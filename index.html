@@ -8,7 +8,7 @@
     <!-- Base de données recettes -->
     <script src="./recettes.js"></script>
 
-    <!-- Design & Icônes -->
+    <!-- Tailwind CSS & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -21,8 +21,8 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
       import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-      import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-      window.FirebaseHelper = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, setDoc, collection, onSnapshot };
+      import { getFirestore, doc, setDoc, collection, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+      window.FirebaseHelper = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, setDoc, collection, onSnapshot, getDoc };
     </script>
 
     <style>
@@ -35,6 +35,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 overflow-x-hidden">
@@ -46,7 +47,7 @@
 
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
         
-        // --- 🔑 TES CLÉS CONFIGURÉES ---
+        // --- 🔑 CONFIGURATION DES CLÉS ---
         const GEMINI_AI_KEY = "AIzaSyCIqqsNc1X0MG135Hw6Vw4HY4bI18OMQSU"; 
 
         const firebaseConfig = {
@@ -70,11 +71,12 @@
           const [shoppingList, setShoppingList] = useState([]); 
           const [customImages, setCustomImages] = useState({}); 
           const [user, setUser] = useState(null);
+          const [firebaseError, setFirebaseError] = useState(null);
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
           const [initStatus, setInitStatus] = useState({ active: false, current: 0, total: 88 });
 
-          const appId = "cookidoudou-final-v1";
+          const appId = "cookidoudou-final-v7";
 
           const ageInMonths = useMemo(() => {
             if (!babyProfile.birthdate) return null;
@@ -89,22 +91,43 @@
             const start = async () => {
               if (!window.FirebaseHelper) return;
               try {
+                // Initialize Firebase
                 const app = window.FirebaseHelper.initializeApp(firebaseConfig);
                 const auth = window.FirebaseHelper.getAuth(app);
                 window._db = window.FirebaseHelper.getFirestore(app);
-                const cred = await window.FirebaseHelper.signInAnonymously(auth);
-                setUser(cred.user);
-                console.log("🔥 [FIREBASE] : Connecté");
-              } catch (e) { console.error("❌ [FIREBASE] : Erreur", e); }
+                
+                console.log("🔥 [FIREBASE] : Tentative de connexion...");
+                
+                // Sign in anonymously (Rule 3)
+                try {
+                  const cred = await window.FirebaseHelper.signInAnonymously(auth);
+                  setUser(cred.user);
+                  setFirebaseError(null);
+                  console.log("✅ [FIREBASE] : Connecté avec succès");
+                } catch (authErr) {
+                  console.error("❌ [FIREBASE AUTH ERROR] :", authErr);
+                  if (authErr.message.includes("identity-toolkit-api")) {
+                    setFirebaseError("L'API Identity Toolkit n'est pas activée. Veuillez cliquer sur le lien dans la console ou activer l'authentification anonyme dans votre console Firebase.");
+                  } else {
+                    setFirebaseError("Erreur d'authentification : " + authErr.message);
+                  }
+                }
+              } catch (e) { 
+                console.error("❌ [FIREBASE CRITICAL] :", e); 
+                setFirebaseError("Erreur d'initialisation Firebase. Vérifiez la configuration.");
+              }
             };
             start();
           }, []);
 
           // --- 2. DATA SYNC (RULE 1) ---
           useEffect(() => {
+            // Guard: ensure user is authenticated before listeners start (Rule 3)
             if (!user || !window._db || !familyCode) return;
             const fid = familyCode.trim().toLowerCase();
+            console.log("📡 [SYNC] : Démarrage pour la famille : " + fid);
             
+            // Sync Profile & Agenda
             const pRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
             const unsubP = window.FirebaseHelper.onSnapshot(pRef, (s) => {
               if (s.exists()) {
@@ -113,8 +136,9 @@
                 if (d.agenda) setAgenda(d.agenda);
                 if (d.shoppingList) setShoppingList(d.shoppingList);
               }
-            });
+            }, (err) => console.error("❌ [SYNC PROFIL] :", err));
 
+            // Sync Images collection
             const iCol = window.FirebaseHelper.collection(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages');
             const unsubI = window.FirebaseHelper.onSnapshot(iCol, (s) => {
               const imgs = {};
@@ -124,7 +148,7 @@
                 }
               });
               setCustomImages(imgs);
-            });
+            }, (err) => console.error("❌ [SYNC IMAGES] :", err));
 
             return () => { unsubP(); unsubI(); };
           }, [user, familyCode]);
@@ -133,12 +157,18 @@
             if (!user || !window._db || !familyCode) return;
             const fid = familyCode.trim().toLowerCase();
             const docRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
-            try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { }
+            try { 
+              await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); 
+            } catch (e) { 
+              console.error("❌ [SAVE ERROR] :", e);
+            }
           }, [user, familyCode]);
 
-          // --- 3. GÉNÉRATEUR IA (CORRIGÉ POUR IMAGEN 3) ---
+          // --- 3. GÉNÉRATEUR IA ---
           const startInitialization = async () => {
-            if (!familyCode) return alert("Définit un Code Famille dans Profil.");
+            if (!familyCode) return alert("Veuillez d'abord définir un Code Famille dans Profil.");
+            if (!user) return alert("Veuillez attendre que Firebase soit connecté.");
+            
             const recipes = RECIPES.slice(0, 88);
             setInitStatus({ active: true, current: 0, total: 88 });
             const fid = familyCode.trim().toLowerCase();
@@ -147,17 +177,21 @@
               const r = recipes[i];
               setInitStatus(prev => ({ ...prev, current: i + 1 }));
 
+              // Skip if already exists
               if (customImages[r.id]) continue;
 
               try {
-                // Utilisation du modèle Imagen 3.0 (endpoint prédictif stable)
-                const prompt = `Gourmet professional food photography of ${r.title}, appetizing, cookbook style, soft natural lighting, minimalist high quality background.`;
+                const prompt = `Professional food photography of ${r.title}, appetizing cookbook style, soft natural lighting, minimalist high quality background.`;
+                // URL for Imagen 3.0 Predict
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_AI_KEY}`;
                 
                 const response = await fetch(url, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ instances: [{ prompt: prompt }], parameters: { sampleCount: 1 } })
+                  body: JSON.stringify({ 
+                    instances: [{ prompt: prompt }], 
+                    parameters: { sampleCount: 1 } 
+                  })
                 });
 
                 if (response.ok) {
@@ -167,12 +201,16 @@
                     const imgUrl = `data:image/png;base64,${base64}`;
                     const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
                     await window.FirebaseHelper.setDoc(imgDoc, { url: imgUrl, fid: fid });
+                    console.log("✅ [IA] : Image générée pour " + r.title);
                   }
                 } else {
-                   const err = await response.text();
-                   console.error("❌ [IA ERROR] :", err);
+                   const errText = await response.text();
+                   console.error("❌ [IA ERROR] :", errText);
                 }
-              } catch (err) { }
+              } catch (err) { 
+                console.error("❌ [IA FETCH] :", err); 
+              }
+              // Respect API quotas
               await new Promise(res => setTimeout(res, 1200)); 
             }
             setInitStatus(prev => ({ ...prev, active: false }));
@@ -180,30 +218,41 @@
 
           const getRecipeImageUrl = (id) => customImages[id] || FALLBACK_IMAGE;
 
-          // --- RENDERING ---
+          // --- VIEWS ---
           const renderHome = () => {
-            const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
-            const todayRecipe = RECIPES.find(r => r.id === agenda[today]);
+            const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
+            const todayRecipe = RECIPES.find(r => r.id === agenda[todayStr]);
             
             return (
               <div className="space-y-6 animate-fadeIn">
                 <div className="text-center">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
-                    <h1 className="text-3xl font-black text-gray-800">Hello {babyProfile.name || "toi"} !</h1>
+                    <h1 className="text-3xl font-black text-gray-800">Hello {babyProfile.name || "Miam"} !</h1>
                 </div>
+
+                {firebaseError && (
+                    <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
+                        <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest">
+                           <i className="fa-solid fa-triangle-exclamation"></i> Action Requise
+                        </div>
+                        <p className="leading-relaxed mb-3">{firebaseError}</p>
+                        <a href="https://console.firebase.google.com/" target="_blank" className="inline-block bg-red-600 text-white px-4 py-2 rounded-xl font-bold uppercase text-[10px]">Ouvrir Firebase</a>
+                    </div>
+                )}
+
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-day text-orange-500"></i> Aujourd'hui</h3>
+                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-check text-orange-500"></i> Menu du jour</h3>
                     {todayRecipe ? (
                         <div onClick={() => { setSelectedRecipe(todayRecipe); setCurrentTab('recipe_detail'); }} className="flex gap-4 cursor-pointer bg-orange-50 p-4 rounded-3xl">
                             <div className="w-16 h-16 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0">
                                 <img src={getRecipeImageUrl(todayRecipe.id)} className="w-full h-full object-cover" />
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1 flex flex-col justify-center">
                                 <h4 className="font-black text-gray-800 line-clamp-1">{todayRecipe.title}</h4>
-                                <p className="text-xs text-orange-600 font-bold">⏱ {todayRecipe.time}</p>
+                                <p className="text-xs text-orange-600 font-bold">Prêt en {todayRecipe.time}</p>
                             </div>
                         </div>
-                    ) : <p className="text-sm text-gray-400 italic">Rien de prévu au menu.</p>}
+                    ) : <p className="text-sm text-gray-400 italic py-2">Planifiez un repas dans l'onglet Livre.</p>}
                 </div>
               </div>
             );
@@ -211,7 +260,8 @@
 
           const renderCarnet = () => {
             const grouped = RECIPES.reduce((acc, r) => {
-              const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") || r.category?.includes("Goûter") ? "Desserts" : "Plats");
+              const cat = r.category || "Plats";
+              const c = cat.includes("Entrée") ? "Entrées" : (cat.includes("Dessert") || cat.includes("Goûter") ? "Desserts" : "Plats");
               if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
             }, {});
             const progress = Object.keys(customImages).length;
@@ -221,24 +271,30 @@
                 <h1 className="text-2xl font-black text-gray-800">Les Recettes</h1>
                 {familyCode && progress < 88 && !initStatus.active && (
                     <div className="bg-gradient-to-br from-orange-400 to-red-500 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
-                        <h3 className="font-black text-xl mb-1">Générer les photos</h3>
-                        <p className="text-xs opacity-90 mb-5 leading-relaxed">Préparez les 88 photos de votre livre avec l'IA.</p>
-                        <button onClick={startInitialization} className="w-full bg-white text-orange-600 py-4 rounded-2xl font-black text-xs uppercase shadow-lg">Lancer ({progress}/88)</button>
+                        <div className="relative z-10">
+                            <h3 className="font-black text-xl mb-1">Générer les photos</h3>
+                            <p className="text-xs opacity-90 mb-5 leading-relaxed">Préparez les 88 photos de votre livre avec l'IA Google Studio.</p>
+                            <button onClick={startInitialization} className="w-full bg-white text-orange-600 py-4 rounded-2xl font-black text-xs uppercase shadow-lg active:scale-95 transition">Démarrer ({progress}/88)</button>
+                        </div>
+                        <i className="fa-solid fa-wand-magic-sparkles absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
                     </div>
                 )}
                 {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
                     <div key={c} className="mb-6">
-                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2">{c}</h2>
+                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2 flex items-center gap-2">
+                         {c} <span className="w-1 h-1 bg-gray-200 rounded-full"></span> {grouped[c].length}
+                      </h2>
                       <div className="grid grid-cols-1 gap-3">
                         {grouped[c].sort((a,b)=>a.id-b.id).map(r => (
                           <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer">
-                            <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                            <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0">
                                 <img src={getRecipeImageUrl(r.id)} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex-1">
                               <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4>
-                              <p className="text-[10px] text-gray-400">⏱ {r.time}</p>
+                              <p className="text-[10px] text-gray-400">P. {r.id+40} • {r.time}</p>
                             </div>
+                            <i className="fa-solid fa-chevron-right text-gray-200 text-xs"></i>
                           </div>
                         ))}
                       </div>
@@ -249,28 +305,25 @@
           };
 
           const renderDetail = () => {
-            // SÉCURITÉ : Si selectedRecipe n'est pas là, on n'affiche rien pour éviter le crash
-            if (!selectedRecipe) return null;
-            
+            if (!selectedRecipe) return <div className="p-20 text-center"><div className="loader-ring mx-auto"></div></div>;
             const r = selectedRecipe;
-            const img = getRecipeImageUrl(r.id);
             const babySteps = r.babyAdaptations || [];
-            const babyAdvice = babyProfile.birthdate 
+            const babyStepText = babyProfile.birthdate 
                 ? (babySteps.find(a => ageInMonths <= a.maxAge)?.text || babySteps[babySteps.length - 1]?.text || "Adaptation familiale")
                 : "Configurez l'âge dans Profil.";
 
             return (
               <div className="animate-fadeIn space-y-6 pb-24">
-                <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-400 font-bold flex items-center gap-2"><i className="fa-solid fa-arrow-left"></i> Livre</button>
-                <img src={img} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-64 object-cover rounded-[3rem] shadow-xl" />
+                <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-400 font-bold flex items-center gap-2 transition hover:text-gray-600"><i className="fa-solid fa-arrow-left"></i> Livre</button>
+                <img src={getRecipeImageUrl(r.id)} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-72 object-cover rounded-[3rem] shadow-xl" />
                 <h1 className="text-3xl font-black text-gray-800 leading-tight">{r.title}</h1>
                 <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl">
-                  <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2"><i className="fa-solid fa-baby"></i> Pour bébé ({ageInMonths || '?'} mois)</h4>
-                  <p className="text-sm leading-relaxed font-medium">{babyAdvice}</p>
+                  <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2"><i className="fa-solid fa-baby"></i> Part de bébé ({ageInMonths || '?'} mois)</h4>
+                  <p className="text-sm leading-relaxed font-medium">{babyStepText}</p>
                 </div>
                 <div className="space-y-10 pt-4">
                   <section>
-                    <h3 className="font-black text-[10px] uppercase text-gray-300 mb-5">Ingrédients</h3>
+                    <h3 className="font-black text-[10px] uppercase text-gray-300 mb-5 text-center tracking-widest">Ingrédients</h3>
                     <div className="grid grid-cols-1 gap-2">
                       {r.ingredients?.map((ing, idx) => (
                         <div key={idx} className="flex items-center gap-4 text-sm text-gray-700 bg-white p-4 rounded-2xl border border-gray-100">
@@ -280,11 +333,11 @@
                     </div>
                   </section>
                   <section>
-                    <h3 className="font-black text-[10px] uppercase text-gray-300 mb-5">Préparation</h3>
+                    <h3 className="font-black text-[10px] uppercase text-gray-300 mb-5 text-center tracking-widest">Recette</h3>
                     <div className="space-y-8">
                       {r.adultSteps?.map((s, idx) => (
                         <div key={idx} className="flex gap-6">
-                          <span className="font-black text-4xl text-orange-100 italic">{idx+1}</span>
+                          <span className="font-black text-4xl text-orange-100 italic">0{idx+1}</span>
                           <p className="text-sm leading-relaxed text-gray-600 pt-2 font-medium">{s}</p>
                         </div>
                       ))}
@@ -303,16 +356,24 @@
                   {babyProfile.photo ? <img src={babyProfile.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-6xl text-orange-200"></i>}
                 </div>
                 <div className="w-full space-y-4 text-center">
-                    <input type="text" value={babyProfile.name} onChange={(e) => handleUpdateProfile({...babyProfile, name: e.target.value})} placeholder="Prénom" className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none" />
-                    <input type="date" value={babyProfile.birthdate} onChange={(e) => handleUpdateProfile({...babyProfile, birthdate: e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center outline-none" />
+                    <input type="text" value={babyProfile.name} onChange={(e) => handleUpdateProfile({...babyProfile, name: e.target.value})} placeholder="Prénom" className="w-full bg-gray-50 p-5 rounded-2xl text-center font-black outline-none border-none focus:ring-2 ring-orange-200" />
+                    <input type="date" value={babyProfile.birthdate} onChange={(e) => handleUpdateProfile({...babyProfile, birthdate: e.target.value})} className="w-full bg-gray-50 p-5 rounded-2xl text-center font-bold outline-none border-none" />
                 </div>
               </div>
+
               <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
                 <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-link text-blue-500"></i> Code Famille</h3>
+                <p className="text-[10px] text-gray-400 mb-6 uppercase tracking-widest font-bold">Synchronisez tous vos appareils</p>
                 <div className="flex gap-2">
-                  <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="VOTRE CODE" className="flex-1 bg-gray-50 p-4 rounded-2xl uppercase font-mono text-xs font-black outline-none border border-gray-100" />
-                  <button onClick={() => { if(!tempFamilyCode) return; setFamilyCode(tempFamilyCode); localStorage.setItem('cookidoudou_family_code', tempFamilyCode); alert("Synchronisation activée !"); }} className="bg-blue-600 text-white px-6 rounded-2xl font-bold">OK</button>
+                  <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="CODE SECRET" className="flex-1 bg-gray-50 p-5 rounded-2xl uppercase font-mono text-xs font-black outline-none border-none" />
+                  <button onClick={() => { 
+                      if(!tempFamilyCode) return; 
+                      setFamilyCode(tempFamilyCode); 
+                      localStorage.setItem('cookidoudou_family_code', tempFamilyCode); 
+                      alert("Synchronisation activée !"); 
+                  }} className="bg-blue-600 text-white px-8 rounded-2xl font-black uppercase text-[10px] tracking-widest">OK</button>
                 </div>
+                {familyCode && <p className="text-[10px] text-green-600 mt-4 font-black uppercase flex items-center gap-2 tracking-widest"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Groupe connecté : {familyCode}</p>}
               </div>
             </div>
           );
@@ -322,31 +383,33 @@
           return (
             <div className="min-h-screen bg-gray-50 flex flex-col relative overflow-x-hidden">
               {initStatus.active && (
-                  <div className="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center p-10 text-center">
-                      <div className="loader-ring mb-8"></div>
-                      <h2 className="text-2xl font-black mb-2 uppercase tracking-tighter">Création de votre livre</h2>
-                      <p className="text-gray-400 text-sm mb-10 leading-relaxed font-medium">L'IA génère les photos (88 recettes).<br/>Ne fermez pas la page.</p>
-                      <div className="w-full max-w-xs bg-gray-100 h-2 rounded-full overflow-hidden mb-4">
-                          <div className="bg-orange-500 h-full transition-all duration-500" style={{ width: `${(initStatus.current / initStatus.total) * 100}%` }}></div>
+                  <div className="fixed inset-0 bg-gray-900/98 backdrop-blur-2xl z-[100] flex flex-col items-center justify-center p-12 text-center text-white animate-fadeIn">
+                      <div className="loader-ring mb-10"></div>
+                      <h2 className="text-4xl font-black mb-3 uppercase tracking-tighter italic tracking-tight">Studio Photo IA</h2>
+                      <p className="text-orange-200 text-sm mb-12 opacity-80 leading-relaxed font-bold tracking-wide">L'IA crée les 88 photos de votre livre.<br/>Veuillez patienter...</p>
+                      <div className="w-full max-w-xs bg-white/5 h-4 rounded-full overflow-hidden mb-5 p-1 border border-white/5">
+                          <div className="bg-gradient-to-r from-orange-400 to-red-500 h-full transition-all duration-700 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.6)]" style={{ width: `${(initStatus.current / initStatus.total) * 100}%` }}></div>
                       </div>
-                      <span className="text-orange-500 font-black text-xs uppercase">{initStatus.current} / 88</span>
+                      <span className="text-orange-500 font-black text-[10px] tracking-[0.5em] uppercase">{initStatus.current} / 88</span>
                   </div>
               )}
-              <main className="flex-1 max-w-2xl mx-auto w-full p-6 pt-10 overflow-y-auto">
+
+              <main className="flex-1 max-w-2xl mx-auto w-full p-6 pt-12 overflow-y-auto">
                 {currentTab === 'home' && renderHome()}
                 {currentTab === 'carnet' && renderCarnet()}
                 {currentTab === 'profile' && renderProfile()}
                 {currentTab === 'recipe_detail' && renderDetail()}
               </main>
-              <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-50 flex justify-around py-4 z-50 pb-safe shadow-2xl">
+
+              <nav className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-2xl border-t border-gray-50 flex justify-around py-5 px-2 z-50 pb-safe shadow-[0_-15px_40px_rgba(0,0,0,0.04)]">
                 {[
                   { id: 'home', icon: 'fa-house', label: 'Accueil' },
                   { id: 'carnet', icon: 'fa-book-open', label: 'Livre' },
                   { id: 'profile', icon: 'fa-user', label: 'Profil' }
                 ].map(t => (
-                  <button key={t.id} onClick={() => { setCurrentTab(t.id); setSelectedRecipe(null); }} className={`flex flex-col items-center gap-1 relative ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'text-orange-500 scale-110' : 'text-gray-300'}`}>
+                  <button key={t.id} onClick={() => { setCurrentTab(t.id); setSelectedRecipe(null); }} className={`flex flex-col items-center gap-1 relative ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'text-orange-500 scale-110' : 'text-gray-300'} transition-all duration-300`}>
                     <i className={`fa-solid ${t.icon} text-xl transition-all`}></i>
-                    <span className="text-[9px] font-black uppercase tracking-wider">{t.label}</span>
+                    <span className="text-[8px] font-black uppercase tracking-wider tracking-widest">{t.label}</span>
                   </button>
                 ))}
               </nav>
