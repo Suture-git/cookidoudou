@@ -78,6 +78,7 @@
         function App() {
           const [currentTab, setCurrentTab] = useState('home');
           const [selectedRecipe, setSelectedRecipe] = useState(null);
+          const [selectedDayForAgenda, setSelectedDayForAgenda] = useState(DAYS_OF_WEEK[0]);
           const [babyProfile, setBabyProfile] = useState({ name: '', birthdate: '', photo: null });
           const [agenda, setAgenda] = useState({}); 
           const [shoppingList, setShoppingList] = useState([]); 
