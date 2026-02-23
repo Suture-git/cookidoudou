@@ -1,1 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookidoudou</title>
 
+    <!-- Base de données recettes -->
+    <script src="./recettes.js"></script>
+
+    <!-- Design & Icônes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+      window.FirebaseHelper = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, setDoc, collection, onSnapshot };
+    </script>
+
+    <style>
+        .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 overflow-x-hidden">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useMemo } = React;
+
+        // Image de secours au cas où une photo manque dans le dossier /images/
+        const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
+
+        // --- CONFIGURATION FIREBASE DÉFINITIVE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
+            authDomain: "cookidoudou-4ac92.firebaseapp.com",
+            projectId: "cookidoudou-4ac92",
+            storageBucket: "cookidoudou-4ac92.firebasestorage.app",
+            messagingSenderId: "590128476695",
+            appId: "1:590128476695:web:821122bbc1e8280694e252"
+        };
+        
+        const appId = "cookidoudou-app"; // Nom de l'espace de stockage dans Firebase
+
+        const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
+        const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+        function App() {
+          const [currentTab, setCurrentTab] = useState('home');
+          const [selectedRecipe, setSelectedRecipe] = useState(null);
+          const [selectedDayForAgenda, setSelectedDayForAgenda] = useState(DAYS_OF_WEEK[0]);
+          
+          const [babyProfile, setBabyProfile] = useState({ name: '', birthdate: '', photo: null });
+          const [agenda, setAgenda] = useState({}); 
+          const [shoppingList, setShoppingList] = useState([]); 
+          
+          const [user, setUser] = useState(null);
+          const [appError, setAppError] = useState(null);
+          const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
+          const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
+
+          // Calcul de l'âge de bébé en mois
+          const ageInMonths = useMemo(() => {
+            if (!babyProfile.birthdate) return null;
+            try {
+                const diffTime = Math.abs(new Date() - new Date(babyProfile.birthdate));
+                return Math.floor(Math.ceil(diffTime / (1000 * 60 * 60 * 24)) / 30.44); 
+            } catch(e) { return null; }
+          }, [babyProfile.birthdate]);
+
+          // --- 1. FIREBASE AUTHENTIFICATION ---
+          useEffect(() => {
+            const start = async () => {
+              if (!window.FirebaseHelper) return;
+              try {
+                const app = window.FirebaseHelper.initializeApp(firebaseConfig);
+                const auth = window.FirebaseHelper.getAuth(app);
+                window._db = window.FirebaseHelper.getFirestore(app);
+                
+                try {
+                    const cred = await window.FirebaseHelper.signInAnonymously(auth);
+                    setUser(cred.user);
+                    setAppError(null);
+                } catch (authErr) {
+                    console.error("Erreur Auth Firebase:", authErr);
+                    setAppError("Impossible de se connecter à la base de données de synchronisation.");
+                }
+              } catch (e) { 
+                  console.error("Firebase Init Error", e); 
+              }
+            };
+            start();
+          }, []);
+
+          // --- 2. SYNCHRONISATION DES DONNÉES FAMILIALES ---
+          useEffect(() => {
+            if (!user || !window._db || !familyCode) return;
+            const fid = familyCode.trim().toLowerCase();
+            
+            const pRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
+            const unsubP = window.FirebaseHelper.onSnapshot(pRef, (s) => {
+              if (s.exists()) {
+                const d = s.data();
+                if (d.babyProfile) setBabyProfile(d.babyProfile);
+                if (d.agenda) setAgenda(d.agenda);
+                if (d.shoppingList) setShoppingList(d.shoppingList);
+              }
+            });
+
+            return () => unsubP(); 
+          }, [user, familyCode]);
+
+          const saveToCloud = useCallback(async (data) => {
+            if (!user || !window._db || !familyCode) return;
+            const fid = familyCode.trim().toLowerCase();
+            const docRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
+            try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { console.error("Save error", e); }
+          }, [user, familyCode]);
+
+          // --- HANDLERS ---
+          const handleUpdateProfile = (newP) => { setBabyProfile(newP); saveToCloud({ babyProfile: newP }); };
+          
+          const addToAgenda = (day, rid) => {
+            const newA = { ...agenda, [day]: rid };
+            setAgenda(newA);
+            const r = RECIPES.find(rec => rec.id === rid);
+            let newS = [...shoppingList];
+            if (r?.ingredients) {
+                r.ingredients.forEach(i => { if (!newS.includes(i)) newS.push(i); });
+                setShoppingList(newS);
+            }
+            saveToCloud({ agenda: newA, shoppingList: newS });
+          };
+
+          const removeFromShoppingList = (item) => {
+            const newS = shoppingList.filter(i => i !== item);
+            setShoppingList(newS);
+            saveToCloud({ shoppingList: newS });
+          };
+
+          const copyShoppingList = () => {
+              if (shoppingList.length === 0) return;
+              const textToCopy = "Ma liste de courses Cookidoudou :\n\n- " + shoppingList.join("\n- ");
+              try {
+                  document.execCommand('copy'); 
+                  navigator.clipboard.writeText(textToCopy);
+                  alert("Liste copiée !");
+              } catch (err) {
+                  alert("Impossible de copier la liste.");
+              }
+          };
+
+          // --- VUES DE L'APPLICATION ---
+          const renderHome = () => {
+            const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
+            const todayRecipe = RECIPES.find(r => r.id === agenda[todayStr]);
+            
+            return (
+              <div className="space-y-6 animate-fadeIn pb-24">
+                <div className="text-center">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
+                    <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {babyProfile.name || "!"}</h1>
+                </div>
+                
+                {appError && (
+                    <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
+                        <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest">
+                           <i className="fa-solid fa-triangle-exclamation"></i> Info
+                        </div>
+                        <p className="leading-relaxed mb-3">{appError}</p>
+                    </div>
+                )}
+
+                <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-day text-orange-500"></i> Menu du jour</h3>
+                    {todayRecipe ? (
+                        <div onClick={() => { setSelectedRecipe(todayRecipe); setCurrentTab('recipe_detail'); }} className="flex gap-4 cursor-pointer bg-orange-50 p-4 rounded-3xl group transition-all">
+                            <div className="w-20 h-20 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0 shadow-sm">
+                                <img src={todayRecipe.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={todayRecipe.title} />
+                            </div>
+                            <div className="flex-1 flex flex-col justify-center">
+                                <h4 className="font-black text-gray-800 line-clamp-1">{todayRecipe.title}</h4>
+                                <p className="text-xs text-orange-600 font-bold mt-1">⏱ {todayRecipe.time}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-6 opacity-60">
+                            <i className="fa-solid fa-plate-wheat text-3xl text-gray-300 mb-2"></i>
+                            <p className="text-sm text-gray-500 italic">Rien de prévu pour le moment.</p>
+                            <button onClick={() => setCurrentTab('carnet')} className="mt-4 text-xs font-bold text-orange-500 uppercase tracking-widest bg-orange-50 px-4 py-2 rounded-xl">Ouvrir le livre</button>
+                        </div>
+                    )}
+                </div>
+              </div>
+            );
+          };
+
+          const renderCarnet = () => {
+            const grouped = RECIPES.reduce((acc, r) => {
+              const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") ? "Desserts" : "Plats");
+              if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
+            }, {});
+
+            return (
+              <div className="animate-fadeIn space-y-8 pb-24">
+                <h1 className="text-2xl font-black text-gray-800">Le Livre de Recettes</h1>
+                
+                {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
+                    <div key={c} className="mb-8">
+                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2 flex items-center justify-between">
+                         <span>{c}</span>
+                         <span className="bg-gray-100 px-2 py-1 rounded-full text-[8px]">{grouped[c].length} recettes</span>
+                      </h2>
+                      <div className="grid grid-cols-1 gap-3">
+                        {grouped[c].sort((a,b)=>a.id-b.id).map(r => (
+                          <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer group shadow-sm">
+                            <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner">
+                                <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4>
+                              <p className="text-[10px] text-gray-400 font-bold mt-1">⏱ {r.time}</p>
+                            </div>
+                            <i className="fa-solid fa-chevron-right text-gray-200 text-xs mr-2"></i>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                ))}
+              </div>
+            );
+          };
+
+          const renderShopping = () => (
+            <div className="animate-fadeIn space-y-6 pb-24">
+              <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-black text-gray-800">Ma Liste</h1>
+                  {shoppingList.length > 0 && (
+                      <button onClick={copyShoppingList} className="text-orange-500 bg-orange-50 p-3 rounded-2xl hover:bg-orange-100 transition active:scale-95" title="Copier la liste">
+                          <i className="fa-solid fa-copy"></i>
+                      </button>
+                  )}
+              </div>
+
+              {shoppingList.length === 0 ? (
+                  <div className="text-center py-24 opacity-20 flex flex-col items-center">
+                      <i className="fa-solid fa-basket-shopping text-7xl mb-4"></i>
+                      <p className="font-black uppercase tracking-widest text-xs">Panier vide</p>
+                  </div>
+              ) : (
+                <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
+                  {shoppingList.map((item, i) => (
+                    <div key={i} className="flex items-center gap-5 p-5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
+                      <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer accent-orange-500" onChange={() => setTimeout(() => removeFromShoppingList(item), 300)} />
+                      <span className="text-sm font-bold text-gray-600 flex-1">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+
+          const renderDetail = () => {
+            if (!selectedRecipe) return null;
+            const r = selectedRecipe;
+            const babySteps = r.babyAdaptations || [];
+            
+            // Logique pour trouver l'adaptation bébé correcte
+            let babyStepText = "Indiquez l'âge de bébé dans Profil pour voir les adaptations.";
+            if (babyProfile.birthdate && ageInMonths !== null) {
+                const step = babySteps.find(a => ageInMonths <= a.maxAge);
+                babyStepText = step ? step.text : (babySteps[babySteps.length - 1]?.text || "Adaptation familiale standard");
+            }
+
+            return (
+              <div className="animate-fadeIn space-y-6 pb-32">
+                <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-500 font-bold flex items-center gap-2 transition hover:text-gray-800 bg-white/80 px-4 py-2 rounded-full shadow-sm w-fit backdrop-blur-md border border-gray-100">
+                    <i className="fa-solid fa-arrow-left"></i> Retour
+                </button>
+                
+                <div className="relative">
+                    <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-72 object-cover rounded-[3rem] shadow-xl" alt={r.title} />
+                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg">
+                        <span className="text-xs font-black text-gray-800">⏱ {r.time}</span>
+                    </div>
+                </div>
+
+                <h1 className="text-3xl font-black text-gray-800 leading-tight px-2">{r.title}</h1>
+                
+                <div className="pt-2 flex gap-3 px-2">
+                    <select value={selectedDayForAgenda} onChange={(e)=>setSelectedDayForAgenda(e.target.value)} className="flex-1 p-4 rounded-2xl bg-white border border-gray-200 font-black outline-none text-sm appearance-none shadow-sm focus:border-orange-400">
+                      {DAYS_OF_WEEK.map(d=><option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <button onClick={()=>{addToAgenda(selectedDayForAgenda, r.id); alert("Planifié avec succès ! Les ingrédients ont été ajoutés à votre liste.");}} className="bg-gray-900 text-white px-8 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition hover:bg-black">
+                        Planifier
+                    </button>
+                </div>
+
+                <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl mt-4 relative overflow-hidden">
+                  <i className="fa-solid fa-baby absolute -right-4 -bottom-4 text-7xl opacity-10"></i>
+                  <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2 relative z-10">
+                      <i className="fa-solid fa-spoon"></i> Part de bébé ({ageInMonths !== null ? `${ageInMonths} mois` : '?'})
+                  </h4>
+                  <p className="text-sm leading-relaxed font-medium relative z-10 whitespace-pre-line">{babyStepText}</p>
+                </div>
+
+                <div className="space-y-8 pt-6 px-2">
+                  <section>
+                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 tracking-widest border-b pb-2">Ingrédients</h3>
+                    <div className="grid grid-cols-1 gap-2">
+                      {r.ingredients?.map((ing, idx) => (
+                        <div key={idx} className="flex items-center gap-4 text-sm text-gray-700 bg-white p-4 rounded-2xl shadow-sm border border-gray-50">
+                          <span className="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></span>
+                          <span className="font-medium">{ing}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 tracking-widest border-b pb-2">Préparation</h3>
+                    <div className="space-y-6">
+                      {r.adultSteps?.map((s, idx) => (
+                        <div key={idx} className="flex gap-5 bg-white p-5 rounded-3xl shadow-sm border border-gray-50">
+                          <span className="font-black text-3xl text-orange-100 italic leading-none">{idx+1}</span>
+                          <p className="text-sm leading-relaxed text-gray-600 font-medium pt-1">{s}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+              </div>
+            );
+          };
+
+          const renderProfile = () => (
+            <div className="animate-fadeIn space-y-6 pb-24">
+              <h1 className="text-2xl font-black text-gray-800">Configuration</h1>
+              
+              <div className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm">
+                <div className="w-28 h-28 rounded-full bg-orange-50 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden mb-6 text-orange-200">
+                  <i className="fa-solid fa-baby text-5xl"></i>
+                </div>
+                <div className="w-full space-y-4 text-center">
+                    <div>
+                        <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Prénom de l'enfant</label>
+                        <input type="text" value={babyProfile.name} onChange={(e) => handleUpdateProfile({...babyProfile, name: e.target.value})} placeholder="Ex: Léo" className="w-full bg-gray-50 p-4 rounded-2xl text-center font-black outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Date de naissance</label>
+                        <input type="date" value={babyProfile.birthdate} onChange={(e) => handleUpdateProfile({...babyProfile, birthdate: e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
+                    </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+                <i className="fa-solid fa-cloud absolute -right-6 -bottom-6 text-8xl text-blue-50 opacity-50"></i>
+                <div className="relative z-10">
+                    <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800"><i className="fa-solid fa-link text-blue-500"></i> Partage Familial</h3>
+                    <p className="text-xs text-gray-500 mb-6 font-medium leading-relaxed">Entrez un code secret pour synchroniser vos menus et courses sur un autre téléphone.</p>
+                    <div className="flex gap-2">
+                      <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="CODE SECRET" className="flex-1 bg-gray-50 p-4 rounded-2xl uppercase font-mono text-xs font-black outline-none border border-transparent focus:border-blue-200 transition" />
+                      <button onClick={() => { if(!tempFamilyCode) return; setFamilyCode(tempFamilyCode); localStorage.setItem('cookidoudou_family_code', tempFamilyCode); alert("Synchronisation activée !"); }} className="bg-blue-600 text-white px-6 rounded-2xl font-black uppercase text-[10px] shadow-md active:scale-95 transition">Valider</button>
+                    </div>
+                    {familyCode && (
+                        <div className="mt-5 inline-flex items-center gap-2 bg-green-50 px-3 py-2 rounded-xl">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> 
+                            <span className="text-[10px] text-green-700 font-black uppercase tracking-widest">Connecté : {familyCode}</span>
+                        </div>
+                    )}
+                </div>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="min-h-screen bg-gray-50 flex flex-col relative overflow-x-hidden">
+              <main className="flex-1 max-w-2xl mx-auto w-full p-6 pt-10 overflow-y-auto">
+                {currentTab === 'home' && renderHome()}
+                {currentTab === 'carnet' && renderCarnet()}
+                {currentTab === 'shopping' && renderShopping()}
+                {currentTab === 'profile' && renderProfile()}
+                {currentTab === 'recipe_detail' && renderDetail()}
+              </main>
+
+              {/* Barre de navigation */}
+              <nav className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around py-4 px-2 z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                {[
+                  { id: 'home', icon: 'fa-house', label: 'Accueil' },
+                  { id: 'carnet', icon: 'fa-book-open', label: 'Livre' },
+                  { id: 'shopping', icon: 'fa-cart-shopping', label: 'Courses' },
+                  { id: 'profile', icon: 'fa-user', label: 'Profil' }
+                ].map(t => (
+                  <button key={t.id} onClick={() => { setCurrentTab(t.id); setSelectedRecipe(null); }} className={`flex flex-col items-center gap-1.5 relative w-16 ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'} transition-colors duration-200`}>
+                    <div className={`transition-transform duration-300 ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? '-translate-y-1 scale-110' : ''}`}>
+                        <i className={`fa-solid ${t.icon} text-xl`}></i>
+                    </div>
+                    <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity duration-300 ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'opacity-100' : 'opacity-70'}`}>{t.label}</span>
+                    {(currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail')) && (
+                        <span className="absolute -bottom-2 w-1 h-1 bg-orange-500 rounded-full"></span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
