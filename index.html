@@ -41,45 +41,10 @@
     <script type="text/babel">
         const { useState, useEffect, useCallback, useMemo } = React;
 
+        // Image de secours au cas où une photo manque dans le dossier /images/
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
 
-        // --- MOTEUR SÉMANTIQUE D'IMAGES (Solution d'attente propre) ---
-        const getSmartImage = (title, category) => {
-            if (!title) return FALLBACK_IMAGE;
-            const t = title.toLowerCase();
-            
-            if (t.includes('saumon')) return 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('cabillaud') || t.includes('daurade') || t.includes('bar ') || t.includes('poisson')) return 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('crevette') || t.includes('saint-jacques') || t.includes('crabe') || t.includes('pétoncle')) return 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('sardine') || t.includes('maquereau')) return 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('poulet') || t.includes('dinde') || t.includes('volaille')) return 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('bœuf') || t.includes('veau') || t.includes('porc') || t.includes('lapin') || t.includes('boudin') || t.includes('nems')) return 'https://images.unsplash.com/photo-1544025162-8111f4e7c376?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('pâte') || t.includes('fusilli') || t.includes('spaghetti') || t.includes('ravioles') || t.includes('penne') || t.includes('carbonara')) return 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('riz') || t.includes('risotto') || t.includes('blésotto') || t.includes('boulgour') || t.includes('quinoa')) return 'https://images.unsplash.com/photo-1531234799389-dcb7651eb0a2?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('pizza') || t.includes('tarte') || t.includes('quiche') || t.includes('chausson')) return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('soupe') || t.includes('velouté') || t.includes('gaspacho')) return 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('houmous') || t.includes('tartinade') || t.includes('caviar')) return 'https://images.unsplash.com/photo-1577903846067-111100b52c03?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('gratin') || t.includes('tian') || t.includes('crumble')) return 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('oeuf') || t.includes('omelette') || t.includes('flan') || t.includes('croquette') || t.includes('crique')) return 'https://images.unsplash.com/photo-1510693042738-eb4dbed08c54?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('courgette') || t.includes('brocoli') || t.includes('épinard') || t.includes('haricot') || t.includes('petit pois') || t.includes('blette')) return 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('carotte') || t.includes('patate douce') || t.includes('potimarron') || t.includes('courge')) return 'https://images.unsplash.com/photo-1596797882870-8c33deeac224?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('champignon')) return 'https://images.unsplash.com/photo-1604642646274-131b74aeb9fb?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('chocolat')) return 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('pomme') || t.includes('poire') || t.includes('banane')) return 'https://images.unsplash.com/photo-1568213816046-0ee1c42bd559?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('fraise') || t.includes('framboise') || t.includes('fruit') || t.includes('abricot') || t.includes('pêche')) return 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('sablé') || t.includes('biscuit') || t.includes('crêpe') || t.includes('pancake') || t.includes('financier')) return 'https://images.unsplash.com/photo-1558961363-a0c87cea159e?auto=format&fit=crop&w=600&q=80';
-            
-            if (category && category.includes('Dessert')) return 'https://images.unsplash.com/photo-1551024506-0cbcca0e4c84?auto=format&fit=crop&w=600&q=80';
-            if (category && category.includes('Entrée')) return 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80';
-            
-            return FALLBACK_IMAGE;
-        };
-
-        // --- CLÉS API ---
-        // Clé Google AI conservée pour une éventuelle utilisation ultérieure
-        const GEMINI_AI_KEY = "AIzaSyBBucd46h6ou4ZImFBRftTiv60suj1Qsxs"; 
-
-        // Configuration exacte Firebase
+        // --- CONFIGURATION FIREBASE DÉFINITIVE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
             authDomain: "cookidoudou-4ac92.firebaseapp.com",
@@ -89,7 +54,7 @@
             appId: "1:590128476695:web:821122bbc1e8280694e252"
         };
         
-        const appId = "cookidoudou-clean-v1"; // Identifiant pour repartir sur une base de données fraîche
+        const appId = "cookidoudou-app"; // Nom de l'espace de stockage dans Firebase
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -108,6 +73,7 @@
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
 
+          // Calcul de l'âge de bébé en mois
           const ageInMonths = useMemo(() => {
             if (!babyProfile.birthdate) return null;
             try {
@@ -116,7 +82,7 @@
             } catch(e) { return null; }
           }, [babyProfile.birthdate]);
 
-          // --- 1. FIREBASE AUTH ---
+          // --- 1. FIREBASE AUTHENTIFICATION ---
           useEffect(() => {
             const start = async () => {
               if (!window.FirebaseHelper) return;
@@ -130,18 +96,17 @@
                     setUser(cred.user);
                     setAppError(null);
                 } catch (authErr) {
-                    console.error("❌ [FIREBASE AUTH ERROR] :", authErr);
-                    setAppError("Problème de connexion à la base de données. (" + authErr.message + ")");
+                    console.error("Erreur Auth Firebase:", authErr);
+                    setAppError("Impossible de se connecter à la base de données de synchronisation.");
                 }
               } catch (e) { 
-                  console.error("Firebase Error", e); 
-                  setAppError("Erreur critique d'initialisation de l'application.");
+                  console.error("Firebase Init Error", e); 
               }
             };
             start();
           }, []);
 
-          // --- 2. DATA SYNC (Profil, Agenda, Courses) ---
+          // --- 2. SYNCHRONISATION DES DONNÉES FAMILIALES ---
           useEffect(() => {
             if (!user || !window._db || !familyCode) return;
             const fid = familyCode.trim().toLowerCase();
@@ -192,14 +157,14 @@
               const textToCopy = "Ma liste de courses Cookidoudou :\n\n- " + shoppingList.join("\n- ");
               try {
                   document.execCommand('copy'); 
-                  navigator.clipboard.writeText(textToCopy); // Fallback moderne
+                  navigator.clipboard.writeText(textToCopy);
                   alert("Liste copiée !");
               } catch (err) {
                   alert("Impossible de copier la liste.");
               }
           };
 
-          // --- VIEWS ---
+          // --- VUES DE L'APPLICATION ---
           const renderHome = () => {
             const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
             const todayRecipe = RECIPES.find(r => r.id === agenda[todayStr]);
@@ -214,7 +179,7 @@
                 {appError && (
                     <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
                         <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest">
-                           <i className="fa-solid fa-triangle-exclamation"></i> Action Requise
+                           <i className="fa-solid fa-triangle-exclamation"></i> Info
                         </div>
                         <p className="leading-relaxed mb-3">{appError}</p>
                     </div>
@@ -225,7 +190,7 @@
                     {todayRecipe ? (
                         <div onClick={() => { setSelectedRecipe(todayRecipe); setCurrentTab('recipe_detail'); }} className="flex gap-4 cursor-pointer bg-orange-50 p-4 rounded-3xl group transition-all">
                             <div className="w-20 h-20 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0 shadow-sm">
-                                <img src={getSmartImage(todayRecipe.title, todayRecipe.category)} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={todayRecipe.title} />
+                                <img src={todayRecipe.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={todayRecipe.title} />
                             </div>
                             <div className="flex-1 flex flex-col justify-center">
                                 <h4 className="font-black text-gray-800 line-clamp-1">{todayRecipe.title}</h4>
@@ -246,13 +211,13 @@
 
           const renderCarnet = () => {
             const grouped = RECIPES.reduce((acc, r) => {
-              const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") || r.category?.includes("Goûter") ? "Desserts" : "Plats");
+              const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") ? "Desserts" : "Plats");
               if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
             }, {});
 
             return (
               <div className="animate-fadeIn space-y-8 pb-24">
-                <h1 className="text-2xl font-black text-gray-800">Toutes les recettes</h1>
+                <h1 className="text-2xl font-black text-gray-800">Le Livre de Recettes</h1>
                 
                 {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
                     <div key={c} className="mb-8">
@@ -264,11 +229,11 @@
                         {grouped[c].sort((a,b)=>a.id-b.id).map(r => (
                           <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer group shadow-sm">
                             <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner">
-                                <img src={getSmartImage(r.title, r.category)} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
+                                <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
                             </div>
                             <div className="flex-1">
                               <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4>
-                              <p className="text-[10px] text-gray-400 font-bold mt-1">Page {r.id + 40} • {r.time}</p>
+                              <p className="text-[10px] text-gray-400 font-bold mt-1">⏱ {r.time}</p>
                             </div>
                             <i className="fa-solid fa-chevron-right text-gray-200 text-xs mr-2"></i>
                           </div>
@@ -313,18 +278,22 @@
             if (!selectedRecipe) return null;
             const r = selectedRecipe;
             const babySteps = r.babyAdaptations || [];
-            const babyStepText = babyProfile.birthdate 
-                ? (babySteps.find(a => ageInMonths <= a.maxAge)?.text || babySteps[babySteps.length - 1]?.text || "Adaptation familiale standard")
-                : "Indiquez l'âge de bébé dans Profil pour voir les adaptations.";
+            
+            // Logique pour trouver l'adaptation bébé correcte
+            let babyStepText = "Indiquez l'âge de bébé dans Profil pour voir les adaptations.";
+            if (babyProfile.birthdate && ageInMonths !== null) {
+                const step = babySteps.find(a => ageInMonths <= a.maxAge);
+                babyStepText = step ? step.text : (babySteps[babySteps.length - 1]?.text || "Adaptation familiale standard");
+            }
 
             return (
               <div className="animate-fadeIn space-y-6 pb-32">
-                <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-400 font-bold flex items-center gap-2 transition hover:text-gray-600 bg-white/50 px-4 py-2 rounded-full shadow-sm w-fit backdrop-blur-md">
+                <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-500 font-bold flex items-center gap-2 transition hover:text-gray-800 bg-white/80 px-4 py-2 rounded-full shadow-sm w-fit backdrop-blur-md border border-gray-100">
                     <i className="fa-solid fa-arrow-left"></i> Retour
                 </button>
                 
                 <div className="relative">
-                    <img src={getSmartImage(r.title, r.category)} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-72 object-cover rounded-[3rem] shadow-xl" alt={r.title} />
+                    <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-72 object-cover rounded-[3rem] shadow-xl" alt={r.title} />
                     <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg">
                         <span className="text-xs font-black text-gray-800">⏱ {r.time}</span>
                     </div>
@@ -336,7 +305,7 @@
                     <select value={selectedDayForAgenda} onChange={(e)=>setSelectedDayForAgenda(e.target.value)} className="flex-1 p-4 rounded-2xl bg-white border border-gray-200 font-black outline-none text-sm appearance-none shadow-sm focus:border-orange-400">
                       {DAYS_OF_WEEK.map(d=><option key={d} value={d}>{d}</option>)}
                     </select>
-                    <button onClick={()=>{addToAgenda(selectedDayForAgenda, r.id); alert("Planifié avec succès ! Les ingrédients ont été ajoutés à votre liste.");}} className="bg-gray-900 text-white px-8 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition">
+                    <button onClick={()=>{addToAgenda(selectedDayForAgenda, r.id); alert("Planifié avec succès ! Les ingrédients ont été ajoutés à votre liste.");}} className="bg-gray-900 text-white px-8 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition hover:bg-black">
                         Planifier
                     </button>
                 </div>
@@ -346,7 +315,7 @@
                   <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2 relative z-10">
                       <i className="fa-solid fa-spoon"></i> Part de bébé ({ageInMonths !== null ? `${ageInMonths} mois` : '?'})
                   </h4>
-                  <p className="text-sm leading-relaxed font-medium relative z-10">{babyStepText}</p>
+                  <p className="text-sm leading-relaxed font-medium relative z-10 whitespace-pre-line">{babyStepText}</p>
                 </div>
 
                 <div className="space-y-8 pt-6 px-2">
@@ -428,7 +397,7 @@
                 {currentTab === 'recipe_detail' && renderDetail()}
               </main>
 
-              {/* Navigation Bar */}
+              {/* Barre de navigation */}
               <nav className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around py-4 px-2 z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
                 {[
                   { id: 'home', icon: 'fa-house', label: 'Accueil' },
@@ -441,7 +410,6 @@
                         <i className={`fa-solid ${t.icon} text-xl`}></i>
                     </div>
                     <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity duration-300 ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'opacity-100' : 'opacity-70'}`}>{t.label}</span>
-                    {/* Active dot indicator */}
                     {(currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail')) && (
                         <span className="absolute -bottom-2 w-1 h-1 bg-orange-500 rounded-full"></span>
                     )}
