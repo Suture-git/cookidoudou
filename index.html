@@ -48,9 +48,51 @@
 
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
 
+        // --- MOTEUR SÉMANTIQUE D'IMAGES ---
+        const getSmartImage = (title, category) => {
+            if (!title) return FALLBACK_IMAGE;
+            const t = title.toLowerCase();
+            
+            // Poissons & Fruits de mer
+            if (t.includes('saumon')) return 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('cabillaud') || t.includes('daurade') || t.includes('bar ') || t.includes('poisson')) return 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('crevette') || t.includes('saint-jacques') || t.includes('crabe') || t.includes('pétoncle')) return 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('sardine') || t.includes('maquereau')) return 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?auto=format&fit=crop&w=600&q=80';
+
+            // Viandes
+            if (t.includes('poulet') || t.includes('dinde') || t.includes('volaille')) return 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('bœuf') || t.includes('veau') || t.includes('porc') || t.includes('lapin') || t.includes('boudin') || t.includes('nems')) return 'https://images.unsplash.com/photo-1544025162-8111f4e7c376?auto=format&fit=crop&w=600&q=80';
+            
+            // Plats Spécifiques
+            if (t.includes('pâte') || t.includes('fusilli') || t.includes('spaghetti') || t.includes('ravioles') || t.includes('penne') || t.includes('carbonara')) return 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('riz') || t.includes('risotto') || t.includes('blésotto') || t.includes('boulgour') || t.includes('quinoa')) return 'https://images.unsplash.com/photo-1531234799389-dcb7651eb0a2?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('pizza') || t.includes('tarte') || t.includes('quiche') || t.includes('chausson')) return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('soupe') || t.includes('velouté') || t.includes('gaspacho')) return 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('houmous') || t.includes('tartinade') || t.includes('caviar')) return 'https://images.unsplash.com/photo-1577903846067-111100b52c03?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('gratin') || t.includes('tian') || t.includes('crumble')) return 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('oeuf') || t.includes('omelette') || t.includes('flan') || t.includes('croquette') || t.includes('crique')) return 'https://images.unsplash.com/photo-1510693042738-eb4dbed08c54?auto=format&fit=crop&w=600&q=80';
+
+            // Légumes dominants
+            if (t.includes('courgette') || t.includes('brocoli') || t.includes('épinard') || t.includes('haricot') || t.includes('petit pois') || t.includes('blette')) return 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('carotte') || t.includes('patate douce') || t.includes('potimarron') || t.includes('courge')) return 'https://images.unsplash.com/photo-1596797882870-8c33deeac224?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('champignon')) return 'https://images.unsplash.com/photo-1604642646274-131b74aeb9fb?auto=format&fit=crop&w=600&q=80';
+
+            // Desserts
+            if (t.includes('chocolat')) return 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('pomme') || t.includes('poire') || t.includes('banane')) return 'https://images.unsplash.com/photo-1568213816046-0ee1c42bd559?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('fraise') || t.includes('framboise') || t.includes('fruit') || t.includes('abricot') || t.includes('pêche')) return 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80';
+            if (t.includes('sablé') || t.includes('biscuit') || t.includes('crêpe') || t.includes('pancake') || t.includes('financier')) return 'https://images.unsplash.com/photo-1558961363-a0c87cea159e?auto=format&fit=crop&w=600&q=80';
+            
+            // Catégories par défaut
+            if (category && category.includes('Dessert')) return 'https://images.unsplash.com/photo-1551024506-0cbcca0e4c84?auto=format&fit=crop&w=600&q=80';
+            if (category && category.includes('Entrée')) return 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80';
+            
+            return FALLBACK_IMAGE;
+        };
+
         // --- CONFIGURATION FIREBASE ---
         const myFirebaseConfig = {
-            apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
+            apiKey: "AIzaSyDoriCaCrlIrfH-KYviY32-9O_fym0O7Ng",
             authDomain: "cookidoudou-4ac92.firebaseapp.com",
             projectId: "cookidoudou-4ac92",
             storageBucket: "cookidoudou-4ac92.firebasestorage.app",
@@ -425,4 +467,3 @@
     </script>
 </body>
 </html>
-
