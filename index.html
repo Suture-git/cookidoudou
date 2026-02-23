@@ -47,33 +47,20 @@
         const { useState, useEffect, useCallback, useMemo } = React;
 
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
-        
-        // Banque d'images culinaires professionnelles HD (Rapide et 100% fiable)
-        const FOOD_IMAGES = [
-            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=600&q=80"
-        ];
 
         // --- CONFIGURATION FIREBASE ---
         const myFirebaseConfig = {
-            apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
+            apiKey: "AIzaSyDoriCaCrlIrfH-KYviY32-9O_fym0O7Ng",
             authDomain: "cookidoudou-4ac92.firebaseapp.com",
             projectId: "cookidoudou-4ac92",
             storageBucket: "cookidoudou-4ac92.firebasestorage.app",
             messagingSenderId: "590128476695",
             appId: "1:590128476695:web:821122bbc1e8280694e252"
         };
-        // Utilisation de la configuration environnementale si disponible (pour que l'app fonctionne dans cet éditeur)
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : "cookidoudou-final-v14";
+        
+        // v15 : On change l'ID pour forcer Firebase à oublier les fausses images d'avant
+        const appId = typeof __app_id !== 'undefined' ? __app_id : "cookidoudou-final-v15";
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -111,7 +98,6 @@
                 
                 try {
                     let cred;
-                    // Support pour l'environnement de test et votre déploiement Vercel
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         cred = await window.FirebaseHelper.signInWithCustomToken(auth, __initial_auth_token);
                     } else {
@@ -121,18 +107,11 @@
                     setAppError(null);
                 } catch (authErr) {
                     console.error("❌ [FIREBASE AUTH ERROR] :", authErr);
-                    // Message d'erreur spécifique à votre problème de restriction de clé API
-                    if (authErr.message.includes("signup-are-blocked")) {
-                        setAppError("Votre clé API Firebase bloque la connexion. Allez sur Google Cloud Console > Identifiants > Modifiez votre clé API Firebase > 'Restrictions d'API' > Cochez 'Identity Toolkit API'.");
-                    } else if (authErr.message.includes("identity-toolkit-api")) {
-                        setAppError("L'API Google Identity Toolkit est désactivée. Veuillez l'activer dans votre console Google Cloud.");
-                    } else {
-                        setAppError("Erreur d'authentification : " + authErr.message);
-                    }
+                    setAppError("Erreur d'authentification : " + authErr.message);
                 }
               } catch (e) { 
                   console.error("Firebase Error", e); 
-                  setAppError("Erreur d'initialisation Firebase. Vérifiez la console.");
+                  setAppError("Erreur d'initialisation Firebase.");
               }
             };
             start();
@@ -176,11 +155,11 @@
             try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { }
           }, [user, familyCode]);
 
-          // --- 3. GÉNÉRATEUR INSTANTANÉ ---
+          // --- 3. GÉNÉRATEUR IA DYNAMIQUE (SOLUTION SANS ERREUR) ---
           const startInitialization = async () => {
             if (!familyCode) return alert("Veuillez d'abord définir un Code Famille dans Profil.");
             const recipes = RECIPES.slice(0, 88);
-            setInitStatus({ active: true, current: 0, total: 88 });
+            setInitStatus({ active: true, current: 0, total: recipes.length });
             const fid = familyCode.trim().toLowerCase();
 
             for (let i = 0; i < recipes.length; i++) {
@@ -190,15 +169,22 @@
               if (customImages[r.id]) continue;
 
               try {
-                 // Utilise une image haute définition aléatoire de la banque d'images
-                 const imgUrl = FOOD_IMAGES[r.id % FOOD_IMAGES.length];
-                 const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
+                 // Astuce : Au lieu de télécharger l'image avec un script (ce qui bloque Cloudflare 530),
+                 // on génère une URL magique basée sur le nom exact de la recette.
+                 // Le navigateur chargera cette image naturellement.
+                 const promptText = `Professional and appetizing food photography of ${r.title}, gourmet plating, recipe book style, soft lighting`;
+                 const encodedPrompt = encodeURIComponent(promptText);
                  
-                 // Sauvegarde de l'URL directement
+                 // On ajoute un seed = id de la recette pour que la photo reste toujours la même
+                 const imgUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=600&height=400&nologo=true&seed=${r.id}`;
+                 
+                 const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
                  await window.FirebaseHelper.setDoc(imgDoc, { url: imgUrl, fid: fid });
+                 
               } catch (err) { console.error("Erreur de sauvegarde", err); }
               
-              await new Promise(res => setTimeout(res, 100)); 
+              // C'est quasi-instantané puisqu'on ne fait qu'écrire du texte dans Firebase !
+              await new Promise(res => setTimeout(res, 50)); 
             }
             setInitStatus(prev => ({ ...prev, active: false }));
           };
@@ -279,7 +265,7 @@
                     <div className="bg-gradient-to-br from-orange-400 to-red-500 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="font-black text-xl mb-1 text-white">Générer la galerie</h3>
-                            <p className="text-xs opacity-90 mb-5 text-white">Création instantanée des 88 photos de votre livre.</p>
+                            <p className="text-xs opacity-90 mb-5 text-white">L'IA va illustrer chaque recette sur-mesure !</p>
                             <button onClick={startInitialization} className="w-full bg-white text-orange-600 py-4 rounded-2xl font-black text-xs uppercase shadow-lg active:scale-95 transition">Démarrer ({progress}/88)</button>
                         </div>
                         <i className="fa-solid fa-wand-magic-sparkles absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
