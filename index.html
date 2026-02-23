@@ -50,7 +50,7 @@
 
         // --- CONFIGURATION FIREBASE ---
         const myFirebaseConfig = {
-            apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
+            apiKey: "AIzaSyDoriCaCrlIrfH-KYviY32-9O_fym0O7Ng",
             authDomain: "cookidoudou-4ac92.firebaseapp.com",
             projectId: "cookidoudou-4ac92",
             storageBucket: "cookidoudou-4ac92.firebasestorage.app",
@@ -59,7 +59,6 @@
         };
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
         
-        // v17 : On repart sur une base saine pour encoder définitivement les images
         const appId = typeof __app_id !== 'undefined' ? __app_id : "cookidoudou-final-v17";
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
@@ -155,7 +154,7 @@
             try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { }
           }, [user, familyCode]);
 
-          // --- 3. GÉNÉRATEUR IA SÉCURISÉ (Moteur Pollinations avec encodage Base64) ---
+          // --- 3. GÉNÉRATEUR INSTANTANÉ (Plus de "fetch", plus de plantage) ---
           const startInitialization = async () => {
             if (!familyCode) return alert("Veuillez d'abord définir un Code Famille dans Profil.");
             const recipes = RECIPES.slice(0, 88);
@@ -166,52 +165,24 @@
               const r = recipes[i];
               setInitStatus(prev => ({ ...prev, current: i + 1 }));
 
-              // Si on a déjà une belle image validement stockée en Base64, on la garde.
-              if (customImages[r.id] && customImages[r.id].startsWith('data:image')) {
-                  continue;
-              }
+              if (customImages[r.id]) continue;
 
               try {
-                 // 1. Demande d'un dessin sur-mesure à l'IA basé sur le titre exact de la recette
-                 const promptText = `A beautiful and professional food photography of ${r.title}, appetizing, cookbook style, gourmet plating, high resolution`;
-                 const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}?width=600&height=400&nologo=true&seed=${r.id}`;
+                 // Utilise l'algorithme sémantique pour générer l'URL exacte
+                 const imgUrl = getSmartImage(r.title, r.category);
+                 const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
                  
-                 // 2. Récupération de l'image (blob)
-                 const response = await fetch(url);
-                 if (response.ok) {
-                     const blob = await response.blob();
-                     
-                     // 3. Conversion de l'image en "Texte" (Base64) pour la stocker de manière permanente
-                     const base64data = await new Promise((resolve) => {
-                         const reader = new FileReader();
-                         reader.onloadend = () => resolve(reader.result);
-                         reader.readAsDataURL(blob);
-                     });
-
-                     // 4. Sauvegarde dans la base de données Firebase
-                     const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
-                     await window.FirebaseHelper.setDoc(imgDoc, { url: base64data, fid: fid });
-                 } else {
-                     console.error(`L'IA a retourné une erreur ${response.status} pour la recette ${r.id}`);
-                 }
-              } catch (err) { 
-                  console.error("Erreur réseau pendant la génération", err); 
-              }
+                 // Sauvegarde ultra-rapide
+                 await window.FirebaseHelper.setDoc(imgDoc, { url: imgUrl, fid: fid });
+              } catch (err) { console.error("Erreur de sauvegarde", err); }
               
-              // 5. PAUSE OBLIGATOIRE (2.5 secondes) pour ne pas déclencher la sécurité Cloudflare (Erreur 530)
-              await new Promise(res => setTimeout(res, 2500)); 
+              // Rapide pause visuelle (l'opération entière prendra 2 secondes)
+              await new Promise(res => setTimeout(res, 20)); 
             }
             setInitStatus(prev => ({ ...prev, active: false }));
-            alert("Toutes vos photos ont été générées avec succès !");
           };
 
-          // Fonction sécurisée pour afficher l'image
-          const getRecipeImageUrl = (id) => {
-              const img = customImages[id];
-              // On affiche l'image seulement si elle a bien été encodée, sinon on met l'image de secours
-              if (img && img.startsWith('data:image')) return img;
-              return FALLBACK_IMAGE;
-          };
+          const getRecipeImageUrl = (id) => customImages[id] || FALLBACK_IMAGE;
 
           // --- HANDLERS ---
           const handleUpdateProfile = (newP) => { setBabyProfile(newP); saveToCloud({ babyProfile: newP }); };
@@ -278,20 +249,19 @@
               const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") || r.category?.includes("Goûter") ? "Desserts" : "Plats");
               if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
             }, {});
-            // On compte combien d'images en base64 sont déjà stockées
-            const progress = Object.values(customImages).filter(url => url.startsWith('data:image')).length;
+            const progress = Object.keys(customImages).length;
 
             return (
               <div className="animate-fadeIn space-y-8 pb-10">
                 <h1 className="text-2xl font-black text-gray-800">Toutes les recettes</h1>
-                {familyCode && progress < 88 && !initStatus.active && (
+                {familyCode && progress < 88 && !initStatus.active && !appError && (
                     <div className="bg-gradient-to-br from-orange-400 to-red-500 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="font-black text-xl mb-1 text-white">Générer la galerie</h3>
-                            <p className="text-xs opacity-90 mb-5 text-white">L'IA va dessiner et stocker vos 88 photos (cela prend ~3 minutes).</p>
+                            <p className="text-xs opacity-90 mb-5 text-white">Chargement ultra-rapide des photos !</p>
                             <button onClick={startInitialization} className="w-full bg-white text-orange-600 py-4 rounded-2xl font-black text-xs uppercase shadow-lg active:scale-95 transition">Démarrer ({progress}/88)</button>
                         </div>
-                        <i className="fa-solid fa-wand-magic-sparkles absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
+                        <i className="fa-solid fa-bolt absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
                     </div>
                 )}
                 {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
@@ -418,7 +388,7 @@
                       <div className="loader-ring mb-10"></div>
                       <h2 className="text-4xl font-black mb-3 uppercase tracking-tighter italic tracking-tight">Studio IA</h2>
                       <p className="text-orange-200 text-sm mb-4 opacity-90 leading-relaxed font-bold tracking-wide">
-                          L'IA dessine vos 88 plats sur-mesure...<br/>Cela prend environ 3 à 4 minutes.<br/>Ne fermez pas cette page.
+                          Affectation sémantique des images...<br/>Ultra-rapide !
                       </p>
                       <div className="w-full max-w-xs bg-white/5 h-4 rounded-full overflow-hidden mb-5 p-1 border border-white/5">
                           <div className="bg-gradient-to-r from-orange-400 to-red-500 h-full transition-all duration-300 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.6)]" style={{ width: `${(initStatus.current / initStatus.total) * 100}%` }}></div>
