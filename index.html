@@ -48,48 +48,6 @@
 
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
 
-        // --- MOTEUR SÉMANTIQUE D'IMAGES (Remplace les API IA défaillantes) ---
-        const getSmartImage = (title, category) => {
-            if (!title) return FALLBACK_IMAGE;
-            const t = title.toLowerCase();
-            
-            // Poissons & Fruits de mer
-            if (t.includes('saumon')) return 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('cabillaud') || t.includes('daurade') || t.includes('bar ') || t.includes('poisson')) return 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('crevette') || t.includes('saint-jacques') || t.includes('crabe') || t.includes('pétoncle')) return 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('sardine') || t.includes('maquereau')) return 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?auto=format&fit=crop&w=600&q=80';
-
-            // Viandes
-            if (t.includes('poulet') || t.includes('dinde') || t.includes('volaille')) return 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('bœuf') || t.includes('veau') || t.includes('porc') || t.includes('lapin') || t.includes('boudin') || t.includes('nems')) return 'https://images.unsplash.com/photo-1544025162-8111f4e7c376?auto=format&fit=crop&w=600&q=80';
-            
-            // Plats Spécifiques
-            if (t.includes('pâte') || t.includes('fusilli') || t.includes('spaghetti') || t.includes('ravioles') || t.includes('penne') || t.includes('carbonara')) return 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('riz') || t.includes('risotto') || t.includes('blésotto') || t.includes('boulgour') || t.includes('quinoa')) return 'https://images.unsplash.com/photo-1531234799389-dcb7651eb0a2?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('pizza') || t.includes('tarte') || t.includes('quiche') || t.includes('chausson')) return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('soupe') || t.includes('velouté') || t.includes('gaspacho')) return 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('houmous') || t.includes('tartinade') || t.includes('caviar')) return 'https://images.unsplash.com/photo-1577903846067-111100b52c03?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('gratin') || t.includes('tian') || t.includes('crumble')) return 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('oeuf') || t.includes('omelette') || t.includes('flan') || t.includes('croquette') || t.includes('crique')) return 'https://images.unsplash.com/photo-1510693042738-eb4dbed08c54?auto=format&fit=crop&w=600&q=80';
-
-            // Légumes dominants
-            if (t.includes('courgette') || t.includes('brocoli') || t.includes('épinard') || t.includes('haricot') || t.includes('petit pois') || t.includes('blette')) return 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('carotte') || t.includes('patate douce') || t.includes('potimarron') || t.includes('courge')) return 'https://images.unsplash.com/photo-1596797882870-8c33deeac224?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('champignon')) return 'https://images.unsplash.com/photo-1604642646274-131b74aeb9fb?auto=format&fit=crop&w=600&q=80';
-
-            // Desserts
-            if (t.includes('chocolat')) return 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('pomme') || t.includes('poire') || t.includes('banane')) return 'https://images.unsplash.com/photo-1568213816046-0ee1c42bd559?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('fraise') || t.includes('framboise') || t.includes('fruit') || t.includes('abricot') || t.includes('pêche')) return 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=600&q=80';
-            if (t.includes('sablé') || t.includes('biscuit') || t.includes('crêpe') || t.includes('pancake') || t.includes('financier')) return 'https://images.unsplash.com/photo-1558961363-a0c87cea159e?auto=format&fit=crop&w=600&q=80';
-            
-            // Catégories par défaut
-            if (category && category.includes('Dessert')) return 'https://images.unsplash.com/photo-1551024506-0cbcca0e4c84?auto=format&fit=crop&w=600&q=80';
-            if (category && category.includes('Entrée')) return 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80';
-            
-            return FALLBACK_IMAGE;
-        };
-
         // --- CONFIGURATION FIREBASE ---
         const myFirebaseConfig = {
             apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
@@ -101,8 +59,8 @@
         };
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
         
-        // Nouvelle version de la BDD pour effacer les bugs précédents
-        const appId = typeof __app_id !== 'undefined' ? __app_id : "cookidoudou-final-v16";
+        // v17 : On repart sur une base saine pour encoder définitivement les images
+        const appId = typeof __app_id !== 'undefined' ? __app_id : "cookidoudou-final-v17";
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -197,7 +155,7 @@
             try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { }
           }, [user, familyCode]);
 
-          // --- 3. GÉNÉRATEUR SÉMANTIQUE (Instantané et sans erreur) ---
+          // --- 3. GÉNÉRATEUR IA SÉCURISÉ (Moteur Pollinations avec encodage Base64) ---
           const startInitialization = async () => {
             if (!familyCode) return alert("Veuillez d'abord définir un Code Famille dans Profil.");
             const recipes = RECIPES.slice(0, 88);
@@ -208,24 +166,52 @@
               const r = recipes[i];
               setInitStatus(prev => ({ ...prev, current: i + 1 }));
 
-              if (customImages[r.id]) continue;
+              // Si on a déjà une belle image validement stockée en Base64, on la garde.
+              if (customImages[r.id] && customImages[r.id].startsWith('data:image')) {
+                  continue;
+              }
 
               try {
-                 // Utilise l'algorithme sémantique pour trouver la photo parfaite
-                 const imgUrl = getSmartImage(r.title, r.category);
-                 const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
+                 // 1. Demande d'un dessin sur-mesure à l'IA basé sur le titre exact de la recette
+                 const promptText = `A beautiful and professional food photography of ${r.title}, appetizing, cookbook style, gourmet plating, high resolution`;
+                 const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}?width=600&height=400&nologo=true&seed=${r.id}`;
                  
-                 // Sauvegarde de l'URL dans Firebase
-                 await window.FirebaseHelper.setDoc(imgDoc, { url: imgUrl, fid: fid });
-              } catch (err) { console.error("Erreur de sauvegarde", err); }
+                 // 2. Récupération de l'image (blob)
+                 const response = await fetch(url);
+                 if (response.ok) {
+                     const blob = await response.blob();
+                     
+                     // 3. Conversion de l'image en "Texte" (Base64) pour la stocker de manière permanente
+                     const base64data = await new Promise((resolve) => {
+                         const reader = new FileReader();
+                         reader.onloadend = () => resolve(reader.result);
+                         reader.readAsDataURL(blob);
+                     });
+
+                     // 4. Sauvegarde dans la base de données Firebase
+                     const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
+                     await window.FirebaseHelper.setDoc(imgDoc, { url: base64data, fid: fid });
+                 } else {
+                     console.error(`L'IA a retourné une erreur ${response.status} pour la recette ${r.id}`);
+                 }
+              } catch (err) { 
+                  console.error("Erreur réseau pendant la génération", err); 
+              }
               
-              // Petite animation visuelle (très rapide)
-              await new Promise(res => setTimeout(res, 30)); 
+              // 5. PAUSE OBLIGATOIRE (2.5 secondes) pour ne pas déclencher la sécurité Cloudflare (Erreur 530)
+              await new Promise(res => setTimeout(res, 2500)); 
             }
             setInitStatus(prev => ({ ...prev, active: false }));
+            alert("Toutes vos photos ont été générées avec succès !");
           };
 
-          const getRecipeImageUrl = (id) => customImages[id] || FALLBACK_IMAGE;
+          // Fonction sécurisée pour afficher l'image
+          const getRecipeImageUrl = (id) => {
+              const img = customImages[id];
+              // On affiche l'image seulement si elle a bien été encodée, sinon on met l'image de secours
+              if (img && img.startsWith('data:image')) return img;
+              return FALLBACK_IMAGE;
+          };
 
           // --- HANDLERS ---
           const handleUpdateProfile = (newP) => { setBabyProfile(newP); saveToCloud({ babyProfile: newP }); };
@@ -292,7 +278,8 @@
               const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") || r.category?.includes("Goûter") ? "Desserts" : "Plats");
               if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
             }, {});
-            const progress = Object.keys(customImages).length;
+            // On compte combien d'images en base64 sont déjà stockées
+            const progress = Object.values(customImages).filter(url => url.startsWith('data:image')).length;
 
             return (
               <div className="animate-fadeIn space-y-8 pb-10">
@@ -301,7 +288,7 @@
                     <div className="bg-gradient-to-br from-orange-400 to-red-500 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="font-black text-xl mb-1 text-white">Générer la galerie</h3>
-                            <p className="text-xs opacity-90 mb-5 text-white">L'app va illustrer chaque recette sur-mesure !</p>
+                            <p className="text-xs opacity-90 mb-5 text-white">L'IA va dessiner et stocker vos 88 photos (cela prend ~3 minutes).</p>
                             <button onClick={startInitialization} className="w-full bg-white text-orange-600 py-4 rounded-2xl font-black text-xs uppercase shadow-lg active:scale-95 transition">Démarrer ({progress}/88)</button>
                         </div>
                         <i className="fa-solid fa-wand-magic-sparkles absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
@@ -429,12 +416,14 @@
               {initStatus.active && (
                   <div className="fixed inset-0 bg-gray-900/98 backdrop-blur-2xl z-[100] flex flex-col items-center justify-center p-12 text-center text-white animate-fadeIn">
                       <div className="loader-ring mb-10"></div>
-                      <h2 className="text-4xl font-black mb-3 uppercase tracking-tighter italic tracking-tight">Studio Photo</h2>
-                      <p className="text-orange-200 text-sm mb-12 opacity-80 leading-relaxed font-bold tracking-wide">Mise en place de votre galerie...<br/>C'est presque fini !</p>
+                      <h2 className="text-4xl font-black mb-3 uppercase tracking-tighter italic tracking-tight">Studio IA</h2>
+                      <p className="text-orange-200 text-sm mb-4 opacity-90 leading-relaxed font-bold tracking-wide">
+                          L'IA dessine vos 88 plats sur-mesure...<br/>Cela prend environ 3 à 4 minutes.<br/>Ne fermez pas cette page.
+                      </p>
                       <div className="w-full max-w-xs bg-white/5 h-4 rounded-full overflow-hidden mb-5 p-1 border border-white/5">
                           <div className="bg-gradient-to-r from-orange-400 to-red-500 h-full transition-all duration-300 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.6)]" style={{ width: `${(initStatus.current / initStatus.total) * 100}%` }}></div>
                       </div>
-                      <span className="text-orange-500 font-black text-[10px] tracking-[0.5em] uppercase">{initStatus.current} / 88</span>
+                      <span className="text-orange-500 font-black text-[10px] tracking-[0.5em] uppercase">{initStatus.current} / {initStatus.total}</span>
                   </div>
               )}
               <main className="flex-1 max-w-2xl mx-auto w-full p-6 pt-12 overflow-y-auto">
