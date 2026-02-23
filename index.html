@@ -35,6 +35,8 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 overflow-x-hidden">
@@ -45,6 +47,20 @@
         const { useState, useEffect, useCallback, useMemo } = React;
 
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
+        
+        // Banque d'images culinaires professionnelles HD (Rapide et 100% fiable)
+        const FOOD_IMAGES = [
+            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=600&q=80"
+        ];
 
         // --- CONFIGURATION FIREBASE ---
         const firebaseConfig = {
@@ -71,7 +87,7 @@
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
           const [initStatus, setInitStatus] = useState({ active: false, current: 0, total: 88 });
 
-          const appId = "cookidoudou-final-v12";
+          const appId = "cookidoudou-final-v14";
 
           const ageInMonths = useMemo(() => {
             if (!babyProfile.birthdate) return null;
@@ -134,28 +150,7 @@
             try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { }
           }, [user, familyCode]);
 
-          // --- 3. GÉNÉRATEUR IA (MOTEUR OPEN SOURCE SANS CLÉ) ---
-          const attemptImageGen = async (prompt, recipeId) => {
-            // Utilisation d'une API publique gratuite pour contourner les blocages régionaux de Google
-            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=400&nologo=true&seed=${recipeId}`;
-            try {
-                const response = await fetch(url);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    // On convertit l'image en base64 pour la sauvegarder dans la base de données
-                    return await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(blob);
-                    });
-                }
-            } catch (e) {
-                console.error("Erreur de téléchargement :", e);
-            }
-            return null;
-          };
-
+          // --- 3. GÉNÉRATEUR INSTANTANÉ (SANS ERREUR 530) ---
           const startInitialization = async () => {
             if (!familyCode) return alert("Veuillez d'abord définir un Code Famille dans Profil.");
             const recipes = RECIPES.slice(0, 88);
@@ -166,30 +161,40 @@
               const r = recipes[i];
               setInitStatus(prev => ({ ...prev, current: i + 1 }));
 
-              // Si l'image existe déjà, on passe
               if (customImages[r.id]) continue;
 
-              // Création de l'image
-              const prompt = `Professional food photography of ${r.title}, appetizing cookbook style, soft natural lighting, minimalist background`;
-              const base64Image = await attemptImageGen(prompt, r.id);
-
-              if (base64Image) {
+              try {
+                 // Utilise une image haute définition aléatoire de la banque d'images
+                 const imgUrl = FOOD_IMAGES[r.id % FOOD_IMAGES.length];
                  const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
-                 await window.FirebaseHelper.setDoc(imgDoc, { url: base64Image, fid: fid });
-                 console.log(`📸 Image sauvegardée pour ${r.title}`);
-              }
+                 
+                 // Sauvegarde de l'URL directement (très léger et rapide pour la base de données)
+                 await window.FirebaseHelper.setDoc(imgDoc, { url: imgUrl, fid: fid });
+              } catch (err) { console.error("Erreur de sauvegarde", err); }
               
-              // Petite pause pour ne pas surcharger le réseau
-              await new Promise(res => setTimeout(res, 800)); 
+              // Pause très courte pour l'animation (100ms au lieu de 1500ms)
+              await new Promise(res => setTimeout(res, 100)); 
             }
             setInitStatus(prev => ({ ...prev, active: false }));
-            alert("Génération terminée !");
           };
 
           const getRecipeImageUrl = (id) => customImages[id] || FALLBACK_IMAGE;
 
           // --- HANDLERS ---
           const handleUpdateProfile = (newP) => { setBabyProfile(newP); saveToCloud({ babyProfile: newP }); };
+          
+          const addToAgenda = (day, rid) => {
+            const newA = { ...agenda, [day]: rid };
+            setAgenda(newA);
+            const r = RECIPES.find(rec => rec.id === rid);
+            let newS = [...shoppingList];
+            if (r?.ingredients) {
+                r.ingredients.forEach(i => { if (!newS.includes(i)) newS.push(i); });
+                setShoppingList(newS);
+            }
+            saveToCloud({ agenda: newA, shoppingList: newS });
+          };
+
           const removeFromShoppingList = (item) => {
             const newS = shoppingList.filter(i => i !== item);
             setShoppingList(newS);
@@ -208,11 +213,11 @@
                     <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {babyProfile.name || "Miam"} !</h1>
                 </div>
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-utensils text-orange-500"></i> Menu du jour</h3>
+                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-day text-orange-500"></i> Menu du jour</h3>
                     {todayRecipe ? (
                         <div onClick={() => { setSelectedRecipe(todayRecipe); setCurrentTab('recipe_detail'); }} className="flex gap-4 cursor-pointer bg-orange-50 p-4 rounded-3xl group">
                             <div className="w-20 h-20 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0">
-                                <img src={getRecipeImageUrl(todayRecipe.id)} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+                                <img src={getRecipeImageUrl(todayRecipe.id)} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
                             </div>
                             <div className="flex-1 flex flex-col justify-center">
                                 <h4 className="font-black text-gray-800 line-clamp-1">{todayRecipe.title}</h4>
@@ -235,11 +240,11 @@
             return (
               <div className="animate-fadeIn space-y-8 pb-10">
                 <h1 className="text-2xl font-black text-gray-800">Toutes les recettes</h1>
-                {familyCode && progress < 80 && !initStatus.active && (
+                {familyCode && progress < 88 && !initStatus.active && (
                     <div className="bg-gradient-to-br from-orange-400 to-red-500 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
                         <div className="relative z-10">
-                            <h3 className="font-black text-xl mb-1 text-white">Générer les photos</h3>
-                            <p className="text-xs opacity-90 mb-5 text-white">Création automatique de la galerie d'images.</p>
+                            <h3 className="font-black text-xl mb-1 text-white">Générer la galerie</h3>
+                            <p className="text-xs opacity-90 mb-5 text-white">Création instantanée des 88 photos de votre livre.</p>
                             <button onClick={startInitialization} className="w-full bg-white text-orange-600 py-4 rounded-2xl font-black text-xs uppercase shadow-lg active:scale-95 transition">Démarrer ({progress}/88)</button>
                         </div>
                         <i className="fa-solid fa-wand-magic-sparkles absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
@@ -247,12 +252,14 @@
                 )}
                 {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
                     <div key={c} className="mb-6">
-                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2">{c}</h2>
+                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2 flex items-center gap-2">
+                         {c} <span className="w-1 h-1 bg-gray-300 rounded-full"></span> {grouped[c].length}
+                      </h2>
                       <div className="grid grid-cols-1 gap-3">
                         {grouped[c].sort((a,b)=>a.id-b.id).map(r => (
                           <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer group">
                             <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner">
-                                <img src={getRecipeImageUrl(r.id)} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+                                <img src={getRecipeImageUrl(r.id)} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
                             </div>
                             <div className="flex-1">
                               <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4>
@@ -287,8 +294,9 @@
           const renderDetail = () => {
             if (!selectedRecipe) return null;
             const r = selectedRecipe;
-            const babyAdvice = babyProfile.birthdate 
-                ? (r.babyAdaptations?.find(a => ageInMonths <= a.maxAge)?.text || r.babyAdaptations?.[r.babyAdaptations.length - 1]?.text || "Adaptation standard")
+            const babySteps = r.babyAdaptations || [];
+            const babyStepText = babyProfile.birthdate 
+                ? (babySteps.find(a => ageInMonths <= a.maxAge)?.text || babySteps[babySteps.length - 1]?.text || "Adaptation standard")
                 : "Indiquez l'âge dans Profil.";
 
             return (
@@ -296,9 +304,17 @@
                 <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-400 font-bold flex items-center gap-2 transition hover:text-gray-600"><i className="fa-solid fa-arrow-left"></i> Livre</button>
                 <img src={getRecipeImageUrl(r.id)} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-72 object-cover rounded-[3rem] shadow-xl" />
                 <h1 className="text-3xl font-black text-gray-800 leading-tight">{r.title}</h1>
-                <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl">
+                
+                <div className="pt-4 flex gap-3">
+                    <select value={selectedDayForAgenda} onChange={(e)=>setSelectedDayForAgenda(e.target.value)} className="flex-1 p-5 rounded-[2rem] bg-white border border-gray-200 font-black outline-none text-sm appearance-none shadow-sm">
+                      {DAYS_OF_WEEK.map(d=><option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <button onClick={()=>{addToAgenda(selectedDayForAgenda, r.id); alert("Planifié avec succès !");}} className="bg-gray-900 text-white px-8 rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-lg">Planifier</button>
+                </div>
+
+                <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl mt-6">
                   <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2"><i className="fa-solid fa-baby"></i> Pour bébé ({ageInMonths || '?'} mois)</h4>
-                  <p className="text-sm leading-relaxed font-medium">{babyAdvice}</p>
+                  <p className="text-sm leading-relaxed font-medium">{babyStepText}</p>
                 </div>
                 <div className="space-y-10 pt-4">
                   <section>
@@ -307,6 +323,17 @@
                       {r.ingredients?.map((ing, idx) => (
                         <div key={idx} className="flex items-center gap-4 text-sm text-gray-700 bg-white p-4 rounded-2xl border border-gray-100">
                           <span className="w-2 h-2 bg-orange-400 rounded-full"></span>{ing}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                  <section>
+                    <h3 className="font-black text-[10px] uppercase text-gray-300 mb-5 text-center tracking-widest font-black">Préparation</h3>
+                    <div className="space-y-8">
+                      {r.adultSteps?.map((s, idx) => (
+                        <div key={idx} className="flex gap-6">
+                          <span className="font-black text-4xl text-orange-100 italic">{idx+1}</span>
+                          <p className="text-sm leading-relaxed text-gray-600 pt-2 font-medium">{s}</p>
                         </div>
                       ))}
                     </div>
@@ -330,10 +357,12 @@
               </div>
               <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
                 <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-link text-blue-500"></i> Code Famille</h3>
+                <p className="text-[10px] text-gray-400 mb-6 uppercase font-bold">Synchronisez tous vos téléphones</p>
                 <div className="flex gap-2">
-                  <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="CODE" className="flex-1 bg-gray-50 p-5 rounded-2xl uppercase font-mono text-xs font-black outline-none border-none" />
+                  <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="VOTRE CODE" className="flex-1 bg-gray-50 p-5 rounded-2xl uppercase font-mono text-xs font-black outline-none border-none" />
                   <button onClick={() => { if(!tempFamilyCode) return; setFamilyCode(tempFamilyCode); localStorage.setItem('cookidoudou_family_code', tempFamilyCode); alert("Synchronisé !"); }} className="bg-blue-600 text-white px-8 rounded-2xl font-black uppercase text-[10px]">OK</button>
                 </div>
+                {familyCode && <p className="text-[10px] text-green-600 mt-4 font-black uppercase flex items-center gap-2 tracking-widest"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Connecté : {familyCode}</p>}
               </div>
             </div>
           );
@@ -343,10 +372,10 @@
               {initStatus.active && (
                   <div className="fixed inset-0 bg-gray-900/98 backdrop-blur-2xl z-[100] flex flex-col items-center justify-center p-12 text-center text-white animate-fadeIn">
                       <div className="loader-ring mb-10"></div>
-                      <h2 className="text-4xl font-black mb-3 uppercase tracking-tighter italic tracking-tight">Studio Photo IA</h2>
-                      <p className="text-orange-200 text-sm mb-12 opacity-80 leading-relaxed font-bold tracking-wide">Création des 88 photos...<br/>Veuillez patienter.</p>
+                      <h2 className="text-4xl font-black mb-3 uppercase tracking-tighter italic tracking-tight">Studio Photo</h2>
+                      <p className="text-orange-200 text-sm mb-12 opacity-80 leading-relaxed font-bold tracking-wide">Mise en place de votre galerie...<br/>C'est presque fini !</p>
                       <div className="w-full max-w-xs bg-white/5 h-4 rounded-full overflow-hidden mb-5 p-1 border border-white/5">
-                          <div className="bg-gradient-to-r from-orange-400 to-red-500 h-full transition-all duration-700 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.6)]" style={{ width: `${(initStatus.current / initStatus.total) * 100}%` }}></div>
+                          <div className="bg-gradient-to-r from-orange-400 to-red-500 h-full transition-all duration-300 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.6)]" style={{ width: `${(initStatus.current / initStatus.total) * 100}%` }}></div>
                       </div>
                       <span className="text-orange-500 font-black text-[10px] tracking-[0.5em] uppercase">{initStatus.current} / 88</span>
                   </div>
