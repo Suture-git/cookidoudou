@@ -20,9 +20,9 @@
     <!-- Firebase SDK -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
       import { getFirestore, doc, setDoc, collection, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-      window.FirebaseHelper = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, setDoc, collection, onSnapshot, getDoc };
+      window.FirebaseHelper = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, setDoc, collection, onSnapshot, getDoc };
     </script>
 
     <style>
@@ -63,7 +63,7 @@
         ];
 
         // --- CONFIGURATION FIREBASE ---
-        const firebaseConfig = {
+        const myFirebaseConfig = {
             apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
             authDomain: "cookidoudou-4ac92.firebaseapp.com",
             projectId: "cookidoudou-4ac92",
@@ -71,6 +71,9 @@
             messagingSenderId: "590128476695",
             appId: "1:590128476695:web:821122bbc1e8280694e252"
         };
+        // Utilisation de la configuration environnementale si disponible (pour que l'app fonctionne dans cet éditeur)
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : "cookidoudou-final-v14";
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -84,11 +87,10 @@
           const [shoppingList, setShoppingList] = useState([]); 
           const [customImages, setCustomImages] = useState({}); 
           const [user, setUser] = useState(null);
+          const [appError, setAppError] = useState(null);
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
           const [initStatus, setInitStatus] = useState({ active: false, current: 0, total: 88 });
-
-          const appId = "cookidoudou-final-v14";
 
           const ageInMonths = useMemo(() => {
             if (!babyProfile.birthdate) return null;
@@ -106,9 +108,32 @@
                 const app = window.FirebaseHelper.initializeApp(firebaseConfig);
                 const auth = window.FirebaseHelper.getAuth(app);
                 window._db = window.FirebaseHelper.getFirestore(app);
-                const cred = await window.FirebaseHelper.signInAnonymously(auth);
-                setUser(cred.user);
-              } catch (e) { console.error("Firebase Error", e); }
+                
+                try {
+                    let cred;
+                    // Support pour l'environnement de test et votre déploiement Vercel
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        cred = await window.FirebaseHelper.signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        cred = await window.FirebaseHelper.signInAnonymously(auth);
+                    }
+                    setUser(cred.user);
+                    setAppError(null);
+                } catch (authErr) {
+                    console.error("❌ [FIREBASE AUTH ERROR] :", authErr);
+                    // Message d'erreur spécifique à votre problème de restriction de clé API
+                    if (authErr.message.includes("signup-are-blocked")) {
+                        setAppError("Votre clé API Firebase bloque la connexion. Allez sur Google Cloud Console > Identifiants > Modifiez votre clé API Firebase > 'Restrictions d'API' > Cochez 'Identity Toolkit API'.");
+                    } else if (authErr.message.includes("identity-toolkit-api")) {
+                        setAppError("L'API Google Identity Toolkit est désactivée. Veuillez l'activer dans votre console Google Cloud.");
+                    } else {
+                        setAppError("Erreur d'authentification : " + authErr.message);
+                    }
+                }
+              } catch (e) { 
+                  console.error("Firebase Error", e); 
+                  setAppError("Erreur d'initialisation Firebase. Vérifiez la console.");
+              }
             };
             start();
           }, []);
@@ -151,7 +176,7 @@
             try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { }
           }, [user, familyCode]);
 
-          // --- 3. GÉNÉRATEUR INSTANTANÉ (SANS ERREUR 530) ---
+          // --- 3. GÉNÉRATEUR INSTANTANÉ ---
           const startInitialization = async () => {
             if (!familyCode) return alert("Veuillez d'abord définir un Code Famille dans Profil.");
             const recipes = RECIPES.slice(0, 88);
@@ -169,11 +194,10 @@
                  const imgUrl = FOOD_IMAGES[r.id % FOOD_IMAGES.length];
                  const imgDoc = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'recipeImages', fid + '_' + r.id);
                  
-                 // Sauvegarde de l'URL directement (très léger et rapide pour la base de données)
+                 // Sauvegarde de l'URL directement
                  await window.FirebaseHelper.setDoc(imgDoc, { url: imgUrl, fid: fid });
               } catch (err) { console.error("Erreur de sauvegarde", err); }
               
-              // Pause très courte pour l'animation (100ms au lieu de 1500ms)
               await new Promise(res => setTimeout(res, 100)); 
             }
             setInitStatus(prev => ({ ...prev, active: false }));
@@ -213,6 +237,16 @@
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
                     <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {babyProfile.name || "Miam"} !</h1>
                 </div>
+                
+                {appError && (
+                    <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
+                        <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest">
+                           <i className="fa-solid fa-triangle-exclamation"></i> Action Requise
+                        </div>
+                        <p className="leading-relaxed mb-3">{appError}</p>
+                    </div>
+                )}
+
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-day text-orange-500"></i> Menu du jour</h3>
                     {todayRecipe ? (
