@@ -58,50 +58,32 @@
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-        
-// === DÉBUT BLOC 1 : CERVEAU DES SAISONS ===
-const SEASONAL_INGREDIENTS = {
-  printemps: ['asperge', 'carotte', 'champignon', 'chou', 'courgette', 'épinard', 'navet', 'oignon', 'radis', 'tomate', 'abricot', 'cerise', 'citron', 'fraise', 'framboise', 'passion', 'pêche', 'rhubarbe'],
-  ete: ['artichaut', 'aubergine', 'blette', 'brocoli', 'carotte', 'céleri', 'champignon', 'chou', 'concombre', 'courgette', 'épinard', 'fenouil', 'haricot', 'oignon', 'pois', 'poivron', 'tomate', 'abricot', 'cassis', 'cerise', 'citron', 'figue', 'fraise', 'framboise', 'passion', 'groseille', 'melon', 'mirabelle', 'mûre', 'myrtille', 'nectarine', 'pastèque', 'pêche', 'prune', 'quetsche'],
-  automne: ['avocat', 'carotte', 'céleri', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'épinard', 'fenouil', 'maïs', 'navet', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'topinambour', 'amande', 'châtaigne', 'citron', 'clémentine', 'coing', 'datte', 'figue', 'passion', 'kaki', 'mandarine', 'marron', 'mirabelle', 'mûre', 'myrtille', 'noisette', 'noix', 'papaye', 'pêche', 'poire', 'pomme', 'raisin'],
-  hiver: ['avocat', 'betterave', 'carotte', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'salsifis', 'topinambour', 'ananas', 'banane', 'citron', 'clémentine', 'passion', 'grenade', 'kaki', 'litchi', 'mandarine', 'mangue', 'noisette', 'noix', 'orange', 'pamplemousse', 'poire', 'pomme', 'raisin']
-};
 
-const getCurrentSeasonInfo = () => {
-  const month = new Date().getMonth(); // 0 = Janvier, 11 = Décembre
-  if (month >= 2 && month <= 4) return { id: 'printemps', icon: '🌸', name: 'Printemps' };
-  if (month >= 5 && month <= 7) return { id: 'ete', icon: '☀️', name: 'Été' };
-  if (month >= 8 && month <= 10) return { id: 'automne', icon: '🍂', name: 'Automne' };
-  return { id: 'hiver', icon: '❄️', name: 'Hiver' };
-};
+        // --- LOGIQUE MODE 100% SAISON ---
+        const SEASONAL_INGREDIENTS = {
+          printemps: ['asperge', 'carotte', 'champignon', 'chou', 'courgette', 'épinard', 'navet', 'oignon', 'radis', 'tomate', 'abricot', 'cerise', 'citron', 'fraise', 'framboise', 'passion', 'pêche', 'rhubarbe'],
+          ete: ['artichaut', 'aubergine', 'blette', 'brocoli', 'carotte', 'céleri', 'champignon', 'chou', 'concombre', 'courgette', 'épinard', 'fenouil', 'haricot', 'oignon', 'pois', 'poivron', 'tomate', 'abricot', 'cassis', 'cerise', 'citron', 'figue', 'fraise', 'framboise', 'passion', 'groseille', 'melon', 'mirabelle', 'mûre', 'myrtille', 'nectarine', 'pastèque', 'pêche', 'prune', 'quetsche'],
+          automne: ['avocat', 'carotte', 'céleri', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'épinard', 'fenouil', 'maïs', 'navet', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'topinambour', 'amande', 'châtaigne', 'citron', 'clémentine', 'coing', 'datte', 'figue', 'passion', 'kaki', 'mandarine', 'marron', 'mirabelle', 'mûre', 'myrtille', 'noisette', 'noix', 'papaye', 'pêche', 'poire', 'pomme', 'raisin'],
+          hiver: ['avocat', 'betterave', 'carotte', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'salsifis', 'topinambour', 'ananas', 'banane', 'citron', 'clémentine', 'passion', 'grenade', 'kaki', 'litchi', 'mandarine', 'mangue', 'noisette', 'noix', 'orange', 'pamplemousse', 'poire', 'pomme', 'raisin']
+        };
 
-const checkIsSeasonal = (ingredientsArray, seasonId) => {
-  if (!ingredientsArray) return false;
-  // On transforme le tableau d'ingrédients de la recette en texte pour chercher dedans
-  const text = ingredientsArray.join(' ').toLowerCase();
-  // On vérifie si un des ingrédients de la saison est dans le texte
-  return SEASONAL_INGREDIENTS[seasonId].some(ing => text.includes(ing));
-};
-// === FIN BLOC 1 ===
-        
+        const getCurrentSeasonInfo = () => {
+          const month = new Date().getMonth(); // 0 = Janvier, 11 = Décembre
+          if (month >= 2 && month <= 4) return { id: 'printemps', icon: '🌸', name: 'Printemps' };
+          if (month >= 5 && month <= 7) return { id: 'ete', icon: '☀️', name: 'Été' };
+          if (month >= 8 && month <= 10) return { id: 'automne', icon: '🍂', name: 'Automne' };
+          return { id: 'hiver', icon: '❄️', name: 'Hiver' };
+        };
+
+        const checkIsSeasonal = (ingredientsArray, seasonId) => {
+          if (!ingredientsArray) return false;
+          // Transforme le tableau en texte pour chercher dedans facilement
+          const text = ingredientsArray.join(' ').toLowerCase();
+          return SEASONAL_INGREDIENTS[seasonId].some(ing => text.includes(ing));
+        };
+        // --- FIN LOGIQUE MODE SAISON ---
+
         function App() {
-        
-          // === DÉBUT BLOC 2 : MÉMOIRE ET RÉGLAGES ===
-  const currentSeason = getCurrentSeasonInfo();
-  // L'interrupteur est activé par défaut (true), et on sauvegarde le choix de l'utilisateur
-  const [isSeasonalModeActive, setIsSeasonalModeActive] = React.useState(() => {
-    const saved = localStorage.getItem('cookidoudou_season_mode');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
-  
-  // Fenêtre de paramètres visible ou non
-  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
-
-  React.useEffect(() => {
-    localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive));
-  }, [isSeasonalModeActive]);
-// === FIN BLOC 2 ===
-            
           const [currentTab, setCurrentTab] = useState('home');
           const [selectedRecipe, setSelectedRecipe] = useState(null);
           const [selectedDayForAgenda, setSelectedDayForAgenda] = useState(DAYS_OF_WEEK[0]);
@@ -115,20 +97,22 @@ const checkIsSeasonal = (ingredientsArray, seasonId) => {
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
 
-            // Détection de la saison actuelle
-  const currentSeason = getCurrentSeason();
+          // --- ÉTATS POUR LE MODE SAISON ---
+          const currentSeason = getCurrentSeasonInfo();
+          const [isSeasonalModeActive, setIsSeasonalModeActive] = useState(() => {
+            const saved = localStorage.getItem('cookidoudou_season_mode');
+            return saved !== null ? JSON.parse(saved) : true;
+          });
+          const [activeFilter, setActiveFilter] = useState('Tous');
 
-  // État du mode saison (activé par défaut, lu depuis le localStorage)
-  const [isSeasonalModeActive, setIsSeasonalModeActive] = React.useState(() => {
-    const savedMode = localStorage.getItem('cookidoudou_seasonal_mode');
-    return savedMode !== null ? JSON.parse(savedMode) : true;
-  });
+          // Sauvegarde automatique de l'interrupteur
+          useEffect(() => {
+            localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive));
+            // Si on désactive le mode alors qu'on était sur le filtre saisonnier, on remet sur "Tous"
+            if (!isSeasonalModeActive && activeFilter === 'Saison') setActiveFilter('Tous');
+          }, [isSeasonalModeActive, activeFilter]);
+          // ---------------------------------
 
-  // Sauvegarde automatique si l'utilisateur change le réglage
-  React.useEffect(() => {
-    localStorage.setItem('cookidoudou_seasonal_mode', JSON.stringify(isSeasonalModeActive));
-  }, [isSeasonalModeActive]);
-            
           // Calcul de l'âge de bébé en mois
           const ageInMonths = useMemo(() => {
             if (!babyProfile.birthdate) return null;
@@ -224,51 +208,7 @@ const checkIsSeasonal = (ingredientsArray, seasonId) => {
           const renderHome = () => {
             const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
             const todayRecipe = RECIPES.find(r => r.id === agenda[todayStr]);
-          
-              {/* === DÉBUT BLOC 3 : BOUTON ET FENÊTRE RÉGLAGES === */}
-<div className="relative">
-  <button 
-    onClick={() => setShowSettingsModal(true)} 
-    className="p-2 text-gray-500 hover:text-gray-800 rounded-full"
-    title="Paramètres de l'application"
-  >
-    ⚙️
-  </button>
-
-  {/* La fenêtre (Modale) qui s'ouvre */}
-  {showSettingsModal && (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-11/12 max-w-sm shadow-xl">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Paramètres</h2>
-          <button onClick={() => setShowSettingsModal(false)} className="text-gray-500 text-2xl font-bold">&times;</button>
-        </div>
-        
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div>
-            <p className="font-semibold text-gray-800 flex items-center gap-2">
-              Mode 100% Saison {currentSeason.icon}
-            </p>
-            <p className="text-sm text-gray-500">Mettre en avant les recettes adaptées au mois en cours.</p>
-          </div>
-          
-          {/* L'interrupteur (Toggle) fait maison avec Tailwind */}
-          <button 
-            onClick={() => setIsSeasonalModeActive(!isSeasonalModeActive)}
-            className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex ${isSeasonalModeActive ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}
-          >
-            <div className="w-4 h-4 rounded-full bg-white shadow-md"></div>
-          </button>
-        </div>
-        
-        <button onClick={() => setShowSettingsModal(false)} className="mt-6 w-full bg-gray-800 text-white py-3 rounded-lg font-medium">
-          Fermer
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-{/* === FIN BLOC 3 === */}
+            
             return (
               <div className="space-y-6 animate-fadeIn pb-24">
                 <div className="text-center">
@@ -289,7 +229,7 @@ const checkIsSeasonal = (ingredientsArray, seasonId) => {
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-day text-orange-500"></i> Menu du jour</h3>
                     {todayRecipe ? (
                         <div onClick={() => { setSelectedRecipe(todayRecipe); setCurrentTab('recipe_detail'); }} className="flex gap-4 cursor-pointer bg-orange-50 p-4 rounded-3xl group transition-all">
-                            <div className="w-20 h-20 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0 shadow-sm">
+                            <div className="w-20 h-20 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0 shadow-sm relative">
                                 <img src={todayRecipe.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={todayRecipe.title} />
                             </div>
                             <div className="flex-1 flex flex-col justify-center">
@@ -310,37 +250,82 @@ const checkIsSeasonal = (ingredientsArray, seasonId) => {
           };
 
           const renderCarnet = () => {
-            const grouped = RECIPES.reduce((acc, r) => {
+            // Filtrage des recettes selon le mode saison actif
+            let recipesToDisplay = RECIPES;
+            if (isSeasonalModeActive && activeFilter === 'Saison') {
+                recipesToDisplay = RECIPES.filter(r => checkIsSeasonal(r.ingredients, currentSeason.id));
+            }
+
+            // Groupement par catégories
+            const grouped = recipesToDisplay.reduce((acc, r) => {
               const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") ? "Desserts" : "Plats");
               if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
             }, {});
 
             return (
               <div className="animate-fadeIn space-y-8 pb-24">
-                <h1 className="text-2xl font-black text-gray-800">Le Livre de Recettes</h1>
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-black text-gray-800">Le Livre</h1>
+                </div>
+
+                {/* Barre de filtres de Saison */}
+                {isSeasonalModeActive && (
+                    <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                        <button 
+                            onClick={() => setActiveFilter('Tous')}
+                            className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all ${activeFilter === 'Tous' ? 'bg-gray-800 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}
+                        >
+                            Toutes
+                        </button>
+                        <button 
+                            onClick={() => setActiveFilter('Saison')}
+                            className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all flex items-center gap-1.5 ${activeFilter === 'Saison' ? 'bg-green-500 text-white shadow-md' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'}`}
+                        >
+                            {currentSeason.icon} De saison ({currentSeason.name})
+                        </button>
+                    </div>
+                )}
                 
-                {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
+                {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && grouped[c].length > 0 && (
                     <div key={c} className="mb-8">
                       <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2 flex items-center justify-between">
                          <span>{c}</span>
                          <span className="bg-gray-100 px-2 py-1 rounded-full text-[8px]">{grouped[c].length} recettes</span>
                       </h2>
                       <div className="grid grid-cols-1 gap-3">
-                        {grouped[c].sort((a,b)=>a.id-b.id).map(r => (
-                          <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer group shadow-sm">
-                            <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner">
-                                <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4>
-                              <p className="text-[10px] text-gray-400 font-bold mt-1">⏱ {r.time}</p>
-                            </div>
-                            <i className="fa-solid fa-chevron-right text-gray-200 text-xs mr-2"></i>
-                          </div>
-                        ))}
+                        {grouped[c].sort((a,b)=>a.id-b.id).map(r => {
+                          const isSeasonMatch = checkIsSeasonal(r.ingredients, currentSeason.id);
+                          return (
+                              <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer group shadow-sm">
+                                <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner relative">
+                                    <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
+                                    {/* Petit badge saison sur l'image */}
+                                    {isSeasonalModeActive && isSeasonMatch && (
+                                        <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm p-1 rounded-full text-[10px] shadow-sm flex items-center justify-center w-5 h-5 leading-none">
+                                            <span>{currentSeason.icon}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4>
+                                  <p className="text-[10px] text-gray-400 font-bold mt-1">⏱ {r.time}</p>
+                                </div>
+                                <i className="fa-solid fa-chevron-right text-gray-200 text-xs mr-2"></i>
+                              </div>
+                          )
+                        })}
                       </div>
                     </div>
                 ))}
+
+                {/* Message si le filtre de saison ne retourne rien */}
+                {isSeasonalModeActive && activeFilter === 'Saison' && Object.keys(grouped).length === 0 && (
+                    <div className="text-center py-12 opacity-60">
+                        <i className="fa-solid fa-leaf text-4xl mb-3 text-green-300"></i>
+                        <p className="text-sm font-medium">Aucune recette trouvée pour cette saison.</p>
+                        <button onClick={() => setActiveFilter('Tous')} className="mt-4 text-xs font-bold text-gray-500 uppercase tracking-widest bg-gray-200 px-4 py-2 rounded-xl">Voir toutes les recettes</button>
+                    </div>
+                )}
               </div>
             );
           };
@@ -451,7 +436,7 @@ const checkIsSeasonal = (ingredientsArray, seasonId) => {
             <div className="animate-fadeIn space-y-6 pb-24">
               <h1 className="text-2xl font-black text-gray-800">Configuration</h1>
               
-              <div className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm">
+              <div className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm mb-6">
                 <div className="w-28 h-28 rounded-full bg-orange-50 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden mb-6 text-orange-200">
                   <i className="fa-solid fa-baby text-5xl"></i>
                 </div>
@@ -465,6 +450,24 @@ const checkIsSeasonal = (ingredientsArray, seasonId) => {
                         <input type="date" value={babyProfile.birthdate} onChange={(e) => handleUpdateProfile({...babyProfile, birthdate: e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
                     </div>
                 </div>
+              </div>
+
+              {/* BLOC MODE 100% SAISON */}
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm mb-6 flex justify-between items-center">
+                <div className="pr-4">
+                  <h3 className="font-black mb-1 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800">
+                    <i className="fa-solid fa-leaf text-green-500"></i> Mode 100% Saison
+                  </h3>
+                  <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
+                    Mettre en avant les recettes pour la saison en cours ({currentSeason.name} {currentSeason.icon}).
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setIsSeasonalModeActive(!isSeasonalModeActive)}
+                  className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex flex-shrink-0 shadow-inner ${isSeasonalModeActive ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}
+                >
+                  <div className="w-4 h-4 rounded-full bg-white shadow-sm"></div>
+                </button>
               </div>
 
               <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
@@ -525,4 +528,3 @@ const checkIsSeasonal = (ingredientsArray, seasonId) => {
     </script>
 </body>
 </html>
-
