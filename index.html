@@ -8,7 +8,7 @@
     <!-- Base de données recettes -->
     <script src="./recettes.js"></script>
 
-    <!-- Tailwind CSS & Lucide Icons -->
+    <!-- Design & Icônes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -71,7 +71,7 @@
           const [shoppingList, setShoppingList] = useState([]); 
           const [customImages, setCustomImages] = useState({}); 
           const [user, setUser] = useState(null);
-          const [firebaseError, setFirebaseError] = useState(null);
+          const [appError, setAppError] = useState(null);
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
           const [initStatus, setInitStatus] = useState({ active: false, current: 0, total: 88 });
@@ -98,34 +98,32 @@
                 
                 console.log("🔥 [FIREBASE] : Tentative de connexion...");
                 
-                // Sign in anonymously (Rule 3)
+                // Sign in anonymously
                 try {
                   const cred = await window.FirebaseHelper.signInAnonymously(auth);
                   setUser(cred.user);
-                  setFirebaseError(null);
+                  setAppError(null);
                   console.log("✅ [FIREBASE] : Connecté avec succès");
                 } catch (authErr) {
                   console.error("❌ [FIREBASE AUTH ERROR] :", authErr);
                   if (authErr.message.includes("identity-toolkit-api")) {
-                    setFirebaseError("L'API Identity Toolkit n'est pas activée. Veuillez cliquer sur le lien dans la console ou activer l'authentification anonyme dans votre console Firebase.");
+                    setAppError("L'API Google Identity Toolkit est désactivée. Veuillez cliquer sur le lien dans votre console de développement Google Cloud pour l'activer.");
                   } else {
-                    setFirebaseError("Erreur d'authentification : " + authErr.message);
+                    setAppError("Erreur d'authentification : " + authErr.message);
                   }
                 }
               } catch (e) { 
                 console.error("❌ [FIREBASE CRITICAL] :", e); 
-                setFirebaseError("Erreur d'initialisation Firebase. Vérifiez la configuration.");
+                setAppError("Erreur d'initialisation Firebase. Vérifiez la configuration.");
               }
             };
             start();
           }, []);
 
-          // --- 2. DATA SYNC (RULE 1) ---
+          // --- 2. DATA SYNC ---
           useEffect(() => {
-            // Guard: ensure user is authenticated before listeners start (Rule 3)
             if (!user || !window._db || !familyCode) return;
             const fid = familyCode.trim().toLowerCase();
-            console.log("📡 [SYNC] : Démarrage pour la famille : " + fid);
             
             // Sync Profile & Agenda
             const pRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
@@ -171,6 +169,7 @@
             
             const recipes = RECIPES.slice(0, 88);
             setInitStatus({ active: true, current: 0, total: 88 });
+            setAppError(null);
             const fid = familyCode.trim().toLowerCase();
 
             for (let i = 0; i < recipes.length; i++) {
@@ -182,7 +181,6 @@
 
               try {
                 const prompt = `Professional food photography of ${r.title}, appetizing cookbook style, soft natural lighting, minimalist high quality background.`;
-                // URL for Imagen 3.0 Predict
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_AI_KEY}`;
                 
                 const response = await fetch(url, {
@@ -206,6 +204,13 @@
                 } else {
                    const errText = await response.text();
                    console.error("❌ [IA ERROR] :", errText);
+                   
+                   // Si c'est une erreur de permission bloquante, on arrête la boucle
+                   if (response.status === 403 || response.status === 404) {
+                       setAppError(`Génération interrompue (Erreur ${response.status}). Votre clé Gemini n'a pas accès au modèle Imagen 3.0. Veuillez vérifier les permissions sur Google AI Studio.`);
+                       setInitStatus(prev => ({ ...prev, active: false }));
+                       return; 
+                   }
                 }
               } catch (err) { 
                 console.error("❌ [IA FETCH] :", err); 
@@ -230,13 +235,12 @@
                     <h1 className="text-3xl font-black text-gray-800">Hello {babyProfile.name || "Miam"} !</h1>
                 </div>
 
-                {firebaseError && (
+                {appError && (
                     <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
                         <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest">
                            <i className="fa-solid fa-triangle-exclamation"></i> Action Requise
                         </div>
-                        <p className="leading-relaxed mb-3">{firebaseError}</p>
-                        <a href="https://console.firebase.google.com/" target="_blank" className="inline-block bg-red-600 text-white px-4 py-2 rounded-xl font-bold uppercase text-[10px]">Ouvrir Firebase</a>
+                        <p className="leading-relaxed mb-3">{appError}</p>
                     </div>
                 )}
 
@@ -318,7 +322,7 @@
                 <img src={getRecipeImageUrl(r.id)} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-72 object-cover rounded-[3rem] shadow-xl" />
                 <h1 className="text-3xl font-black text-gray-800 leading-tight">{r.title}</h1>
                 <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl">
-                  <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2"><i className="fa-solid fa-baby"></i> Part de bébé ({ageInMonths || '?'} mois)</h4>
+                  <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2"><i className="fa-solid fa-baby"></i> Pour bébé ({ageInMonths || '?'} mois)</h4>
                   <p className="text-sm leading-relaxed font-medium">{babyStepText}</p>
                 </div>
                 <div className="space-y-10 pt-4">
@@ -337,7 +341,7 @@
                     <div className="space-y-8">
                       {r.adultSteps?.map((s, idx) => (
                         <div key={idx} className="flex gap-6">
-                          <span className="font-black text-4xl text-orange-100 italic">0{idx+1}</span>
+                          <span className="font-black text-4xl text-orange-100 italic">{idx+1}</span>
                           <p className="text-sm leading-relaxed text-gray-600 pt-2 font-medium">{s}</p>
                         </div>
                       ))}
@@ -356,8 +360,8 @@
                   {babyProfile.photo ? <img src={babyProfile.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-6xl text-orange-200"></i>}
                 </div>
                 <div className="w-full space-y-4 text-center">
-                    <input type="text" value={babyProfile.name} onChange={(e) => handleUpdateProfile({...babyProfile, name: e.target.value})} placeholder="Prénom" className="w-full bg-gray-50 p-5 rounded-2xl text-center font-black outline-none border-none focus:ring-2 ring-orange-200" />
-                    <input type="date" value={babyProfile.birthdate} onChange={(e) => handleUpdateProfile({...babyProfile, birthdate: e.target.value})} className="w-full bg-gray-50 p-5 rounded-2xl text-center font-bold outline-none border-none" />
+                    <input type="text" value={babyProfile.name} onChange={(e) => handleUpdateProfile({...babyProfile, name: e.target.value})} placeholder="Prénom" className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border-none focus:ring-2 ring-orange-200" />
+                    <input type="date" value={babyProfile.birthdate} onChange={(e) => handleUpdateProfile({...babyProfile, birthdate: e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center outline-none border-none" />
                 </div>
               </div>
 
@@ -365,7 +369,7 @@
                 <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-link text-blue-500"></i> Code Famille</h3>
                 <p className="text-[10px] text-gray-400 mb-6 uppercase tracking-widest font-bold">Synchronisez tous vos appareils</p>
                 <div className="flex gap-2">
-                  <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="CODE SECRET" className="flex-1 bg-gray-50 p-5 rounded-2xl uppercase font-mono text-xs font-black outline-none border-none" />
+                  <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="VOTRE CODE" className="flex-1 bg-gray-50 p-5 rounded-2xl uppercase font-mono text-xs font-black outline-none border-none" />
                   <button onClick={() => { 
                       if(!tempFamilyCode) return; 
                       setFamilyCode(tempFamilyCode); 
@@ -382,11 +386,12 @@
 
           return (
             <div className="min-h-screen bg-gray-50 flex flex-col relative overflow-x-hidden">
+              {/* Overlay IA */}
               {initStatus.active && (
                   <div className="fixed inset-0 bg-gray-900/98 backdrop-blur-2xl z-[100] flex flex-col items-center justify-center p-12 text-center text-white animate-fadeIn">
                       <div className="loader-ring mb-10"></div>
                       <h2 className="text-4xl font-black mb-3 uppercase tracking-tighter italic tracking-tight">Studio Photo IA</h2>
-                      <p className="text-orange-200 text-sm mb-12 opacity-80 leading-relaxed font-bold tracking-wide">L'IA crée les 88 photos de votre livre.<br/>Veuillez patienter...</p>
+                      <p className="text-orange-200 text-sm mb-12 opacity-80 leading-relaxed font-bold tracking-wide">Création de vos 88 photos...<br/>Veuillez patienter.</p>
                       <div className="w-full max-w-xs bg-white/5 h-4 rounded-full overflow-hidden mb-5 p-1 border border-white/5">
                           <div className="bg-gradient-to-r from-orange-400 to-red-500 h-full transition-all duration-700 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.6)]" style={{ width: `${(initStatus.current / initStatus.total) * 100}%` }}></div>
                       </div>
@@ -397,6 +402,7 @@
               <main className="flex-1 max-w-2xl mx-auto w-full p-6 pt-12 overflow-y-auto">
                 {currentTab === 'home' && renderHome()}
                 {currentTab === 'carnet' && renderCarnet()}
+                {currentTab === 'shopping' && renderShopping()}
                 {currentTab === 'profile' && renderProfile()}
                 {currentTab === 'recipe_detail' && renderDetail()}
               </main>
@@ -405,6 +411,7 @@
                 {[
                   { id: 'home', icon: 'fa-house', label: 'Accueil' },
                   { id: 'carnet', icon: 'fa-book-open', label: 'Livre' },
+                  { id: 'shopping', icon: 'fa-cart-shopping', label: 'Liste' },
                   { id: 'profile', icon: 'fa-user', label: 'Profil' }
                 ].map(t => (
                   <button key={t.id} onClick={() => { setCurrentTab(t.id); setSelectedRecipe(null); }} className={`flex flex-col items-center gap-1 relative ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'text-orange-500 scale-110' : 'text-gray-300'} transition-all duration-300`}>
