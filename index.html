@@ -508,7 +508,6 @@
             };
 
             const newAgenda = {};
-            let newShoppingList = [...shoppingList];
             let usedIds = [];
 
             DAYS_OF_WEEK.forEach(day => {
@@ -536,6 +535,7 @@
 
             const newPantry = []; // Reset total du placard pour une nouvelle semaine
             setPantry(newPantry);
+            
             const newShoppingList = getRebuiltShoppingList(newAgenda, newPantry);
 
             setAgenda(newAgenda); setShoppingList(newShoppingList); saveToCloud({ agenda: newAgenda, shoppingList: newShoppingList, pantry: newPantry });
