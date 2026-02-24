@@ -19,16 +19,7 @@ window.RECIPES = [
   },
   {
     id: 2, category: "Entrées", title: "Guacamole mexicain", image: "./images/id2.png", time: "5 min",
-    ingredients: [
-      "2 avocats",
-      "1 citron vert",
-      "1 filet huile d'olive",
-      "0.5 oignon blanc",
-      "0.25 bouquet coriandre",
-      "1 tomate",
-      "1 piment oiseau",
-      "Fleur de sel"
-    ],
+    ingredients: ["2 avocats", "1 citron vert", "1 filet huile d'olive", "0.5 oignon blanc", "0.25 bouquet coriandre", "1 tomate", "1 piment oiseau", "Fleur de sel"],
     adultSteps: [
       "Retirez la peau et le noyau des avocats, puis écrasez-les à la fourchette.",
       "Ajoutez le jus du citron vert, l'huile et mélangez.",
@@ -45,17 +36,7 @@ window.RECIPES = [
   },
   {
     id: 3, category: "Entrées", title: "Soupe de laitue", image: "./images/id3.png", time: "17 min",
-    ingredients: [
-      "2 laitues",
-      "2 pommes de terre",
-      "1 oignon blanc",
-      "1 gousse d'ail",
-      "0.25 bouquet coriandre",
-      "Huile de noix",
-      "1 poignée croûtons de pain",
-      "1 poignée fromage râpé pasteurisé",
-      "Sel et poivre"
-    ],
+    ingredients: ["2 laitues", "2 pommes de terre", "1 oignon blanc", "1 gousse d'ail", "0.25 bouquet coriandre", "Huile de noix", "1 poignée croûtons de pain", "1 poignée fromage râpé pasteurisé", "Sel et poivre"],
     adultSteps: [
       "Effeuillez les laitues et coupez-les en morceaux.",
       "Épluchez, rincez et coupez les pommes de terre en petits morceaux. Pelez l'oignon et l'ail, puis émincez-les.",
@@ -74,47 +55,27 @@ window.RECIPES = [
   },
   {
     id: 4, category: "Entrées", title: "Salade de betterave, anchois et noix", image: "./images/id4.png", time: "5 min",
-    ingredients: [
-      "4 betteraves cuites",
-      "1 bocal anchois à l'huile non salés",
-      "50 g cerneaux de noix",
-      "80 g feta",
-      "0.5 bouquet aneth",
-      "1 échalote",
-      "Huile d'olive",
-      "Vinaigre de Xérès",
-      "Sel et poivre"
-    ],
+    ingredients: ["4 betteraves cuites", "1 bocal anchois à l'huile non salés", "50 g cerneaux de noix", "80 g feta", "0.5 bouquet aneth", "1 échalote", "Huile d'olive", "Vinaigre de Xérès", "Sel et poivre"],
     adultSteps: [
       "Égouttez les betteraves et coupez-les en petits cubes de 1 cm de côté.",
       "Égouttez les anchois et coupez-les en deux dans la largeur.",
       "Concassez grossièrement les noix.",
       "Hachez finement l'aneth. Épluchez et émincez finement l'échalote.",
       "Égouttez et coupez la feta en petits cubes de la même taille que les betteraves.",
-      "Dans un saladier, déposez les cubes de betterave, puis parsemez les autres ingrédients par-dessus.",
+      "Dans un saladier, déposez le cubes de betterave, puis parsemez les autres ingrédients par-dessus.",
       "Versez un filet d'huile et de vinaigre.",
       "Salez et poivrez. Réservez au frais."
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de betterave après l'étape 1. Mixez-la finement. Faites chauffer la betterave pour la mixer plus facilement. Ajoutez un peu d'eau minérale si besoin." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de betterave après l'étape 1 et une pincée d'aneth et d'échalote après l'étape 4. Mixez le tout finement. Faites chauffer pour mixer plus facilement." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de betterave (étape 1), une pincée d'aneth et d'échalote (étape 4) et 10 g de feta (étape 5). Mixez grossièrement la betterave, ajoutez l'aneth et l'échalote, mélangez et parsemez de feta." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g de salade de betterave après l'étape 7. Attention avec les noix, ne les donnez pas si bébé n'est pas prêt à manger des morceaux trop fermes." }
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de betterave après l'étape 1 et une pincée d'aneth et d'échalote après l'étape 4. Mixez le tout finement." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de betterave (étape 1), une pincée d'aneth et d'échalote (étape 4) et 10 g de feta (étape 5). Mixez grossièrement la betterave." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g de salade de betterave après l'étape 7." }
     ]
   },
   {
     id: 5, category: "Entrées", title: "Salade de céleri branche, cacahuètes et raisins secs", image: "./images/id5.png", time: "10 min",
-    ingredients: [
-      "1 céleri branche",
-      "60 g cacahuètes",
-      "60 g raisins secs",
-      "1 pomme granny smith",
-      "1 citron",
-      "1 bouquet ciboulette",
-      "Huile de pépins de raisin",
-      "Vinaigre à l'échalote",
-      "Sel et poivre"
-    ],
+    ingredients: ["1 céleri branche", "60 g cacahuètes", "60 g raisins secs", "1 pomme granny smith", "1 citron", "1 bouquet ciboulette", "Huile de pépins de raisin", "Vinaigre à l'échalote", "Sel et poivre"],
     adultSteps: [
       "Enlevez les fils et coupez le céleri en petits tronçons.",
       "Épluchez, coupez la pomme en petits morceaux et citronnez-la.",
@@ -127,22 +88,12 @@ window.RECIPES = [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de pomme après l'étape 2. Faites-la cuire et mixez-la finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 150 g de céleri après l'étape 1 et 50 g de pomme après l'étape 2. Faites cuire le tout et mixez finement." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de céleri (étape 1) et 50 g de pomme (étape 2), plus une belle pincée de ciboulette. Faites cuire le tout et mixez." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 30 g de salade de céleri à bébé sans les cacahuètes ni les raisins secs. Dès 15 mois, vous pourrez servir la salade entière (attention avec les cacahuètes en cas d'allergies familiales)." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 30 g de salade de céleri à bébé sans les cacahuètes ni les raisins secs." }
     ]
   },
   {
     id: 6, category: "Entrées", title: "Salade de cresson aux poires et aux noix", image: "./images/id6.png", time: "10 min",
-    ingredients: [
-      "1 botte cresson de fontaine",
-      "2 poires",
-      "1 poignée cerneaux de noix",
-      "100 g roquefort",
-      "1 échalote",
-      "1 citron",
-      "Huile de noix",
-      "Vinaigre balsamique",
-      "Sel et poivre"
-    ],
+    ingredients: ["1 botte cresson de fontaine", "2 poires", "1 poignée cerneaux de noix", "100 g roquefort", "1 échalote", "1 citron", "Huile de noix", "Vinaigre balsamique", "Sel et poivre"],
     adultSteps: [
       "Équeutez et rincez le cresson.",
       "Épluchez, retirez les pépins et taillez les poires en fines lamelles. Citronnez-les.",
@@ -154,23 +105,15 @@ window.RECIPES = [
       "Salez et poivrez. Réservez au frais."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de feuilles de cresson après l'étape 1. Faites-les cuire dans une casserole d'eau bouillante. Égouttez-les et mixez-les (ajoutez un peu de lait adapté si besoin)." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 150 g de cresson et 50 g de poires. Faites cuire le cresson, égouttez-le et mixez-le avec les poires fraîches." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de cresson et 50 g de poires. Faites cuire le cresson, égouttez-le et hachez-le avec les poires fraîches." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g de salade de cresson. Attention avec les noix, ne les donnez pas si bébé n'est pas prêt à manger des morceaux trop fermes." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de feuilles de cresson après l'étape 1. Faites-les cuire et mixez-les." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 150 g de cresson et 50 g de poires. Faites cuire le cresson et mixez-le avec les poires fraîches." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de cresson et 50 g de poires. Faites cuire le cresson et hachez-le avec les poires fraîches." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g de salade de cresson." }
     ]
   },
   {
     id: 7, category: "Entrées", title: "Salade de fenouil à la menthe", image: "./images/id7.png", time: "5 min",
-    ingredients: [
-      "3 fenouils",
-      "0.5 bouquet menthe",
-      "50 g graines de grenade",
-      "1 citron",
-      "1 filet huile d'olive",
-      "0.5 piment oiseau",
-      "Sel et poivre"
-    ],
+    ingredients: ["3 fenouils", "0.5 bouquet menthe", "50 g graines de grenade", "1 citron", "1 filet huile d'olive", "0.5 piment oiseau", "Sel et poivre"],
     adultSteps: [
       "Coupez les extrémités des fenouils et taillez-les en fines lamelles.",
       "Hachez la menthe et ajoutez-la au fenouil.",
@@ -179,27 +122,15 @@ window.RECIPES = [
       "Salez et poivrez, puis ajoutez le piment haché. Mélangez une dernière fois et réservez au frais."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de fenouil après l'étape 1. Faites-le cuire dans une casserole d'eau bouillante ou à la vapeur. Égouttez-le et mixez-le finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de fenouil après l'étape 2. Faites-le cuire, égouttez-le et mixez-le finement. Ajoutez 5 g de matière grasse et remuez." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de fenouil (étape 2), plus quelques graines de grenade. Faites cuire le fenouil, égouttez-le et mixez-le grossièrement avec la grenade fraîche. Ajoutez 5 g de matière grasse." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g de salade de fenouil après l'étape 4. Laissez cuire le fenouil dans la sauce avant de servir bébé (ou faites blanchir le fenouil s'il est trop dur)." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de fenouil après l'étape 1. Faites-le cuire et mixez-le finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de fenouil après l'étape 2. Faites-le cuire et mixez-le finement." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de fenouil (étape 2), plus quelques graines de grenade. Faites cuire le fenouil et mixez-le grossièrement." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g de salade de fenouil après l'étape 4." }
     ]
   },
   {
     id: 8, category: "Entrées", title: "Falafels express", image: "./images/id8.png", time: "20 min",
-    ingredients: [
-      "500 g pois chiches en conserve",
-      "0.5 oignon",
-      "4 gousses d'ail",
-      "0.5 bouquet herbes fraîches",
-      "1 c. à café graines de sésame doré",
-      "1 c. à soupe farine",
-      "1 c. à café cumin en poudre",
-      "1 c. à café coriandre en poudre",
-      "1 c. à café paprika doux",
-      "Huile végétale",
-      "Sel et poivre"
-    ],
+    ingredients: ["500 g pois chiches en conserve", "0.5 oignon", "4 gousses d'ail", "0.5 bouquet herbes fraîches", "1 c. à café graines de sésame doré", "1 c. à soupe farine", "1 c. à café cumin en poudre", "1 c. à café coriandre en poudre", "1 c. à café paprika doux", "Huile végétale", "Sel et poivre"],
     adultSteps: [
       "Égouttez les pois chiches. Faites-les sécher à l'aide de papier absorbant.",
       "Versez-les dans un robot. Ajoutez l'oignon pelé, les gousses d'ail épluchées et dégermées.",
@@ -213,22 +144,12 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 14, text: "Bébé n'est pas encore prêt pour les fritures et cette texture." },
-      { maxAge: 999, text: "Morceaux (dès 15 mois) : Servez 2 ou 3 petits falafels au déjeuner. Vous pouvez les accompagner de la même sauce que vous." }
+      { maxAge: 999, text: "Morceaux (dès 15 mois) : Servez 2 ou 3 petits falafels au déjeuner." }
     ]
   },
   {
     id: 9, category: "Entrées", title: "Asperges vertes rôties à l'huile de sésame", image: "./images/id9.png", time: "20 min",
-    ingredients: [
-      "20 asperges vertes",
-      "2 c. à soupe huile de sésame",
-      "1 gousse d'ail",
-      "0.25 bouquet persil",
-      "1 c. à café graines de sésame",
-      "1 citron",
-      "Huile végétale",
-      "Piment d'Espelette",
-      "Fleur de sel"
-    ],
+    ingredients: ["20 asperges vertes", "2 c. à soupe huile de sésame", "1 gousse d'ail", "0.25 bouquet persil", "1 c. à café graines de sésame", "1 citron", "Huile végétale", "Piment d'Espelette", "Fleur de sel"],
     adultSteps: [
       "Retirez l'extrémité dure des asperges.",
       "Faites cuire les asperges 3 min dans une casserole d'eau bouillante. Égouttez-les et passez-les sous l'eau froide pour garder la couleur.",
@@ -240,21 +161,13 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 7, text: "Bébé n'est pas encore prêt pour les asperges de cette façon." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g d'asperges après l'étape 6. Écrasez-les et servez-les tièdes à bébé. Ne rajoutez pas de matière grasse (l'huile de sésame a été ajoutée en fin de cuisson)." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g d'asperges après l'étape 6. Coupez-les en petits morceaux et servez-les tièdes à bébé." }
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g d'asperges après l'étape 6. Écrasez-les et servez-les tièdes à bébé." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 30 g d'asperges après l'étape 6. Coupez-les en petits morceaux." }
     ]
   },
   {
     id: 10, category: "Entrées", title: "Salade de champignons aux abricots et herbes fraîches", image: "./images/id10.png", time: "5 min",
-    ingredients: [
-      "250 g champignons de Paris",
-      "80 g abricots secs",
-      "0.5 bouquet herbes fraîches",
-      "1 échalote",
-      "1 citron",
-      "Huile de noisette",
-      "Sel et poivre"
-    ],
+    ingredients: ["250 g champignons de Paris", "80 g abricots secs", "0.5 bouquet herbes fraîches", "1 échalote", "1 citron", "Huile de noisette", "Sel et poivre"],
     adultSteps: [
       "Épluchez les champignons et coupez-les en fines lamelles. Citronnez-les pour éviter l'oxydation.",
       "Hachez finement les herbes et ajoutez-les aux champignons.",
@@ -264,10 +177,10 @@ window.RECIPES = [
       "Salez et poivrez."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de champignons après l'étape 1. Faites-les cuire dans de l'eau bouillante ou à la vapeur et mixez-les finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de champignons après l'étape 2. Faites-les cuire dans de l'eau bouillante ou à la vapeur et mixez-les finement." },
-      { maxAge: 14, text: "Mouliné (dès 8 mois) : Récupérez 200 g de champignons après l'étape 2. Faites-les cuire dans de l'eau bouillante ou à la vapeur et hachez-les finement." },
-      { maxAge: 999, text: "Morceaux (dès 15 mois) : Récupérez 30 g de salade de champignons après l'étape 5. Servez en entrée à bébé. Laissez-le manger avec les doigts ! (Sans les abricots secs, possible dès 12 mois)." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de champignons après l'étape 1. Faites-les cuire et mixez-les finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de champignons après l'étape 2. Faites-les cuire et mixez-les finement." },
+      { maxAge: 14, text: "Mouliné (dès 8 mois) : Récupérez 200 g de champignons après l'étape 2. Faites-les cuire et hachez-les finement." },
+      { maxAge: 999, text: "Morceaux (dès 15 mois) : Récupérez 30 g de salade de champignons après l'étape 5." }
     ]
   },
 
@@ -300,7 +213,7 @@ window.RECIPES = [
       "Assaisonnez et servez."
     ],
     babyAdaptations: [
-      { maxAge: 4, text: "Extra-lisse : Récupérez 30 g d'endive crue. Faites-la bien cuire avant de la mixer finement (ajoutez un petit jus de citron contre l'amertume)." },
+      { maxAge: 4, text: "Extra-lisse : Récupérez 30 g d'endive crue. Faites-la bien cuire avant de la mixer finement." },
       { maxAge: 6, text: "Lisse : Récupérez 200 g d'endives et 10 g de foie de veau bien cuit. Mixez finement." },
       { maxAge: 8, text: "Mouliné : Récupérez 200 g d'endives et 20 g de foie de veau bien cuit. Moulinez finement." },
       { maxAge: 12, text: "Morceaux : Récupérez 160 g d'endives et 30 g de foie de veau. Coupez en morceaux." }
@@ -796,7 +709,7 @@ window.RECIPES = [
       "Parsemez les croûtons sur la raie, arrosez de beurre noisette, déposez les haricots verts et assaisonnez."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de haricots verts après l'étape 4. Mixez-les finement (délayez avec de l'eau ou du lait infantile)." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de haricots verts après l'étape 4. Mixez-les finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de haricots verts. Mixez finement avec persil et 5 g MG. Récupérez 10 g d'aile de raie (étape 7) et mixez-la." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de haricots verts. Moulinez avec persil et 5 g MG. Récupérez 20 g d'aile de raie et hachez-la grossièrement." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de haricots verts. Coupez-les et ajoutez persil/5 g MG. Récupérez 30 g d'aile de raie hachée." }
@@ -914,15 +827,15 @@ window.RECIPES = [
     adultSteps: [
       "Retirez la base des fenouils et coupez-les en morceaux.",
       "Faites-les cuire 10 min dans une casserole d'eau bouillante.",
-      "Dans une casserole, faites fondre le beurre, ajoutez la farine. Versez le lait petit à petit et fouettez pour obtenir une béchamel (cuisson 5 min).",
+      "Dans une casserole, faites fondre le beurre, ajoutez la farine. Versez le lait petit à petit et fouettez pour obtenir une béchamel.",
       "Placez les fenouils dans un plat à gratin et versez la béchamel. Parsemez de comté et enfournez pour 10 min à 225 °C.",
       "Assaisonnez."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de fenouil après l'étape 2. Mixez-le finement (cuisez-le dans du lait pour garder la blancheur)." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de fenouil après l'étape 2. Mixez-le finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de fenouil (étape 2). Mixez-le finement et ajoutez 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de gratin de fenouil (étape 4). Moulinez-le. La béchamel fait office de MG." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de gratin de fenouil. Coupez en petits morceaux. La béchamel fait office de MG." }
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de gratin de fenouil (étape 4). Moulinez-le." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de gratin de fenouil. Coupez en petits morceaux." }
     ]
   },
   {
@@ -937,8 +850,8 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de courgette (étape 1). Faites-la cuire vapeur et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de courgettes, cuisez vapeur, mixez avec 5 g MG. Récupérez 10 g de tofu, cuisez-le et mixez-le." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de gratin de courgettes (étape 4). Moulinez-le finement en ajoutant 5 g MG." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de courgettes, cuisez vapeur, mixez avec 5 g MG. Récupérez 10 g de tofu." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de gratin de courgettes (étape 4). Moulinez-le finement." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de gratin de courgettes (étape 4). Ajoutez 5 g MG." }
     ]
   },
@@ -956,7 +869,7 @@ window.RECIPES = [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de haricots verts. Faites-les cuire à l'eau 10 min et mixez finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de haricots verts. Faites-les cuire à l'eau, mixez finement avec 5 g MG." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de haricots à l'italienne (étape 4). Moulinez finement avec 5 g MG." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de haricots à l'italienne. Coupez en morceaux et ajoutez 5 g MG." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de haricots à l'italienne. Coupez en morceaux." }
     ]
   },
   {
@@ -971,9 +884,9 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de courgette. Cuisez-la vapeur et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de courgettes, cuisez vapeur, mixez avec 5 g MG. Cuisez 1 œuf dur (9 min), récupérez 10 g et mixez." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g légumes (étape 3). Hachez-les avec 5 g MG. Ajoutez 20 g d'œuf dur haché." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de légumes et 30 g d'œuf. L'œuf doit être bien cuit pour bébé." }
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de courgettes, cuisez vapeur, mixez avec 5 g MG. Mixez 10 g d'œuf dur." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g légumes (étape 3). Hachez-les avec 5 g MG. Ajoutez 20 g d'œuf dur." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de légumes et 30 g d'œuf." }
     ]
   },
   {
@@ -986,10 +899,10 @@ window.RECIPES = [
       "Ajoutez un filet d'huile, assaisonnez."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de tomates. Cuisez-les et mixez-les (retirez pépins et peau)." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de tomates. Cuisez, mixez avec 5 g MG (sans peau)." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de tomates, oignon, basilic. Moulinez avec 50 g de pâtes et 5 g MG." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 150 g de pâtes aux tomates et coupez en petits morceaux." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de tomates. Cuisez-les et mixez-les." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de tomates. Cuisez, mixez avec 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de tomates. Moulinez avec 50 g de pâtes et 5 g MG." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 150 g de pâtes aux tomates." }
     ]
   },
   {
@@ -1005,7 +918,7 @@ window.RECIPES = [
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g d'ananas. Cuisez-le vapeur et mixez finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de poivrons sans la peau. Mixez-les finement." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 70 g poivrons sans peau, 70 g ananas. Mixez finement. Ajoutez 60 g de semoule." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 70 g poivrons, 70 g ananas. Ajoutez 60 g de semoule." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 1/2 poivron farci au taboulé coupé en petits morceaux." }
     ]
   },
@@ -1021,8 +934,8 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de courgette (étape 1). Mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de crème de courgettes. Le parmesan est cuit, la crème suffit (pas de MG en plus)." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de crème courgettes et 50 g de ravioles. Hachez grossièrement les ravioles." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de crème de courgettes. Le parmesan est cuit." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de crème courgettes et 50 g de ravioles." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 150 g de ravioles à la crème de courgettes." }
     ]
   },
@@ -1037,8 +950,8 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de petits pois. Recuisez-les et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de pois. Recuisez, mixez finement avec 10 g de tofu haché." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g légumes et tofu. Moulinez, hachez le tofu. Servez avec 50 g riz." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de pois. Mixez finement avec 10 g de tofu." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g légumes et tofu. Servez avec 50 g riz." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de tofu à la provençale." }
     ]
   },
@@ -1053,9 +966,9 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de blettes (vert et blanc). Mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de blettes. Mixez finement avec 5 g MG. Ajoutez 10 g œuf dur mixé." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de blettes. Hachez avec 5 g MG. Ajoutez 20 g œuf dur haché." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de gratin de blettes. Coupez en morceaux (œufs bien cuits)." }
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de blettes. Mixez finement avec 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de blettes. Hachez avec 5 g MG. Ajoutez 20 g d'œuf dur." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de gratin de blettes." }
     ]
   },
   {
@@ -1067,10 +980,10 @@ window.RECIPES = [
       "Farcissez les butternuts. Enfournez 5 min de plus. Laissez tiédir."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de courge sans peau. Mixez-la (délayez avec lait)." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de courge sans peau. Mixez avec ciboulette et 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de courge sans peau. Écrasez-la. Ajoutez 50 g de boulgour (crème = MG)." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de courge farcie. Attention, noix bien mixées." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de courge sans peau. Mixez-la." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de courge sans peau. Mixez avec 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de courge sans peau. Écrasez-la." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de courge farcie." }
     ]
   },
   {
@@ -1084,7 +997,7 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 7, text: "Bébé n'est pas encore prêt pour ce gratin." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de gratin et hachez-le finement (la sauce suffit en MG)." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de gratin et hachez-le finement." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de gratin et écrasez-le finement." }
     ]
   },
@@ -1098,10 +1011,10 @@ window.RECIPES = [
       "Enfournez 15 min à 200 °C."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de panais. Cuisez dans du lait et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de panais. Cuisez dans du lait et mixez finement." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de panais. Cuisez dans du lait et écrasez grossièrement." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 180 g de gratin (mixez les noisettes finement)." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de panais. Cuisez dans du lait and mixez." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de panais. Mixez finement." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de panais. Écrasez grossièrement." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 180 g de gratin." }
     ]
   },
   {
@@ -1135,7 +1048,7 @@ window.RECIPES = [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de panais (étape 2). Mixez finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de velouté (étape 4). Ajoutez un peu d'aneth." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de velouté (étape 4). Ajoutez un peu d'aneth." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de velouté. Vous pouvez ajouter 1 c.a.c de crème." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 180 g de velouté." }
     ]
   },
   {
@@ -1151,7 +1064,7 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de champignons. Cuisez et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de champignons. Mixez avec 5 g MG. (Pas d'œuf cocotte pour bébé)." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de champignons. Mixez avec 5 g MG." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de champignons (étape 2). Moulinez avec 5 g MG." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 1/2 œuf cocotte bien cuit avec salade." }
     ]
@@ -1167,10 +1080,10 @@ window.RECIPES = [
       "Accompagnez d'une salade d'épinards."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g d'épinards. Cuisez à l'eau et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g d'épinards cuits, mixez avec 5 g MG. Mixez 10 g d'œufs bien cuits." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g d'épinards cuits, moulinez avec 5 g MG. Hachez 20 g d'œufs." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Hachez 150 g d'épinards crus avec huile. Coupez 30 g d'œufs brouillés." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g d'épinards. Cuisez à l'eau and mixez." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g d'épinards cuits, mixez avec 5 g MG. Mixez 10 g d'œuf." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g d'épinards cuits, moulinez avec 5 g MG. Hachez 20 g d'œuf." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Hachez 150 g d'épinards crus. Coupez 30 g d'œufs brouillés." }
     ]
   },
   {
@@ -1186,7 +1099,7 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de betterave. Mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de betteraves, mixez avec 5 g MG et 10 g d'omelette." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de betteraves, mixez avec 5 g MG and 10 g d'omelette." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Hachez 100 g betteraves, 100 g cresson, 5 g MG, 20 g d'omelette." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 150 g d'omelette. Régulez les protéines." }
     ]
@@ -1203,7 +1116,7 @@ window.RECIPES = [
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de champignons. Cuisez et mixez finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de champignons. Mixez avec 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de champignons (mixés avec 5 g MG) et 50 g de blésotto." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de champignons and 50 g de blésotto." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 150 g de blésotto aux champignons." }
     ]
   },
@@ -1216,9 +1129,9 @@ window.RECIPES = [
       "Dorez au jaune d'œuf, enfournez 10 min à 200 °C."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g d'épinards cuits. Réchauffez et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g d'épinards. Mixez finement avec 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g d'épinards. Hachez grossièrement avec 5 g MG." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g d'épinards cuits. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de épinards. Mixez finement with 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de épinards. Hachez grossièrement with 5 g MG." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez à bébé 1 petit chausson aux épinards." }
     ]
   },
@@ -1234,8 +1147,8 @@ window.RECIPES = [
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g d'épinards (étape 1). Mixez finement." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g d'épinards (étape 1). Mixez finement." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g d'épinards (étape 1). Mixez finement avec un peu de comté." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 100 g d'épinards au comté et servez avec 1 belle crêpe en morceaux." }
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g d'épinards. Mixez finement with un peu de comté." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 100 g d'épinards au comté et servez avec 1 crêpe." }
     ]
   },
   {
@@ -1250,7 +1163,7 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 14, text: "Bébé n'est pas encore prêt." },
-      { maxAge: 999, text: "Morceaux (dès 15 mois) : Façonnez 3 boulettes avec la pâte (sans piment). Cuisez-les avant les bonbons au piment." }
+      { maxAge: 999, text: "Morceaux (dès 15 mois) : Façonnez 3 boulettes (sans piment). Cuisez-les." }
     ]
   },
   {
@@ -1263,10 +1176,10 @@ window.RECIPES = [
       "Égouttez sur papier absorbant."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de patate douce. Cuisez vapeur, mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de patates douces, cuisez vapeur avec coriandre, mixez finement." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de crique. Écrasez finement avec 5 g MG." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 1 ou 2 criques à bébé. Accompagnez de salade verte." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de patate douce. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de patates douces. Mixez finement with 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de crique. Écrasez finement." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 1 ou 2 petites criques." }
     ]
   },
   {
@@ -1280,9 +1193,9 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de carotte. Mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de carottes, mixez avec 5 g MG. Ajoutez 10 g œuf dur mixé." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 100 g purée brocoli et 100 g purée carottes. Hachez 20 g d'œuf dur." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 1 petit soufflé à bébé avec de la salade." }
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de carottes, mixez avec 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 100 g purée brocoli et 100 g purée carottes." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 1 petit soufflé à bébé." }
     ]
   },
   {
@@ -1295,10 +1208,10 @@ window.RECIPES = [
       "Faites dorer des galettes 2 min de chaque côté à la poêle."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de blancs de poireaux. Cuisez et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de blancs de poireaux. Mixez avec 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de blancs de poireaux mixés (5 g MG). Ajoutez 50 g de blé concassé." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 1 ou 2 petites galettes. Servez avec une sauce fromage blanc." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de blancs de poireaux. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de blancs de poireaux. Mixez with 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de blancs de poireaux mixés. Ajoutez 50 g de blé." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 1 ou 2 petites galettes." }
     ]
   },
   {
@@ -1311,9 +1224,9 @@ window.RECIPES = [
       "Enfournez 15 min à 200 °C."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de poireaux. Cuisez et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de poireaux (étape 2). Mixez finement avec 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de poireaux. Moulinez finement avec 10 g de ricotta et un peu de gruyère." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de poireaux. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de poireaux (étape 2). Mixez finement." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de poireaux. Moulinez finement." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 200 g de gratin de poireaux." }
     ]
   },
@@ -1327,10 +1240,10 @@ window.RECIPES = [
       "Creusez les patates douces et déposez la farce. Parsemez de coriandre."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de patate douce. Mixez-la finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de patates douces. Mixez finement avec 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de patates douces (étape 5). Moulinez avec 5 g MG." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de patates douces (étape 5). Mélangez avec 5 g MG." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de patate douce. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de patates douces. Mixez finement with 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de patates douces. Moulinez with 5 g MG." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de patates douces." }
     ]
   },
   {
@@ -1344,9 +1257,9 @@ window.RECIPES = [
       "Ajoutez les tomates cerises coupées en deux. Assaisonnez."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de tomates cerises. Cuisez et mixez sans peau ni pépins." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 180 g de tomates, mixez avec 5 g MG. Ajoutez 10 g tofu haché." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g tomates, mixez avec 5 g MG. Ajoutez 50 g pâtes et 20 g tofu haché." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de tomates cerises. Mixez sans peau." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 180 g de tomates, mixez with 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g tomates. Ajoutez 50 g pâtes." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 150 g de penne au tofu." }
     ]
   },
@@ -1361,9 +1274,9 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de maïs. Cuisez et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de maïs. Cuisez et mixez finement avec 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 100 g poivron, 100 g maïs, 15 g fromage. Moulinez avec 5 g MG." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 1 part de pizza et coupez-la en petits morceaux (avec grains de maïs)." }
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de maïs. Mixez finement with 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 100 g poivron, 100 g maïs. Moulinez with 5 g MG." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 1 part de pizza. Coupez en morceaux." }
     ]
   },
   {
@@ -1375,9 +1288,9 @@ window.RECIPES = [
       "En fin de cuisson, ajoutez purée de carottes, carottes râpées, mascarpone, parmesan. Mélangez."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de carottes. Cuisez et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de purée de carottes. Mélangez avec 5 g MG." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de purée de carottes avec 5 g MG. Ajoutez 50 g de riz." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de carottes. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de purée de carottes. Mixez with 5 g MG." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 150 g de purée de carottes. Ajoutez 50 g de riz." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 150 g de risotto à la carotte." }
     ]
   },
@@ -1391,9 +1304,9 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de purée de carottes." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de purée de carottes. Mélangez avec 10 g gouda." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de purée de carottes." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Servez 200 g de soufflé de carottes." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 200 g de soufflé de carottes. Accompagnez d'une salade." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 200 g de soufflé de carottes." }
     ]
   },
   {
@@ -1406,8 +1319,8 @@ window.RECIPES = [
       "Ajoutez le reste du maïs, cuisez 3 min. Parsemez de cébettes, coriandre, curry."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g maïs, 10 g PDT. Cuisez et mixez (passez à la passoire)." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de soupe de maïs (passez à la passoire)." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g maïs. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de soupe de maïs." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de soupe de maïs." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de soupe de maïs." }
     ]
@@ -1421,7 +1334,7 @@ window.RECIPES = [
       "Assaisonnez."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de pomme de terre et persil. Mixez bien lisse." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de pomme de terre. Mixez bien." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 200 g de velouté de persil." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 200 g de velouté de persil." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Récupérez 160 g de velouté de persil." }
@@ -1439,10 +1352,10 @@ window.RECIPES = [
       "Déposez le fromage blanc et les pêches confites. Réservez au frais."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de pêche. Cuisez vapeur et mixez finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 50 g pêche (cuisez vapeur et mixez) + 50 g fromage blanc." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 50 g pêche écrasée, 20 g biscuit, 30 g fb." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Mélangez 50 g pêche, 20 g biscuit, 30 g fb." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : Récupérez 30 g de pêche. Mixez finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : Récupérez 50 g pêche + 50 g fromage blanc." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Récupérez 50 g pêche écrasée, 20 g biscuit." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Mélangez 50 g pêche, 20 g biscuit." }
     ]
   },
   {
@@ -1456,8 +1369,8 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 7, text: "Bébé n'est pas encore prêt pour les biscuits aux amandes." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Retirez l'amande sur le biscuit et donnez quelques morceaux." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Retirez l'amande et donnez 1 ou 2 biscuits au goûter." }
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Retirez l'amande sur le biscuit." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Donnez 1 ou 2 biscuits." }
     ]
   },
   {
@@ -1470,10 +1383,10 @@ window.RECIPES = [
       "Décorez avec framboises et pistaches. Placez au frais."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g framboises cuites vapeur et mixées (jus)." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g framboises mixées." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : 50 g framboises mixées + 50 g fromage blanc." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : 50 g framboises + 30 g fromage blanc + 20 g biscuit." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 50 g framboises + 30 g fb + 20 g biscuit. (Possible poudre pistache)." }
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : 50 g framboises + 30 g fb + 20 g biscuit." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 50 g framboises + 30 g fb + 20 g biscuit." }
     ]
   },
   {
@@ -1485,10 +1398,10 @@ window.RECIPES = [
       "Mélangez fruits, jus passion, herbes. Placez au frais."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g mangue vapeur mixée." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g de fruits cuits vapeur et mixés finement." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g mangue mixée." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g de fruits mixés finement." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g de salade de fruits moulinée." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 80 g de salade de fruits en morceaux." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 80 g de salade de fruits." }
     ]
   },
   {
@@ -1501,10 +1414,10 @@ window.RECIPES = [
       "Servez avec glace pistache."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g fraises cuites, mixées (sans pépins)." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g fraises mixées (sans pépins)." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g fruits moulinés + 1/2 feuille de brick émiettée." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 1 cigare avec une petite boule de glace." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g fraises mixées." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g fraises mixées." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g fruits moulinés." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 1 cigare." }
     ]
   },
   {
@@ -1516,9 +1429,9 @@ window.RECIPES = [
       "Cuisez les pancakes à la poêle antiadhésive."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g banane cuite vapeur avec citron, mixée." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g banane vapeur cannelle mixée." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g banane vapeur cannelle écrasée." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g banane mixée." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g banane mixée." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g banane écrasée." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 1 ou 2 petits pancakes." }
     ]
   },
@@ -1531,23 +1444,23 @@ window.RECIPES = [
       "Enfournez 10 min à 200 °C. Servez tiède."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g ananas cuit vapeur, mixé (sans morceaux)." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g ananas vapeur + zestes, mixé." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g ananas mixé." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g ananas mixé." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g ananas rôti mouliné." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 80 g ananas rôti en petits morceaux." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 80 g ananas rôti." }
     ]
   },
   {
     id: 88, category: "Desserts", title: "Petit-suisse à la fleur d'oranger et pommes acidulées", image: "./images/id88.png", time: "5 min",
     ingredients: ["8 petits-suisses", "Fleur d'oranger", "2 pommes granny smith", "0.5 citron", "1 gousse vanille"],
     adultSteps: [
-      "Mélangez les petits-suisses avec fleur d'oranger.",
+      "Mélangez les petits-suisses with fleur d'oranger.",
       "Coupez les pommes en cubes, citronnez, ajoutez vanille.",
       "Répartissez dans des ramequins avec les pommes au centre."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g pomme cuite mixée finement." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 50 g pomme cuite mixée + 50 g pt-suisse." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g pomme mixée finement." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 50 g pomme mixée + 50 g pt-suisse." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : 50 g pomme écrasée + 50 g pt-suisse." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : 50 g pomme + 50 g pt-suisse." }
     ]
@@ -1562,22 +1475,22 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 14, text: "Bébé n'est pas encore prêt pour cette texture." },
-      { maxAge: 999, text: "Morceaux (dès 15 mois) : 30 à 40 g de granola dans fromage frais (noix bien mixées)." }
+      { maxAge: 999, text: "Morceaux (dès 15 mois) : 30 à 40 g de granola." }
     ]
   },
   {
     id: 90, category: "Desserts", title: "Ma première confiture d'abricots", image: "./images/id90.png", time: "35 min",
-    ingredients: ["500 g abricots", "2 gousses vanille", "0.5 citron vert", "2 c. à café pectine", "50 g sucre"],
+    ingredients: ["10 abricots", "2 gousses vanille", "0.5 citron vert", "2 c. à café pectine", "50 g sucre"],
     adultSteps: [
       "Cuisez abricots avec eau, vanille, citron vert 5 min.",
       "Ajoutez pectine, sucre. Cuisez 10 min à feu fort.",
       "Remplissez les pots et retournez-les."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g abricot (avant ajout sucre) mixé." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g abricots (avant ajout sucre) mixés." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g abricots (avant ajout sucre) écrasés." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 c. à café confiture sur tartine beurrée." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g abricot mixé." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g abricots mixés." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g abricots écrasés." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 c. à café confiture." }
     ]
   },
   {
@@ -1592,7 +1505,7 @@ window.RECIPES = [
       { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g pomme mixée." },
       { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g pommes mixées." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g pommes écrasées." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1/2 chausson bien froid." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1/2 chausson." }
     ]
   },
   {
@@ -1605,7 +1518,7 @@ window.RECIPES = [
     ],
     babyAdaptations: [
       { maxAge: 11, text: "Bébé n'est pas encore prêt pour le fondant." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 30 à 40 g de fondant au chocolat." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : Servez 30 à 40 g de fondant." }
     ]
   },
   {
@@ -1613,12 +1526,12 @@ window.RECIPES = [
     ingredients: ["165 g farine", "60 g sucre", "1 citron", "75 g beurre", "1 œuf"],
     adultSteps: [
       "Mélangez farine, sucre, zestes.",
-      "Ajoutez beurre, œuf, 1 c. à soupe de jus. Réservez au frais.",
+      "Ajoutez beurre, œuf, 1 c. à soupe de jus.",
       "Formez des boules aplaties, enfournez 10 min à 200 °C."
     ],
     babyAdaptations: [
       { maxAge: 11, text: "Bébé n'est pas encore prêt." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 ou 2 sablés au goûter." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 ou 2 sablés." }
     ]
   },
   {
@@ -1626,12 +1539,12 @@ window.RECIPES = [
     ingredients: ["1 c. à soupe cacao", "150 g farine", "60 g sucre", "75 g beurre", "1 œuf"],
     adultSteps: [
       "Mélangez farine, sucre, cacao.",
-      "Ajoutez beurre, œuf. Réservez au frais.",
+      "Ajoutez beurre, œuf.",
       "Formez des boules aplaties, enfournez 10 min à 200 °C."
     ],
     babyAdaptations: [
       { maxAge: 11, text: "Bébé n'est pas encore prêt." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 ou 2 sablés au goûter." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 ou 2 sablés." }
     ]
   },
   {
@@ -1639,12 +1552,12 @@ window.RECIPES = [
     ingredients: ["90 g noisettes", "130 g farine", "60 g sucre", "130 g beurre"],
     adultSteps: [
       "Mélangez farine, sucre, noisettes.",
-      "Ajoutez le beurre, réservez au frais.",
+      "Ajoutez le beurre.",
       "Formez des boules aplaties, enfournez 10 min à 175 °C."
     ],
     babyAdaptations: [
       { maxAge: 11, text: "Bébé n'est pas encore prêt." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 ou 2 sablés au goûter." }
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 ou 2 sablés." }
     ]
   },
   {
@@ -1665,8 +1578,8 @@ window.RECIPES = [
     ingredients: ["50 g amandes", "50 g pistaches", "30 g farine", "90 g sucre glace", "90 g beurre", "Vanille", "3 blancs d'œufs"],
     adultSteps: [
       "Mélangez poudres, farine, sucre, vanille.",
-      "Incorporez beurre fondu et blancs montés mousseux.",
-      "Remplissez les moules, parsemez pistaches, enfournez 12 min à 180 °C."
+      "Incorporez beurre fondu and blancs montés.",
+      "Remplissez les moules, enfournez 12 min à 180 °C."
     ],
     babyAdaptations: [
       { maxAge: 11, text: "Bébé n'est pas encore prêt." },
@@ -1681,23 +1594,23 @@ window.RECIPES = [
       "Enfournez 15 min à 180 °C."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g abricot pelé cuit mixé." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g abricots pelés mixés avec vanille." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : Fruits papillote écrasés bien froids." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 papillote bien froide." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g abricot mixé." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g abricots mixés with vanille." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : Fruits papillote écrasés." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 1 papillote." }
     ]
   },
   {
     id: 99, category: "Desserts", title: "Crumble aux poires et 4-épices", image: "./images/id99.png", time: "15 min",
     ingredients: ["4 poires", "4-épices", "70 g pistaches", "50 g amandes", "60 g flocons d'avoine", "60 g farine", "50 g sucre roux", "50 g beurre"],
     adultSteps: [
-      "Coupez poires en lamelles, saupoudrez de 4-épices dans un plat.",
-      "Malaxez noix, avoine, farine, sucre, beurre. Répartissez sur les poires.",
+      "Coupez poires en lamelles, saupoudrez de 4-épices.",
+      "Malaxez noix, avoine, farine, sucre, beurre. Répartissez.",
       "Enfournez 10 min à 200 °C."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g poire cuite mixée." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g poires cuites aux épices, mixées." },
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g poire mixée." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g poires mixées." },
       { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g crumble écrasé." },
       { maxAge: 999, text: "Morceaux (dès 12 mois) : 80 g crumble." }
     ]
@@ -1706,15 +1619,15 @@ window.RECIPES = [
     id: 100, category: "Desserts", title: "Kiwis rôtis et glace à la vanille", image: "./images/id100.png", time: "15 min",
     ingredients: ["4 kiwis gold", "4 kiwis verts", "1 gousse vanille", "40 g sucre roux", "1 pot glace"],
     adultSteps: [
-      "Coupez les kiwis en tranches dans des ramequins.",
+      "Coupez les kiwis en tranches.",
       "Ajoutez vanille, sucre. Enfournez 10 min à 200 °C.",
       "Laissez tiédir, ajoutez la glace."
     ],
     babyAdaptations: [
-      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g kiwi cuit mixé." },
-      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g kiwi cuit mixé." },
-      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g kiwi cuit écrasé." },
-      { maxAge: 999, text: "Morceaux (dès 12 mois) : 80 g kiwi cuit morceaux." }
+      { maxAge: 5, text: "Extra-lisse (dès 4 mois) : 30 g kiwi mixé." },
+      { maxAge: 7, text: "Lisse (dès 6 mois) : 80 g kiwi mixé." },
+      { maxAge: 11, text: "Mouliné (dès 8 mois) : 80 g kiwi écrasé." },
+      { maxAge: 999, text: "Morceaux (dès 12 mois) : 80 g kiwi." }
     ]
   }
 ];
