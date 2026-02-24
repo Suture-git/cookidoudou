@@ -239,6 +239,14 @@
             return FALLBACK_TIP;
         };
 
+        const GENERAL_TIPS = [
+            { icon: '📝', title: "Faites un planning", text: "Établissez vos menus de la semaine en un quart d'heure. Vous gagnerez du temps lors des courses et économiserez en n'achetant que le nécessaire." },
+            { icon: '🧊', title: "Pensez aux surgelés", text: "Faites le plein d'aliments natures surgelés. Ils ont quasiment les mêmes apports nutritionnels que les frais et évitent le gaspillage !" },
+            { icon: '🥕', title: "Ne pelez plus !", text: "Si vos légumes sont bio (ou sans pesticides), un bon brossage suffit. La peau est un cocktail nutritionnel riche en fibres et vitamines." },
+            { icon: '🥗', title: "Préparations à l'avance", text: "Vous mangez souvent des salades ? Préparez votre base de vinaigrette pour la semaine dans un shaker, elle se conservera très bien." },
+            { icon: '🧹', title: "Nettoyez au fur et à mesure", text: "Nettoyez et rangez vos ustensiles dès que vous n'en avez plus besoin. Un bon chef a toujours un plan de travail impeccable !" },
+            { icon: '❄️', title: "Recyclez les restes", text: "Prévoyez de doubler les quantités pour congeler la moitié de la préparation (pourquoi pas en portions individuelles) pour un futur repas." }
+        ];
 
         function App() {
           const [currentTab, setCurrentTab] = useState('home');
@@ -255,6 +263,7 @@
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
 
           const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
+          const [showTipsModal, setShowTipsModal] = useState(false);
 
           const currentActiveSeasons = useMemo(() => getCurrentActiveSeasons(), []);
           const [isSeasonalModeActive, setIsSeasonalModeActive] = useState(() => {
@@ -493,11 +502,16 @@
             <div className="animate-fadeIn space-y-6 pb-24">
               <div className="flex justify-between items-center">
                   <h1 className="text-2xl font-black text-gray-800">Ma Liste</h1>
-                  {shoppingList.length > 0 && (
-                      <button onClick={copyShoppingList} className="text-orange-500 bg-orange-50 p-3 rounded-2xl hover:bg-orange-100 transition active:scale-95" title="Copier la liste">
-                          <i className="fa-solid fa-copy"></i>
+                  <div className="flex gap-2">
+                      <button onClick={() => setShowTipsModal(true)} className="text-yellow-600 bg-yellow-50 p-3 rounded-2xl hover:bg-yellow-100 transition active:scale-95 flex items-center gap-2" title="Astuces d'organisation">
+                          <i className="fa-solid fa-lightbulb text-lg"></i>
                       </button>
-                  )}
+                      {shoppingList.length > 0 && (
+                          <button onClick={copyShoppingList} className="text-orange-500 bg-orange-50 p-3 rounded-2xl hover:bg-orange-100 transition active:scale-95" title="Copier la liste">
+                              <i className="fa-solid fa-copy text-lg"></i>
+                          </button>
+                      )}
+                  </div>
               </div>
 
               {shoppingList.length === 0 ? (
@@ -733,6 +747,41 @@
                         <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
                             <button onClick={() => setShowTypicalDayModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">
                                 J'ai compris
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              )}
+
+              {/* FENÊTRE MODALE BOÎTE À ASTUCES GLOBALES */}
+              {showTipsModal && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="bg-yellow-400 p-6 text-yellow-900 relative flex-shrink-0">
+                            <button onClick={() => setShowTipsModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition text-yellow-900">
+                                <i className="fa-solid fa-xmark"></i>
+                            </button>
+                            <h2 className="text-2xl font-black mb-1 flex items-center gap-2">
+                                <i className="fa-solid fa-lightbulb"></i> Boîte à Astuces
+                            </h2>
+                            <p className="text-yellow-800 text-sm font-medium">L'organisation est le maître mot pour gagner du temps en cuisine.</p>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
+                            {GENERAL_TIPS.map((tip, idx) => (
+                                <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex gap-4 items-start">
+                                    <div className="text-3xl flex-shrink-0">{tip.icon}</div>
+                                    <div>
+                                        <h4 className="font-black text-gray-800 mb-1">{tip.title}</h4>
+                                        <p className="text-sm text-gray-600 font-medium leading-relaxed">{tip.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
+                            <button onClick={() => setShowTipsModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">
+                                C'est noté !
                             </button>
                         </div>
                     </div>
