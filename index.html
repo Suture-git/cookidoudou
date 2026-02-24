@@ -430,7 +430,7 @@
                 {/* MA SEMAINE EN UN COUP D'OEIL */}
                 <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 uppercase text-[10px] tracking-widest px-2"><i className="fa-solid fa-calendar-week text-blue-500"></i> La Semaine</h3>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-2">
+                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-2 pt-2">
                        {DAYS_OF_WEEK.map(day => {
                            const dayRecs = (agenda[day] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
                            const isToday = day === todayStr;
@@ -1067,3 +1067,4 @@
     </script>
 </body>
 </html>
+
