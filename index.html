@@ -58,22 +58,14 @@
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
-        // --- FONCTION UTILITAIRE : AGE EN MOIS ---
-        const calculateAgeInMonths = (birthdate) => {
+        // --- FONCTIONS UTILITAIRES ---
+        function calculateAgeInMonths(birthdate) {
             if (!birthdate) return null;
             try {
                 const diffTime = Math.abs(new Date() - new Date(birthdate));
                 return Math.floor(Math.ceil(diffTime / (1000 * 60 * 60 * 24)) / 30.44); 
             } catch(e) { return null; }
-        };
-
-        // --- LOGIQUE MODE 100% SAISON ---
-        const SEASONAL_INGREDIENTS = {
-          printemps: ['asperge', 'carotte', 'champignon', 'chou', 'courgette', 'épinard', 'navet', 'oignon', 'radis', 'tomate', 'abricot', 'cerise', 'citron', 'fraise', 'framboise', 'passion', 'pêche', 'rhubarbe'],
-          ete: ['artichaut', 'aubergine', 'blette', 'brocoli', 'carotte', 'céleri', 'champignon', 'chou', 'concombre', 'courgette', 'épinard', 'fenouil', 'haricot', 'oignon', 'pois', 'poivron', 'tomate', 'abricot', 'cassis', 'cerise', 'citron', 'figue', 'fraise', 'framboise', 'passion', 'groseille', 'melon', 'mirabelle', 'mûre', 'myrtille', 'nectarine', 'pastèque', 'pêche', 'prune', 'quetsche'],
-          automne: ['avocat', 'carotte', 'céleri', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'épinard', 'fenouil', 'maïs', 'navet', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'topinambour', 'amande', 'châtaigne', 'citron', 'clémentine', 'coing', 'datte', 'figue', 'passion', 'kaki', 'mandarine', 'marron', 'mirabelle', 'mûre', 'myrtille', 'noisette', 'noix', 'papaye', 'pêche', 'poire', 'pomme', 'raisin'],
-          hiver: ['avocat', 'betterave', 'carotte', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'salsifis', 'topinambour', 'ananas', 'banane', 'citron', 'clémentine', 'passion', 'grenade', 'kaki', 'litchi', 'mandarine', 'mangue', 'noisette', 'noix', 'orange', 'pamplemousse', 'poire', 'pomme', 'raisin']
-        };
+        }
 
         const SEASONS_DATA = {
             printemps: { id: 'printemps', icon: '🌸', name: 'Printemps' },
@@ -82,69 +74,73 @@
             hiver: { id: 'hiver', icon: '❄️', name: 'Hiver' }
         };
 
-        const getCurrentActiveSeasons = () => {
-          const month = new Date().getMonth();
-          const activeIds = [];
-          if ([10, 11, 0, 1, 2].includes(month)) activeIds.push('hiver');
-          if ([1, 2, 3, 4, 5].includes(month)) activeIds.push('printemps');
-          if ([4, 5, 6, 7, 8].includes(month)) activeIds.push('ete');
-          if ([7, 8, 9, 10, 11].includes(month)) activeIds.push('automne');
-          return activeIds.map(id => SEASONS_DATA[id]);
+        function getCurrentActiveSeasons() {
+            const month = new Date().getMonth();
+            const activeIds = [];
+            if ([10, 11, 0, 1, 2].includes(month)) activeIds.push('hiver');
+            if ([1, 2, 3, 4, 5].includes(month)) activeIds.push('printemps');
+            if ([4, 5, 6, 7, 8].includes(month)) activeIds.push('ete');
+            if ([7, 8, 9, 10, 11].includes(month)) activeIds.push('automne');
+            return activeIds.map(id => SEASONS_DATA[id]);
+        }
+
+        const SEASONAL_INGREDIENTS = {
+          printemps: ['asperge', 'carotte', 'champignon', 'chou', 'courgette', 'épinard', 'navet', 'oignon', 'radis', 'tomate', 'abricot', 'cerise', 'citron', 'fraise', 'framboise', 'passion', 'pêche', 'rhubarbe'],
+          ete: ['artichaut', 'aubergine', 'blette', 'brocoli', 'carotte', 'céleri', 'champignon', 'chou', 'concombre', 'courgette', 'épinard', 'fenouil', 'haricot', 'oignon', 'pois', 'poivron', 'tomate', 'abricot', 'cassis', 'cerise', 'citron', 'figue', 'fraise', 'framboise', 'passion', 'groseille', 'melon', 'mirabelle', 'mûre', 'myrtille', 'nectarine', 'pastèque', 'pêche', 'prune', 'quetsche'],
+          automne: ['avocat', 'carotte', 'céleri', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'épinard', 'fenouil', 'maïs', 'navet', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'topinambour', 'amande', 'châtaigne', 'citron', 'clémentine', 'coing', 'datte', 'figue', 'passion', 'kaki', 'mandarine', 'marron', 'mirabelle', 'mûre', 'myrtille', 'noisette', 'noix', 'papaye', 'pêche', 'poire', 'pomme', 'raisin'],
+          hiver: ['avocat', 'betterave', 'carotte', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'salsifis', 'topinambour', 'ananas', 'banane', 'citron', 'clémentine', 'passion', 'grenade', 'kaki', 'litchi', 'mandarine', 'mangue', 'noisette', 'noix', 'orange', 'pamplemousse', 'poire', 'pomme', 'raisin']
         };
 
-        const getRecipeDominantSeasons = (ingredientsArray) => {
+        function getRecipeDominantSeasons(ingredientsArray) {
           if (!ingredientsArray || ingredientsArray.length === 0) return [];
           const text = ingredientsArray.join(' ').toLowerCase();
           const scores = { printemps: 0, ete: 0, automne: 0, hiver: 0 };
-          
           Object.keys(SEASONAL_INGREDIENTS).forEach(season => {
               SEASONAL_INGREDIENTS[season].forEach(ing => {
                   if (text.includes(ing)) scores[season]++;
               });
           });
-
           let maxScore = 0;
           Object.values(scores).forEach(score => { if (score > maxScore) maxScore = score; });
           if (maxScore === 0) return [];
           return Object.keys(scores).filter(season => scores[season] === maxScore);
-        };
+        }
 
-        const getMatchingActiveSeasons = (ingredientsArray, activeSeasons) => {
+        function getMatchingActiveSeasons(ingredientsArray, activeSeasons) {
           const dominantSeasonsIds = getRecipeDominantSeasons(ingredientsArray);
           return activeSeasons.filter(activeSeason => dominantSeasonsIds.includes(activeSeason.id));
-        };
+        }
 
-        // --- LOGIQUE CATÉGORIES DE COURSES ET AGRÉGATEUR INTELLIGENT ---
+        // --- LOGIQUE CATÉGORIES ET ANALYSE COURSES ---
         const SHOPPING_CATEGORIES = [
-            { id: 'legumes', icon: '🥦', name: 'Légumes', keywords: ['carotte', 'courgette', 'oignon', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron', 'salade', 'laitue', 'mâche', 'endive', 'ail', 'poivron', 'champignon', 'avocat', 'épinard', 'patate', 'terre', 'radis', 'brocoli', 'chou', 'asperge'] },
-            { id: 'fruits', icon: '🍎', name: 'Fruits', keywords: ['pomme', 'citron', 'fraise', 'framboise', 'banane', 'mangue', 'pêche', 'poire', 'raisin', 'clémentine', 'orange', 'abricot', 'kiwi', 'melon', 'pastèque'] },
-            { id: 'viande', icon: '🥩', name: 'Boucherie & Poissonnerie', keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon', 'poisson', 'saumon', 'cabillaud', 'crevette', 'lardon', 'merlu', 'thon', 'colin', 'truite'] },
-            { id: 'laitier', icon: '🧀', name: 'Rayon Frais', keywords: ['beurre', 'crème', 'yaourt', 'fromage', 'œuf', 'oeuf', 'lait', 'gruyère', 'emmental', 'parmesan', 'mozzarella', 'mascarpone', 'feta', 'chèvre', 'suisse', 'laitage'] },
-            { id: 'sale', icon: '🍝', name: 'Épicerie Salée', keywords: ['pâte', 'riz', 'lentille', 'huile', 'conserve', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne', 'moutarde', 'vinaigre', 'sauce', 'soja', 'pois chiche', 'haricot', 'purée', 'farine de pois', 'tomates pelées', 'ketchup', 'mayonnaise', 'olive', 'bouillon'] },
-            { id: 'epices', icon: '🧂', name: 'Épices & Condiments', keywords: ['sel', 'poivre', 'épice', 'curry', 'cumin', 'paprika', 'herbe', 'thym', 'laurier', 'basilic', 'persil', 'ciboulette', 'coriandre', 'muscade', 'cannelle', 'gingembre'] },
-            { id: 'sucre', icon: '🍯', name: 'Épicerie Sucrée', keywords: ['farine', 'sucre', 'chocolat', 'miel', 'biscuit', 'confiture', 'compote', 'cacao', 'vanille', 'levure', 'amande', 'noisette', 'noix', 'gâteau', 'sucre vanillé'] },
-            { id: 'surgelé', icon: '❄️', name: 'Surgelés', keywords: ['surgelé', 'petit pois', 'glace', 'épinard haché', 'frites'] },
-            { id: 'boulangerie', icon: '🥖', name: 'Boulangerie', keywords: ['pain', 'baguette', 'mie', 'brioche', 'biscotte', 'croissant'] }
+            { id: 'legumes', icon: '🥦', name: 'Légumes', keywords: ['carotte', 'courgette', 'oignon', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron', 'salade', 'blette', 'ail', 'poivron', 'champignon', 'avocat', 'épinard', 'patate', 'terre', 'radis', 'brocoli', 'chou', 'asperge', 'endive', 'céleri', 'fève', 'pois', 'lentille'] },
+            { id: 'fruits', icon: '🍎', name: 'Fruits', keywords: ['pomme', 'citron', 'fraise', 'framboise', 'banane', 'mangue', 'pêche', 'poire', 'raisin', 'clémentine', 'orange', 'abricot', 'kiwi', 'melon', 'pastèque', 'ananas', 'passion', 'papaye', 'litchi', 'fruit du dragon'] },
+            { id: 'viande', icon: '🥩', name: 'Boucherie & Poissonnerie', keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon', 'poisson', 'saumon', 'cabillaud', 'crevette', 'lardon', 'merlu', 'thon', 'colin', 'truite', 'daurade', 'bar', 'maquereau', 'crabe', 'pétoncle', 'saint-jacques', 'boudin', 'lapin', 'sardine', 'anchois'] },
+            { id: 'laitier', icon: '🧀', name: 'Rayon Frais', keywords: ['beurre', 'crème', 'yaourt', 'fromage', 'œuf', 'oeuf', 'lait', 'gruyère', 'emmental', 'parmesan', 'mozzarella', 'mascarpone', 'feta', 'chèvre', 'suisse', 'laitage', 'comté', 'mimolette', 'gorgonzola', 'roquefort', 'fourme', 'ricotta'] },
+            { id: 'sale', icon: '🍝', name: 'Épicerie Salée', keywords: ['pâte', 'riz', 'lentille', 'huile', 'conserve', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne', 'moutarde', 'vinaigre', 'sauce', 'soja', 'pois chiche', 'haricot', 'purée', 'farine de pois', 'tomates pelées', 'ketchup', 'mayonnaise', 'olive', 'bouillon', 'blé', 'boulgour', 'brick', 'falafel'] },
+            { id: 'epices', icon: '🧂', name: 'Épices & Condiments', keywords: ['sel', 'poivre', 'épice', 'curry', 'cumin', 'paprika', 'herbe', 'thym', 'laurier', 'basilic', 'persil', 'ciboulette', 'coriandre', 'muscade', 'cannelle', 'gingembre', 'sarriette', 'aneth', 'sauge', 'estragon', 'curcuma', 'citronnelle', 'raifort', 'origan', 'câpre', 'piment', 'verveine'] },
+            { id: 'sucre', icon: '🍯', name: 'Épicerie Sucrée', keywords: ['farine', 'sucre', 'chocolat', 'miel', 'biscuit', 'confiture', 'compote', 'cacao', 'vanille', 'levure', 'amande', 'noisette', 'noix', 'gâteau', 'sucre vanillé', 'sirop', 'pectine', 'petit-beurre'] },
+            { id: 'surgelé', icon: '❄️', name: 'Surgelés', keywords: ['surgelé', 'petit pois', 'glace', 'épinard haché', 'frites', 'sorbet'] },
+            { id: 'boulangerie', icon: '🥖', name: 'Boulangerie', keywords: ['pain', 'baguette', 'mie', 'brioche', 'biscotte', 'croissant', 'croûton'] }
         ];
 
-        const categorizeIngredient = (ingredient) => {
+        const ROOTS = ['pomme de terre', 'patate douce', 'tomate', 'pomme', 'courgette', 'oignon', 'poivron', 'champignon', 'piment', 'chou', 'poireau', 'haricot', 'kiwi', 'échalote', 'carotte', 'navet', 'aubergine', 'avocat', 'mangue', 'pêche', 'poire', 'fraise', 'framboise', 'banane', 'citron', 'orange', 'abricot', 'melon', 'pastèque', 'asperge', 'oeuf', 'œuf', 'sardine', 'endive'];
+
+        function categorizeIngredient(ingredient) {
             if (!ingredient) return 'autres';
             const lowerIng = ingredient.toLowerCase();
             for (const cat of SHOPPING_CATEGORIES) {
-                if (cat.keywords.some(kw => lowerIng.includes(kw))) {
-                    return cat.id;
-                }
+                if (cat.keywords.some(kw => lowerIng.includes(kw))) return cat.id;
             }
             return 'autres';
-        };
+        }
 
-        const parseIngredient = (rawStr) => {
-            // Le "lookahead" (?=\s|$|d'|d’|de\b) empêche de couper "grosses" en "g + rosses"
-            const match = rawStr.toLowerCase().trim().match(/^([\d.,/]+)?\s*(?:(g|kg|ml|cl|l|c\.à\.s|c\.à\.c|cuillères?|pincées?|gousses?|tranches?|feuilles?)(?=\s|$|d'|d’|de\b))?\s*(?:de\s+|d'|d’)?(.*)$/);
-            if (!match) return { qty: 0, unit: '', name: rawStr.toLowerCase().trim(), originalName: rawStr.trim(), raw: rawStr };
+        function parseIngredient(rawStr) {
+            const match = rawStr.toLowerCase().trim().match(/^([\d.,/]+)?\s*(?:(g|kg|ml|cl|l|c\.à\.s|c\.à\.c|cuillères?|pincées?|gousses?|tranches?|feuilles?|filets?|poignées?|bocaux|bocal|bottes?|bouquets?)(?=\s|$|d'|d’|de\b))?\s*(?:de\s+|d'|d’)?(.*)$/);
+            if (!match) return { qty: 0, unit: '', name: rawStr.toLowerCase().trim(), root: rawStr.toLowerCase().trim(), variety: '', raw: rawStr };
             
-            let qtyStr = match[1] || '0';
             let qty = 0;
+            const qtyStr = match[1] || '0';
             if (qtyStr.includes('/')) {
                 const parts = qtyStr.split('/');
                 if (parts.length === 2 && parseFloat(parts[1]) !== 0) qty = parseFloat(parts[0]) / parseFloat(parts[1]);
@@ -158,202 +154,179 @@
             if (unit.startsWith('gousse')) unit = 'gousse';
             if (unit.startsWith('tranche')) unit = 'tranche';
             if (unit.startsWith('feuille')) unit = 'feuille';
+            if (unit.startsWith('filet')) unit = 'filet';
+            if (unit.startsWith('poignée')) unit = 'poignée';
+            if (unit.startsWith('botte')) unit = 'botte';
+            if (unit.startsWith('bouquet')) unit = 'bouquet';
+            if (unit === 'bocaux') unit = 'bocal';
 
             let name = (match[3] || rawStr).trim();
-            let normalizedName = name.replace(/^(les|des|du|de la|un|une)\s+/, '');
+            name = name.replace(/^(les|des|du|de la|un|une)\s+/, '');
             
-            // Retrait basique du pluriel pour regrouper "courgette" et "courgettes"
-            if (normalizedName.endsWith('s') && !['is', 'os', 'as', 'us'].some(end => normalizedName.endsWith(end))) {
-                normalizedName = normalizedName.slice(0, -1);
+            let normalizedName = name;
+            if (normalizedName.endsWith('s') && !['is', 'os', 'as', 'us', 'es'].some(end => normalizedName.endsWith(end) && !normalizedName.endsWith('tes'))) {
+                if (!['pois', 'radis', 'frais', 'épices'].includes(normalizedName)) normalizedName = normalizedName.replace(/s$/, '');
             }
 
-            return { qty, unit, name: normalizedName, originalName: name, raw: rawStr };
-        };
+            let root = normalizedName;
+            let variety = '';
+            for (const r of ROOTS) {
+                if (normalizedName.startsWith(r)) {
+                    root = r;
+                    variety = normalizedName.substring(r.length).trim().replace(/^(de |d'|des |aux |en )/, '').trim();
+                    break;
+                }
+            }
+            return { qty, unit, name: normalizedName, root, variety, raw: rawStr };
+        }
 
-        const aggregateShoppingList = (rawList) => {
+        function aggregateShoppingList(rawList) {
             const aggregated = {};
             rawList.forEach(rawStr => {
                 const parsed = parseIngredient(rawStr);
                 let baseUnit = parsed.unit;
                 let baseQty = parsed.qty;
-                
-                // Conversions mathématiques pour regrouper kg/g et L/ml
                 if (baseUnit === 'kg') { baseUnit = 'g'; baseQty *= 1000; }
                 else if (baseUnit === 'l' || baseUnit === 'L') { baseUnit = 'ml'; baseQty *= 1000; }
                 else if (baseUnit === 'cl') { baseUnit = 'ml'; baseQty *= 10; }
                 
-                const key = parsed.name;
-                if (!aggregated[key]) aggregated[key] = {};
-                if (!aggregated[key][baseUnit]) {
-                    aggregated[key][baseUnit] = { qty: 0, rawItems: [], displayName: parsed.originalName };
+                const root = parsed.root;
+                if (!aggregated[root]) aggregated[root] = {};
+                if (!aggregated[root][baseUnit]) {
+                    aggregated[root][baseUnit] = { varieties: {}, rawItems: [] };
                 }
-                
-                aggregated[key][baseUnit].qty += baseQty;
-                aggregated[key][baseUnit].rawItems.push(rawStr);
+                const varKey = parsed.variety || 'classique';
+                aggregated[root][baseUnit].varieties[varKey] = (aggregated[root][baseUnit].varieties[varKey] || 0) + baseQty;
+                aggregated[root][baseUnit].rawItems.push(rawStr);
             });
             
             const result = [];
-            Object.values(aggregated).forEach(unitsObj => {
-                Object.keys(unitsObj).forEach(unit => {
-                    let { qty, rawItems, displayName } = unitsObj[unit];
+            Object.keys(aggregated).forEach(root => {
+                Object.keys(aggregated[root]).forEach(unit => {
+                    const data = aggregated[root][unit];
+                    const varKeys = Object.keys(data.varieties);
+                    const totalQty = varKeys.reduce((sum, k) => sum + data.varieties[k], 0);
+                    
+                    let displayQty = totalQty;
                     let displayUnit = unit;
-                    let displayQty = qty;
+                    if (unit === 'g' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'kg'; }
+                    if (unit === 'ml' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'L'; }
                     
-                    if (unit === 'g' && qty >= 1000) { displayQty = qty / 1000; displayUnit = 'kg'; }
-                    if (unit === 'ml' && qty >= 1000) { displayQty = qty / 1000; displayUnit = 'L'; }
-                    
-                    let displayStr = "";
-                    if (displayQty > 0) {
-                        displayStr += Number.isInteger(displayQty) ? displayQty : displayQty.toFixed(1);
-                        
-                        // Accords textuels
-                        if (['cuillère', 'pincée', 'gousse', 'tranche', 'feuille'].includes(displayUnit)) {
-                            displayUnit = displayQty > 1 ? displayUnit + 's' : displayUnit;
-                        }
-
-                        if (displayUnit) {
-                            let linkWord = /^[aeiouyhéèê]/i.test(displayName) ? " d'" : " de ";
-                            displayStr += (displayUnit.length <= 2 ? displayUnit : ' ' + displayUnit) + linkWord;
-                        } else {
-                            displayStr += " ";
-                            // Ajout du 's' si quantité > 1
-                            if (displayQty > 1 && !displayName.endsWith('s') && !displayName.endsWith('x') && !displayName.endsWith('z')) {
-                                displayName += 's';
-                            }
-                        }
+                    let pluralRoot = root;
+                    if (displayQty > 1 && !displayUnit) {
+                        if (!pluralRoot.endsWith('s') && !pluralRoot.endsWith('x') && !pluralRoot.endsWith('z') && root !== 'chou') pluralRoot += 's';
+                        else if (root === 'chou') pluralRoot = 'choux';
                     }
-                    displayStr += displayName;
-                    displayStr = displayStr.charAt(0).toUpperCase() + displayStr.slice(1); 
                     
-                    result.push({ displayStr, rawItems });
+                    let displayName = pluralRoot;
+                    let varietyDetails = "";
+                    if (varKeys.length === 1 && varKeys[0] !== 'classique' && varKeys[0] !== '') {
+                        displayName = `${pluralRoot} ${varKeys[0]}`;
+                    } else if (varKeys.length > 1) {
+                        const details = varKeys.map(vk => {
+                            let vQty = data.varieties[vk];
+                            if (unit === 'g' && vQty >= 1000) vQty /= 1000;
+                            if (unit === 'ml' && vQty >= 1000) vQty /= 1000;
+                            const qStr = Number.isInteger(vQty) ? vQty : vQty.toFixed(1);
+                            return vk === 'classique' || vk === '' ? `${qStr} classiques` : `${qStr} ${vk}`;
+                        }).join(', ');
+                        varietyDetails = ` (${details})`;
+                    }
+                    
+                    let qtyStr = "";
+                    if (displayQty > 0) {
+                        let finalQty = Number.isInteger(displayQty) ? displayQty : displayQty.toFixed(1);
+                        let finalUnit = displayUnit;
+                        if (['cuillère', 'pincée', 'gousse', 'tranche', 'feuille', 'filet', 'poignée', 'bocal', 'botte', 'bouquet'].includes(finalUnit)) {
+                            finalUnit = displayQty > 1 ? (finalUnit === 'bocal' ? 'bocaux' : finalUnit + 's') : finalUnit;
+                        }
+                        qtyStr = finalQty + (finalUnit ? " " + finalUnit : "");
+                    }
+                    
+                    let finalLabel = displayName.charAt(0).toUpperCase() + displayName.slice(1) + varietyDetails;
+                    if (qtyStr) finalLabel += " : " + qtyStr;
+                    result.push({ displayStr: finalLabel, rawItems: data.rawItems });
                 });
             });
             return result;
-        };
+        }
 
-        // --- LOGIQUE GÉNÉRATEUR JOURNÉE TYPE ---
+        // --- DONNÉES COACH ---
         const TYPICAL_DAYS = [
-            { maxAge: 5, title: "Avant 6 mois", subtitle: "Lait exclusif", meals: [{ name: "Matin", icon: "🍼", text: "Allaitement maternel exclusif OU lait 1er âge." }, { name: "Midi", icon: "🍼", text: "Allaitement maternel OU lait 1er âge.\nDébut possible de la diversification vers 4-5 mois sur avis médical." }, { name: "Goûter", icon: "🍼", text: "Allaitement maternel OU lait 1er âge." }, { name: "Soir", icon: "🌙", text: "Allaitement maternel OU lait 1er âge." }] },
-            { maxAge: 7, title: "De 6 à 7 mois", subtitle: "Début de la diversification", meals: [{ name: "Petit-déjeuner", icon: "🍼", text: "200 à 240 ml de lait 2e âge (ou allaitement).\nQuelques cuillerées de fruits." }, { name: "Déjeuner", icon: "🥣", text: "200 g de purée de légumes.\n10 g de viande, poisson ou œuf.\n5 g de beurre ou huile végétale.\n1/2 yaourt." }, { name: "Goûter", icon: "🍎", text: "200 à 240 ml de lait 2e âge.\n80 à 100 g de fruits." }, { name: "Dîner", icon: "🌙", text: "Lait (biberon ou tétée).\nSi insuffisant, petite purée avec des féculents." }] },
-            { maxAge: 9, title: "De 8 à 9 mois", subtitle: "Introduction des textures", meals: [{ name: "Petit-déjeuner", icon: "🍼", text: "250 ml de lait 2e âge (ou allaitement).\n1 petit fruit (cru, cuit ou jus)." }, { name: "Déjeuner", icon: "🥣", text: "140 g de purée de légumes + 50 g de féculents.\n15 g de viande, poisson ou œuf.\n5 g de beurre ou huile végétale.\n1/2 yaourt + 80 à 100 g de fruits." }, { name: "Goûter", icon: "🍎", text: "200 à 240 ml de lait 2e âge.\n80 à 100 g de fruits." }, { name: "Dîner", icon: "🌙", text: "140 g de légumes + 50 g de féculents.\n5 g de matières grasses.\n1/2 yaourt + 80 à 100 g de fruits.\n(Pas de protéines le soir)." }] },
-            { maxAge: 12, title: "De 10 à 12 mois", subtitle: "Les petits morceaux", meals: [{ name: "Petit-déjeuner", icon: "🥖", text: "250 ml de lait 2e âge.\n1 petit fruit.\n1 tartine de pain avec un peu de beurre." }, { name: "Déjeuner", icon: "🥣", text: "150 g d'écrasé de légumes + 50 à 60 g de féculents.\n20 g de viande, poisson ou œuf.\n5 g de matières grasses.\n1 yaourt ou petit-suisse + 80 à 100 g de fruits." }, { name: "Goûter", icon: "🍎", text: "250 ml de lait 2e âge.\n80 à 100 g de fruits." }, { name: "Dîner", icon: "🌙", text: "150 g de légumes + 50 à 60 g de féculents.\n5 g de matières grasses.\n1 yaourt ou petit-suisse + 80 à 100 g de fruits." }] },
-            { maxAge: 24, title: "De 1 à 2 ans", subtitle: "Comme les grands", meals: [{ name: "Petit-déjeuner", icon: "🥖", text: "250 ml de lait de croissance.\n1 petit fruit.\n1 tartine de pain avec un peu de beurre." }, { name: "Déjeuner", icon: "🥗", text: "30 g de crudités.\n90 à 110 g de légumes + 50 à 60 g de féculents.\n25 g de viande, poisson ou œuf.\n5 g de matières grasses.\n1 laitage + 80 à 100 g de fruits." }, { name: "Goûter", icon: "🍪", text: "250 ml de lait de croissance.\n80 à 100 g de fruits.\n1 biscuit ou tartine beurrée." }, { name: "Dîner", icon: "🌙", text: "30 g de crudités + 90 à 110 g de légumes + 50 à 60 g de féculents.\n5 g de matières grasses.\n1 laitage + 80 à 100 g de fruits." }] }
+            { maxAge: 5, title: "Avant 6 mois", subtitle: "Lait exclusif", meals: [{ name: "Matin", icon: "🍼", text: "Allaitement maternel exclusif OU lait 1er âge." }, { name: "Midi", icon: "🍼", text: "Allaitement maternel OU lait 1er âge.\nDiversification possible vers 4-5 mois sur avis médical." }, { name: "Goûter", icon: "🍼", text: "Allaitement maternel OU lait 1er âge." }, { name: "Soir", icon: "🌙", text: "Allaitement maternel OU lait 1er âge." }] },
+            { maxAge: 7, title: "De 6 à 7 mois", subtitle: "Diversification", meals: [{ name: "Petit-déjeuner", icon: "🍼", text: "200 à 240 ml de lait (ou allaitement).\nFruits." }, { name: "Déjeuner", icon: "🥣", text: "200g purée légumes.\n10g protéines.\n5g MG.\n1/2 yaourt." }, { name: "Goûter", icon: "🍎", text: "200 à 240 ml de lait.\n80 à 100g fruits." }, { name: "Dîner", icon: "🌙", text: "Lait exclusif." }] },
+            { maxAge: 9, title: "De 8 à 9 mois", subtitle: "Textures", meals: [{ name: "Petit-déjeuner", icon: "🍼", text: "250 ml de lait.\n1 fruit." }, { name: "Déjeuner", icon: "🥣", text: "140g légumes + 50g féculents.\n15g protéines.\n5g MG.\n1/2 yaourt + fruits." }, { name: "Goûter", icon: "🍎", text: "200 ml de lait.\nFruits." }, { name: "Dîner", icon: "🌙", text: "140g légumes + 50g féculents.\n5g MG." }] },
+            { maxAge: 12, title: "De 10 à 12 mois", subtitle: "Morceaux", meals: [{ name: "Petit-déjeuner", icon: "🥖", text: "250 ml de lait.\nFruit.\nTartine beurrée." }, { name: "Déjeuner", icon: "🥣", text: "150g légumes + 60g féculents.\n20g protéines.\n5g MG.\nLaitage + fruits." }, { name: "Goûter", icon: "🍎", text: "250 ml de lait.\nFruits." }, { name: "Dîner", icon: "🌙", text: "150g légumes + 60g féculents.\nLaitage + fruits." }] },
+            { maxAge: 24, title: "De 1 à 2 ans", subtitle: "Comme les grands", meals: [{ name: "Petit-déjeuner", icon: "🥖", text: "250 ml de lait croissance.\nFruit.\nTartine beurrée." }, { name: "Déjeuner", icon: "🥗", text: "30g crudités.\n100g légumes + 60g féculents.\n25g protéines.\nLaitage + fruits." }, { name: "Goûter", icon: "🍪", text: "250 ml lait.\nFruits.\nBiscuit." }, { name: "Dîner", icon: "🌙", text: "Crudités + légumes + féculents.\nLaitage + fruits." }] }
         ];
 
-        const getTypicalDayForAge = (ageInMonths) => {
+        function getTypicalDayForAge(ageInMonths) {
             if (ageInMonths === null) return null;
-            const profile = TYPICAL_DAYS.find(td => ageInMonths <= td.maxAge);
-            return profile || TYPICAL_DAYS[TYPICAL_DAYS.length - 1];
-        };
+            return TYPICAL_DAYS.find(td => ageInMonths <= td.maxAge) || TYPICAL_DAYS[TYPICAL_DAYS.length - 1];
+        }
 
-        // --- LOGIQUE COACH DIVERSIFICATION & PRÉCAUTIONS IMPORTANTES ---
-        const getCoachAdvice = (ageInMonths) => {
+        function getCoachAdvice(ageInMonths) {
             if (ageInMonths === null) return null;
-            if (ageInMonths < 6) return { texture: "Liquide", prot: "0g", fat: "Non", text: "Lait maternel ou infantile exclusif. La diversification peut commencer entre 4 et 6 mois sur avis médical." };
-            if (ageInMonths <= 7) return { texture: "Mixé lisse", prot: "10g (2 c.à.c)", fat: "1 c.à.c", text: "C'est le début des découvertes ! Proposez des purées bien lisses pour l'habituer." };
-            if (ageInMonths <= 9) return { texture: "Écrasé/Moulu", prot: "15g (3 c.à.c)", fat: "1 c.à.c", text: "On épaissit doucement les textures (écrasé à la fourchette) pour stimuler la mastication." };
-            if (ageInMonths <= 12) return { texture: "Petits morceaux", prot: "20g (4 c.à.c)", fat: "1 c.à.c", text: "Bébé commence à manger presque comme les grands, avec des morceaux bien fondants." };
-            return { texture: "Morceaux", prot: "25 à 30g", fat: "1 à 2 c.à.c", text: "Bébé mange de tout ! Veillez simplement à adapter la taille des morceaux." };
-        };
+            if (ageInMonths < 6) return { texture: "Liquide", prot: "0g", fat: "Non", text: "Lait maternel ou infantile exclusif." };
+            if (ageInMonths <= 7) return { texture: "Mixé lisse", prot: "10g", fat: "1 c.à.c", text: "Début des découvertes ! Purées bien lisses." };
+            if (ageInMonths <= 9) return { texture: "Écrasé", prot: "15g", fat: "1 c.à.c", text: "On épaissit les textures à la fourchette." };
+            if (ageInMonths <= 12) return { texture: "Petits morceaux", prot: "20g", fat: "1 c.à.c", text: "Bébé commence les morceaux fondants." };
+            return { texture: "Morceaux", prot: "25 à 30g", fat: "2 c.à.c", text: "Bébé mange presque comme vous !" };
+        }
 
-        const getGoldenRules = (ageInMonths) => {
+        function getGoldenRules(ageInMonths) {
             if (ageInMonths === null) return [];
             const rules = [];
             if (ageInMonths < 12) {
                 rules.push({ icon: '🚫', text: "Pas de sel ni de sucre ajouté." });
-                rules.push({ icon: '🍯', text: "Strictement AUCUN miel (risque sévère de botulisme infantile)." });
+                rules.push({ icon: '🍯', text: "Strictement AUCUN miel (risque botulisme)." });
             }
-            if (ageInMonths < 15) {
-                rules.push({ icon: '🫘', text: "Pas encore de légumes secs (lentilles, pois chiches...), le transit est trop immature." });
-            }
-            if (ageInMonths >= 12 && ageInMonths < 48) {
-                 rules.push({ icon: '🥜', text: "Attention aux aliments ronds et durs (cacahuètes, tomates cerises entières, raisins) à cause des risques de fausse route." });
-            }
-            if (rules.length === 0) {
-                rules.push({ icon: '💧', text: "Pensez à proposer de l'eau très régulièrement au cours de la journée." });
-            }
+            if (ageInMonths < 15) rules.push({ icon: '🫘', text: "Pas de légumes secs entiers (transit immature)." });
+            if (ageInMonths >= 12 && ageInMonths < 48) rules.push({ icon: '🥜', text: "Attention aux aliments ronds et durs (fausse route)." });
+            if (!rules.length) rules.push({ icon: '💧', text: "De l'eau régulièrement dans la journée." });
             return rules;
-        };
-
-        // --- LOGIQUE TIPS D'ORGANISATION ---
-        const TIPS_DICTIONARY = [
-            { keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon'], icon: '🥩', title: "Astuce Multitâche", text: "Préparez la viande ou coupez vos légumes pendant que l'eau bout ou que la poêle chauffe pour gagner un temps précieux en cuisine." },
-            { keywords: ['carotte', 'courgette', 'pomme', 'légume', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron'], icon: '🥕', title: "Ne pelez plus !", text: "Si vous achetez bio (ou sans pesticides), ne pelez pas vos légumes. Un bon brossage suffit ! La peau est un vrai cocktail nutritionnel riche en vitamines." },
-            { keywords: ['pâtes', 'riz', 'eau', 'bouillon', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne'], icon: '🫖', title: "L'allié Bouilloire", text: "Utilisez votre bouilloire pour faire bouillir l'eau rapidement avant de la verser dans la casserole. Cuisson express garantie pour vos féculents et légumes !" },
-            { keywords: ['salade', 'vinaigre', 'huile', 'laitue', 'mâche', 'endive'], icon: '🥗', title: "Préparation à l'avance", text: "Vous mangez souvent des salades ? Préparez votre base de vinaigrette pour la semaine dans un shaker, elle se conservera très bien et sera prête à l'emploi !" },
-            { keywords: ['surgelé', 'pois', 'haricot', 'épinard', 'framboise', 'myrtille', 'salsifis'], icon: '🧊', title: "Pensez aux surgelés", text: "Les aliments natures surgelés ont quasiment les mêmes apports nutritionnels que les frais. Un gain de temps précieux en semaine pour choisir la juste quantité !" },
-            { keywords: ['gratin', 'purée', 'soupe', 'velouté', 'compote', 'sauce'], icon: '❄️', title: "Voyez double !", text: "Ce plat se conserve très bien. Prévoyez de doubler les quantités afin de congeler la moitié de la préparation pour un soir où vous n'aurez pas le temps." },
-            { keywords: ['pâte', 'biscuit', 'gâteau', 'tarte', 'pizza', 'crêpe', 'pancake'], icon: '👨‍👩‍👧‍👦', title: "Cuisinez à plusieurs", text: "La cuisine, c'est du partage ! Faites participer votre enfant à cette recette ludique. Les enfants apprécient d'autant plus lors de la dégustation." }
-        ];
-
-        const FALLBACK_TIP = { icon: '⏱️', title: "Organisation Chef", text: "Soyez multitâche : mettez la table pendant que le plat rissole ou que la préparation est en train de mixer. Chaque minute compte !" };
-
-        const getRecipeTip = (ingredientsArray) => {
-            if (!ingredientsArray) return FALLBACK_TIP;
-            const text = ingredientsArray.join(' ').toLowerCase();
-            const matchingTips = TIPS_DICTIONARY.filter(tip => tip.keywords.some(kw => text.includes(kw)));
-            if (matchingTips.length > 0) return matchingTips[Math.floor(Math.random() * matchingTips.length)];
-            return FALLBACK_TIP;
-        };
+        }
 
         const GENERAL_TIPS = [
-            { icon: '📝', title: "Faites un planning", text: "Établissez vos menus de la semaine en un quart d'heure. Vous gagnerez du temps lors des courses et économiserez en n'achetant que le nécessaire." },
-            { icon: '🧊', title: "Pensez aux surgelés", text: "Faites le plein d'aliments natures surgelés. Ils ont quasiment les mêmes apports nutritionnels que les frais et évitent le gaspillage !" },
-            { icon: '🥕', title: "Ne pelez plus !", text: "Si vos légumes sont bio (ou sans pesticides), un bon brossage suffit. La peau est un cocktail nutritionnel riche en fibres et vitamines." },
-            { icon: '🥗', title: "Préparations à l'avance", text: "Vous mangez souvent des salades ? Préparez votre base de vinaigrette pour la semaine dans un shaker, elle se conservera très bien." },
-            { icon: '🧹', title: "Nettoyez au fur et à mesure", text: "Nettoyez et rangez vos ustensiles dès que vous n'en avez plus besoin. Un bon chef a toujours un plan de travail impeccable !" },
-            { icon: '❄️', title: "Recyclez les restes", text: "Prévoyez de doubler les quantités pour congeler la moitié de la préparation (pourquoi pas en portions individuelles) pour un futur repas." }
+            { icon: '📝', title: "Faites un planning", text: "Anticipez vos menus pour gagner du temps et économiser." },
+            { icon: '❄️', title: "Recyclez les restes", text: "Congelez des portions pour les soirs pressés." },
+            { icon: '🧹', title: "Nettoyez au fur et à mesure", text: "Un plan de travail propre aide à cuisiner sereinement." }
         ];
 
+        function getRecipeTip(ingredientsArray) {
+            return GENERAL_TIPS[Math.floor(Math.random() * GENERAL_TIPS.length)];
+        }
+
+        // --- COMPOSANT PRINCIPAL ---
         function App() {
           const [currentTab, setCurrentTab] = useState('home');
           const [selectedRecipe, setSelectedRecipe] = useState(null);
           const [selectedDayForAgenda, setSelectedDayForAgenda] = useState(DAYS_OF_WEEK[0]);
-          
           const todayStrGlobal = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
           const [selectedHomeDay, setSelectedHomeDay] = useState(todayStrGlobal);
-          
           const [children, setChildren] = useState([]); 
           const [agenda, setAgenda] = useState({}); 
           const [shoppingList, setShoppingList] = useState([]); 
-          const [pantry, setPantry] = useState([]); // NOUVEAU : La mémoire du placard
-          
+          const [pantry, setPantry] = useState([]); 
           const [user, setUser] = useState(null);
           const [appError, setAppError] = useState(null);
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
-
           const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
           const [activeModalChildId, setActiveModalChildId] = useState(null); 
           const [showTipsModal, setShowTipsModal] = useState(false);
-          
           const [showGeneratorModal, setShowGeneratorModal] = useState(false);
-          const [genConfig, setGenConfig] = useState({
-              weekdayMeals: 1,
-              weekendMeals: 2,
-              structure: 'Plat + Dessert'
-          });
-          
+          const [genConfig, setGenConfig] = useState({ weekdayMeals: 1, weekendMeals: 2, structure: 'Plat + Dessert' });
           const [collapsedCategories, setCollapsedCategories] = useState({});
-
           const [showOnboardingModal, setShowOnboardingModal] = useState(() => localStorage.getItem('cookidoudou_onboarded') !== 'true');
           const [showMedicalConsentModal, setShowMedicalConsentModal] = useState(false);
-          const [isCoachEnabled, setIsCoachEnabled] = useState(() => {
-            const saved = localStorage.getItem('cookidoudou_coach_enabled');
-            return saved !== null ? JSON.parse(saved) : false;
-          });
-
+          const [isCoachEnabled, setIsCoachEnabled] = useState(() => JSON.parse(localStorage.getItem('cookidoudou_coach_enabled')) || false);
           const currentActiveSeasons = useMemo(() => getCurrentActiveSeasons(), []);
-          const [isSeasonalModeActive, setIsSeasonalModeActive] = useState(() => {
-            const saved = localStorage.getItem('cookidoudou_season_mode');
-            return saved !== null ? JSON.parse(saved) : true;
-          });
+          const [isSeasonalModeActive, setIsSeasonalModeActive] = useState(() => JSON.parse(localStorage.getItem('cookidoudou_season_mode')) !== false);
 
-          useEffect(() => {
-            localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive));
-          }, [isSeasonalModeActive]);
+          useEffect(() => { localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive)); }, [isSeasonalModeActive]);
 
-          // --- FIREBASE AUTH & SYNC ---
+          // --- FIREBASE SYNC ---
           useEffect(() => {
             const start = async () => {
               if (!window.FirebaseHelper) return;
@@ -361,12 +334,9 @@
                 const app = window.FirebaseHelper.initializeApp(firebaseConfig);
                 const auth = window.FirebaseHelper.getAuth(app);
                 window._db = window.FirebaseHelper.getFirestore(app);
-                try {
-                    const cred = await window.FirebaseHelper.signInAnonymously(auth);
-                    setUser(cred.user);
-                    setAppError(null);
-                } catch (authErr) { setAppError("Erreur de connexion (Vérifiez les restrictions d'URL Google Cloud)."); }
-              } catch (e) { console.error("Firebase Init Error", e); }
+                const cred = await window.FirebaseHelper.signInAnonymously(auth);
+                setUser(cred.user);
+              } catch (e) { setAppError("Connexion impossible à la base de données."); }
             };
             start();
           }, []);
@@ -375,294 +345,271 @@
             if (!user || !window._db || !familyCode) return;
             const fid = familyCode.trim().toLowerCase();
             const pRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
-            const unsubP = window.FirebaseHelper.onSnapshot(pRef, (s) => {
+            return window.FirebaseHelper.onSnapshot(pRef, (s) => {
               if (s.exists()) {
                 const d = s.data();
-                if (d.children && d.children.length > 0) setChildren(d.children);
-                else if (d.babyProfile && (d.babyProfile.name || d.babyProfile.birthdate)) setChildren([{ id: 'child-migrated-1', ...d.babyProfile }]);
-                
+                if (d.children) setChildren(d.children);
                 if (d.agenda) {
-                    const migratedAgenda = {};
-                    Object.keys(d.agenda).forEach(day => {
-                        const val = d.agenda[day];
-                        if (val) migratedAgenda[day] = Array.isArray(val) ? val : [val];
-                    });
-                    setAgenda(migratedAgenda);
+                    const mig = {};
+                    Object.keys(d.agenda).forEach(day => { mig[day] = Array.isArray(d.agenda[day]) ? d.agenda[day] : [d.agenda[day]].filter(Boolean); });
+                    setAgenda(mig);
                 }
                 if (d.shoppingList) setShoppingList(d.shoppingList);
-                if (d.pantry) setPantry(d.pantry); // Chargement du placard
+                if (d.pantry) setPantry(d.pantry);
               }
             });
-            return () => unsubP(); 
           }, [user, familyCode]);
 
           const saveToCloud = useCallback(async (data) => {
             if (!user || !window._db || !familyCode) return;
             const fid = familyCode.trim().toLowerCase();
             const docRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
-            try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { console.error("Save error", e); }
+            await window.FirebaseHelper.setDoc(docRef, data, { merge: true });
           }, [user, familyCode]);
 
-          // --- GESTION DES ENFANTS ---
-          const updateChild = (childId, updates) => {
-              const newChildren = children.map(c => c.id === childId ? { ...c, ...updates } : c);
-              setChildren(newChildren); saveToCloud({ children: newChildren });
-          };
-          const addChild = () => {
-              if (children.length >= 3) return;
-              const newChildren = [...children, { id: `child-${Date.now()}`, name: '', birthdate: '', photo: null }];
-              setChildren(newChildren); saveToCloud({ children: newChildren });
-          };
-          const removeChild = (childId) => {
-              const newChildren = children.filter(c => c.id !== childId);
-              setChildren(newChildren); saveToCloud({ children: newChildren });
-          };
-          const handlePhotoUpload = (e, childId) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                  const img = new Image();
-                  img.onload = () => {
-                      const canvas = document.createElement('canvas');
-                      const MAX_SIZE = 300; 
-                      const size = Math.min(img.width, img.height);
-                      const startX = (img.width - size) / 2;
-                      const startY = (img.height - size) / 2;
-                      canvas.width = MAX_SIZE; canvas.height = MAX_SIZE;
-                      const ctx = canvas.getContext('2d');
-                      ctx.drawImage(img, startX, startY, size, size, 0, 0, MAX_SIZE, MAX_SIZE);
-                      updateChild(childId, { photo: canvas.toDataURL('image/jpeg', 0.8) });
-                  };
-                  img.src = event.target.result;
-              };
-              reader.readAsDataURL(file);
-          };
-
-          // --- GESTION DU PLANNING ---
+          // --- GESTION LISTE ET PLANNING ---
           const getRebuiltShoppingList = (agendaObj, pantryArr) => {
             let newList = [];
             Object.values(agendaObj).flat().forEach(rid => {
                 const r = RECIPES.find(rec => rec.id === rid);
                 if (r && r.ingredients) {
-                    r.ingredients.forEach(i => {
-                        // On n'ajoute l'ingrédient que s'il n'est pas dans le placard
-                        if (!pantryArr.includes(i) && !newList.includes(i)) {
-                            newList.push(i);
-                        }
-                    });
+                    r.ingredients.forEach(i => { if (!pantryArr.includes(i) && !newList.includes(i)) newList.push(i); });
                 }
             });
             return newList;
           };
 
           const addToAgenda = (day, rid) => {
-            const currentDayList = agenda[day] || [];
-            if (currentDayList.length >= 6) { alert("Menu complet ! Vous ne pouvez pas ajouter plus de 6 recettes pour ce jour."); return; }
-            if (currentDayList.includes(rid)) { alert("Cette recette est déjà prévue pour ce jour !"); return; }
-            const newA = { ...agenda, [day]: [...currentDayList, rid] };
-            setAgenda(newA);
-            
-            // Reconstruction de la source de vérité
+            const current = agenda[day] || [];
+            if (current.length >= 6) { alert("Menu complet ! Max 6 recettes."); return; }
+            if (current.includes(rid)) { alert("Déjà prévu !"); return; }
+            const newA = { ...agenda, [day]: [...current, rid] };
             const newS = getRebuiltShoppingList(newA, pantry);
-            setShoppingList(newS);
+            setAgenda(newA); setShoppingList(newS);
             saveToCloud({ agenda: newA, shoppingList: newS });
-            alert("Recette ajoutée au planning avec succès !");
+            alert("Recette ajoutée !");
           };
 
           const removeFromAgenda = (day, rid) => {
-             const currentDayList = agenda[day] || [];
-             const newA = { ...agenda, [day]: currentDayList.filter(id => id !== rid) };
-             setAgenda(newA); 
-             
-             // Si le planning est complètement vide, on vide aussi le placard
-             const isAgendaEmpty = Object.values(newA).flat().length === 0;
-             let newPantry = pantry;
-             if (isAgendaEmpty) {
-                 newPantry = [];
-                 setPantry(newPantry);
-             }
-             
-             // Reconstruction intelligente
-             const newS = getRebuiltShoppingList(newA, newPantry);
-             setShoppingList(newS);
-             saveToCloud({ agenda: newA, shoppingList: newS, pantry: newPantry });
+            const newA = { ...agenda, [day]: (agenda[day] || []).filter(id => id !== rid) };
+            const isAllEmpty = Object.values(newA).flat().length === 0;
+            const newPantry = isAllEmpty ? [] : pantry;
+            const newS = getRebuiltShoppingList(newA, newPantry);
+            setAgenda(newA); setShoppingList(newS); setPantry(newPantry);
+            saveToCloud({ agenda: newA, shoppingList: newS, pantry: newPantry });
           };
 
-          // --- GÉNÉRATEUR DE SEMAINE MAGIQUE ---
           const generateWeeklyMenu = () => {
-            let availableRecipes = RECIPES;
-            if (isSeasonalModeActive) {
-                const seasonal = RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0);
-                if (seasonal.length > 5) availableRecipes = seasonal; 
-            }
-
-            const entrees = availableRecipes.filter(r => r.category?.includes("Entrée"));
-            const plats = availableRecipes.filter(r => r.category?.includes("Plat"));
-            const desserts = availableRecipes.filter(r => r.category?.includes("Dessert"));
-
-            const getRandom = (arr, excludeIds) => {
-                let available = arr.filter(r => !excludeIds.includes(r.id));
-                if (available.length === 0) available = arr;
-                return available[Math.floor(Math.random() * available.length)];
+            let pool = isSeasonalModeActive ? RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0) : RECIPES;
+            if (pool.length < 5) pool = RECIPES;
+            const entrees = pool.filter(r => r.category?.includes("Entrée"));
+            const plats = pool.filter(r => r.category?.includes("Plat"));
+            const desserts = pool.filter(r => r.category?.includes("Dessert"));
+            const newA = {};
+            let used = [];
+            const pick = (arr) => {
+                let avail = arr.filter(r => !used.includes(r.id));
+                if (avail.length === 0) avail = arr;
+                const r = avail[Math.floor(Math.random() * avail.length)];
+                if (r) used.push(r.id);
+                return r;
             };
-
-            const newAgenda = {};
-            let usedIds = [];
-
             DAYS_OF_WEEK.forEach(day => {
-                const isWeekend = day === 'Samedi' || day === 'Dimanche';
-                const mealsCount = isWeekend ? genConfig.weekendMeals : genConfig.weekdayMeals;
-                
-                let dayRecipes = [];
-                for(let i=0; i<mealsCount; i++) {
-                    if (genConfig.structure.includes('Entrée') && entrees.length > 0) {
-                        const r = getRandom(entrees, usedIds);
-                        if (r) { dayRecipes.push(r); usedIds.push(r.id); }
-                    }
-                    if (genConfig.structure.includes('Plat') && plats.length > 0) {
-                        const r = getRandom(plats, usedIds);
-                        if (r) { dayRecipes.push(r); usedIds.push(r.id); }
-                    }
-                    if (genConfig.structure.includes('Dessert') && desserts.length > 0) {
-                        const r = getRandom(desserts, usedIds);
-                        if (r) { dayRecipes.push(r); usedIds.push(r.id); }
-                    }
+                const count = (day === 'Samedi' || day === 'Dimanche') ? genConfig.weekendMeals : genConfig.weekdayMeals;
+                let dayRecs = [];
+                for(let i=0; i<count; i++) {
+                    if (genConfig.structure.includes('Entrée')) { const r = pick(entrees); if(r) dayRecs.push(r.id); }
+                    if (genConfig.structure.includes('Plat')) { const r = pick(plats); if(r) dayRecs.push(r.id); }
+                    if (genConfig.structure.includes('Dessert')) { const r = pick(desserts); if(r) dayRecs.push(r.id); }
                 }
-                const uniqueDayIds = Array.from(new Set(dayRecipes.map(r => r.id))).slice(0, 6);
-                newAgenda[day] = uniqueDayIds;
+                newA[day] = Array.from(new Set(dayRecs)).slice(0, 6);
             });
-
-            const newPantry = []; // Reset total du placard pour une nouvelle semaine
-            setPantry(newPantry);
-            
-            const newShoppingList = getRebuiltShoppingList(newAgenda, newPantry);
-
-            setAgenda(newAgenda); setShoppingList(newShoppingList); saveToCloud({ agenda: newAgenda, shoppingList: newShoppingList, pantry: newPantry });
-            setShowGeneratorModal(false); alert("✨ Menu de la semaine généré avec succès !"); setCurrentTab('home');
+            const newP = [];
+            const newS = getRebuiltShoppingList(newA, newP);
+            setAgenda(newA); setShoppingList(newS); setPantry(newP);
+            saveToCloud({ agenda: newA, shoppingList: newS, pantry: newP });
+            setShowGeneratorModal(false); setCurrentTab('home');
           };
 
-          // --- LISTE DE COURSES ---
-          const removeAggregatedFromShoppingList = (rawItemsToRemove) => {
-            // L'utilisateur a coché un ingrédient, on l'ajoute au placard
-            const newPantry = [...new Set([...pantry, ...rawItemsToRemove])];
-            setPantry(newPantry);
-            
-            // On reconstruit la liste en cachant ce qui est dans le placard
-            const newS = getRebuiltShoppingList(agenda, newPantry);
-            setShoppingList(newS); 
-            saveToCloud({ shoppingList: newS, pantry: newPantry });
+          const removeAggregatedFromShoppingList = (rawItems) => {
+            const newP = [...new Set([...pantry, ...rawItems])];
+            const newS = getRebuiltShoppingList(agenda, newP);
+            setPantry(newP); setShoppingList(newS);
+            saveToCloud({ shoppingList: newS, pantry: newP });
           };
 
-          const copyShoppingList = () => {
-              if (shoppingList.length === 0) return;
-              const aggregated = aggregateShoppingList(shoppingList);
-              const textToCopy = "Ma liste de courses Cookidoudou :\n\n- " + aggregated.map(a => a.displayStr).join("\n- ");
-              try { document.execCommand('copy'); navigator.clipboard.writeText(textToCopy); alert("Liste copiée !"); } catch (err) { alert("Erreur copie."); }
+          // --- PROFIL ---
+          const updateChild = (id, up) => { const n = children.map(c => c.id === id ? {...c, ...up} : c); setChildren(n); saveToCloud({children: n}); };
+          const addChild = () => { if(children.length < 3) { const n = [...children, {id:Date.now(), name:'', birthdate:'', photo:null}]; setChildren(n); saveToCloud({children:n}); } };
+          const removeChild = (id) => { const n = children.filter(c => c.id !== id); setChildren(n); saveToCloud({children:n}); };
+          const handlePhoto = (e, id) => {
+            const f = e.target.files[0]; if(!f) return;
+            const reader = new FileReader(); reader.onload=(ev)=>{
+                const i = new Image(); i.onload=()=>{
+                    const c = document.createElement('canvas'); const s = Math.min(i.width, i.height);
+                    c.width=300; c.height=300; const ctx=c.getContext('2d');
+                    ctx.drawImage(i, (i.width-s)/2, (i.height-s)/2, s, s, 0, 0, 300, 300);
+                    updateChild(id, {photo: c.toDataURL('image/jpeg', 0.8)});
+                }; i.src=ev.target.result;
+            }; reader.readAsDataURL(f);
           };
 
-          const handleCoachToggle = () => {
-              if (isCoachEnabled) { setIsCoachEnabled(false); localStorage.setItem('cookidoudou_coach_enabled', JSON.stringify(false)); if (currentTab === 'coach') setCurrentTab('home'); } 
-              else { setShowMedicalConsentModal(true); }
+          const copyList = () => {
+            const agg = aggregateShoppingList(shoppingList);
+            const txt = "Ma liste Cookidoudou :\n" + agg.map(a => "- " + a.displayStr).join("\n");
+            document.execCommand('copy'); navigator.clipboard.writeText(txt); alert("Copié !");
           };
 
-          const acceptMedicalConsent = () => {
-              setIsCoachEnabled(true); localStorage.setItem('cookidoudou_coach_enabled', JSON.stringify(true)); setShowMedicalConsentModal(false); setCurrentTab('coach');
-          };
+          const handleCoachToggle = () => isCoachEnabled ? (setIsCoachEnabled(false), localStorage.setItem('cookidoudou_coach_enabled', 'false')) : setShowMedicalConsentModal(true);
+          const acceptConsent = () => { setIsCoachEnabled(true); localStorage.setItem('cookidoudou_coach_enabled', 'true'); setShowMedicalConsentModal(false); setCurrentTab('coach'); };
+          const closeOnboard = () => { setShowOnboardingModal(false); localStorage.setItem('cookidoudou_onboarded', 'true'); };
 
-          const closeOnboarding = () => { setShowOnboardingModal(false); localStorage.setItem('cookidoudou_onboarded', 'true'); };
-          const greetingNames = children.length > 0 ? children.map(c => c.name || "Bébé").join(' et ') : "!";
+          const names = children.length ? children.map(c => c.name || "Bébé").join(' et ') : "!";
 
-          // --- VUES DE L'APPLICATION ---
+          // --- RENDUS ---
           const renderHome = () => {
-            const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
-            const displayRecipeIds = agenda[selectedHomeDay] || [];
-            const displayRecipes = displayRecipeIds.map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
-            const menuTitle = selectedHomeDay === todayStr ? "Menu d'aujourd'hui" : `Menu du ${selectedHomeDay}`;
-            
+            const displayRecs = (agenda[selectedHomeDay] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
             return (
               <div className="space-y-6 animate-fadeIn pb-24">
                 <div className="text-center">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
-                    <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {greetingNames}</h1>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}</p>
+                    <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {names}</h1>
                 </div>
-
-                {appError && (
-                    <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
-                        <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest"><i className="fa-solid fa-triangle-exclamation"></i> Info</div>
-                        <p className="leading-relaxed mb-3">{appError}</p>
-                    </div>
-                )}
-
-                {/* MA SEMAINE EN UN COUP D'OEIL */}
+                {appError && <div className="bg-red-50 p-4 rounded-2xl text-red-600 text-xs border border-red-100">{appError}</div>}
                 <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 uppercase text-[10px] tracking-widest px-2"><i className="fa-solid fa-calendar-week text-blue-500"></i> La Semaine</h3>
+                    <h3 className="font-bold text-gray-800 mb-3 text-[10px] uppercase tracking-widest px-2"><i className="fa-solid fa-calendar-week text-blue-500"></i> La Semaine</h3>
                     <div className="flex gap-3 overflow-x-auto hide-scrollbar pt-2 pb-2 px-2">
                        {DAYS_OF_WEEK.map(day => {
                            const dayRecs = (agenda[day] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
-                           const isToday = day === todayStr;
-                           const isSelected = day === selectedHomeDay;
+                           const isToday = day === todayStrGlobal;
+                           const isSel = day === selectedHomeDay;
                            return (
-                               <div key={day} onClick={() => setSelectedHomeDay(day)} className={`flex flex-col items-center p-3 rounded-2xl min-w-[4rem] shadow-inner border cursor-pointer transition-all transform active:scale-95 ${isSelected ? 'ring-2 ring-orange-400 bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-100/50 hover:bg-gray-100'}`}>
-                                   <span className={`text-[10px] font-black uppercase tracking-widest mb-2 relative ${isSelected ? 'text-orange-600' : isToday ? 'text-orange-400' : 'text-gray-400'}`}>
-                                       {day.substring(0,3)}
-                                       {isToday && !isSelected && <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"></span>}
-                                   </span>
+                               <div key={day} onClick={() => setSelectedHomeDay(day)} className={`flex flex-col items-center p-3 rounded-2xl min-w-[4rem] border transition-all cursor-pointer ${isSel ? 'ring-2 ring-orange-400 bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-100'}`}>
+                                   <span className={`text-[10px] font-black uppercase mb-2 ${isSel ? 'text-orange-600' : isToday ? 'text-orange-400' : 'text-gray-400'}`}>{day.substring(0,3)}</span>
                                    <div className="flex flex-col gap-1 items-center">
-                                       {dayRecs.length > 0 ? dayRecs.slice(0, 3).map((r, i) => (
-                                           <div key={i} className="relative z-10" style={{ marginTop: i > 0 ? '-10px' : '0' }}>
-                                              <img src={r.image} className="recipe-mini-avatar" alt={r.title} />
-                                           </div>
-                                       )) : (
-                                          <div className="w-8 h-8 rounded-full bg-white border border-dashed border-gray-300 flex items-center justify-center"><i className="fa-solid fa-plus text-gray-200 text-xs"></i></div>
-                                       )}
-                                       {dayRecs.length > 3 && <span className="text-[8px] font-black text-gray-500 mt-1">+{dayRecs.length - 3}</span>}
+                                       {dayRecs.length ? dayRecs.slice(0,3).map((r,i) => <img key={i} src={r.image} className="recipe-mini-avatar" style={{marginTop: i>0?'-10px':'0'}} />) : <div className="w-8 h-8 rounded-full border-dashed border border-gray-300 flex items-center justify-center"><i className="fa-solid fa-plus text-gray-200 text-xs"></i></div>}
                                    </div>
                                </div>
                            )
                        })}
                     </div>
                 </div>
-
-                {/* MENU DU JOUR */}
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-utensils text-orange-500"></i> {menuTitle}</h3>
-                    {displayRecipes.length > 0 ? (
-                        <div className="space-y-3">
-                            {displayRecipes.map((r, idx) => (
-                                <div key={idx} className="flex gap-4 bg-orange-50 p-3 pr-4 rounded-3xl items-center relative group">
-                                    <div onClick={() => { setSelectedRecipe(r); setCurrentTab('recipe_detail'); }} className="flex gap-4 items-center flex-1 cursor-pointer">
-                                        <div className="w-16 h-16 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0 shadow-sm relative">
-                                            <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-black text-gray-800 text-sm line-clamp-1">{r.title}</h4>
-                                            <p className="text-[10px] text-orange-600 font-bold mt-1">⏱ {r.time}</p>
-                                        </div>
-                                    </div>
-                                    <button onClick={(e) => { e.stopPropagation(); removeFromAgenda(selectedHomeDay, r.id); }} className="w-8 h-8 bg-white text-gray-400 rounded-full flex items-center justify-center shadow-sm hover:text-red-500 hover:bg-red-50 transition flex-shrink-0" title="Retirer du menu"><i className="fa-solid fa-trash-can text-xs"></i></button>
+                    <h3 className="font-bold text-gray-800 mb-4 text-xs uppercase tracking-widest"><i className="fa-solid fa-utensils text-orange-500"></i> {selectedHomeDay === todayStrGlobal ? "Menu d'aujourd'hui" : `Menu du ${selectedHomeDay}`}</h3>
+                    {displayRecs.length ? <div className="space-y-3">
+                        {displayRecs.map((r, idx) => (
+                            <div key={idx} className="flex gap-4 bg-orange-50 p-3 rounded-3xl items-center group">
+                                <div onClick={() => { setSelectedRecipe(r); setCurrentTab('recipe_detail'); }} className="flex-1 flex items-center gap-4 cursor-pointer">
+                                    <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm"><img src={r.image} className="w-full h-full object-cover" /></div>
+                                    <div className="flex-1"><h4 className="font-black text-gray-800 text-sm line-clamp-1">{r.title}</h4><p className="text-[10px] text-orange-600 font-bold">⏱ {r.time}</p></div>
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-6 opacity-60">
-                            <i className="fa-solid fa-plate-wheat text-3xl text-gray-300 mb-2"></i>
-                            <p className="text-sm text-gray-500 italic">Rien de prévu pour ce jour.</p>
-                            <button onClick={() => setCurrentTab('carnet')} className="mt-4 text-xs font-bold text-orange-500 uppercase tracking-widest bg-orange-50 px-4 py-2 rounded-xl">Voir les recettes</button>
-                        </div>
-                    )}
+                                <button onClick={() => removeFromAgenda(selectedHomeDay, r.id)} className="w-8 h-8 bg-white text-gray-400 rounded-full flex items-center justify-center shadow-sm hover:text-red-500 transition-colors"><i className="fa-solid fa-trash-can text-xs"></i></button>
+                            </div>
+                        ))}
+                    </div> : <div className="text-center py-6 opacity-40 italic text-sm">Rien de prévu pour ce jour.</div>}
                 </div>
-
-                <div onClick={() => { if(children.length > 0) { setActiveModalChildId(children[0].id); setShowTypicalDayModal(true); } else { setCurrentTab('profile'); } }} className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform active:scale-95">
+                <div onClick={() => children.length ? (setActiveModalChildId(children[0].id), setShowTypicalDayModal(true)) : setCurrentTab('profile')} className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer active:scale-95 transition">
                     <i className="fa-solid fa-clipboard-list absolute -right-6 -bottom-6 text-8xl opacity-10 transform -rotate-12"></i>
-                    <div className="relative z-10">
-                        <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-lightbulb text-yellow-300"></i> Journée Type</h3>
-                        {children.length > 0 ? (
-                            <><p className="text-sm font-medium leading-relaxed mb-3">Découvrez les portions et menus recommandés selon l'âge.</p><div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">Voir le menu <i className="fa-solid fa-arrow-right"></i></div></>
-                        ) : (
-                            <p className="text-sm font-medium leading-relaxed">Ajoutez un enfant dans le profil pour découvrir sa journée type !</p>
-                        )}
+                    <h3 className="font-black mb-2 text-xs uppercase tracking-widest"><i className="fa-solid fa-lightbulb text-yellow-300"></i> Journée Type</h3>
+                    <p className="text-sm font-medium mb-3">Découvrez les portions et menus selon l'âge.</p>
+                </div>
+              </div>
+            );
+          };
+
+          const renderShopping = () => {
+            const agg = aggregateShoppingList(shoppingList);
+            const grouped = agg.reduce((acc, obj) => {
+                const cid = categorizeIngredient(obj.displayStr);
+                if(!acc[cid]) acc[cid] = []; acc[cid].push(obj); return acc;
+            }, {});
+            const cats = [...SHOPPING_CATEGORIES, {id:'autres', icon:'🛒', name:'Autres'}];
+            return (
+              <div className="animate-fadeIn space-y-6 pb-24">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-black text-gray-800">Ma Liste <span className="text-sm text-gray-400 font-bold ml-2">({agg.length})</span></h1>
+                    <div className="flex gap-2">
+                        <button onClick={() => setShowTipsModal(true)} className="bg-yellow-50 p-3 rounded-2xl text-yellow-600 shadow-sm active:scale-95 transition"><i className="fa-solid fa-lightbulb"></i></button>
+                        <button onClick={copyList} className="bg-orange-50 p-3 rounded-2xl text-orange-500 shadow-sm active:scale-95 transition"><i className="fa-solid fa-copy"></i></button>
                     </div>
+                </div>
+                {!agg.length ? <div className="text-center py-24 opacity-20"><i className="fa-solid fa-basket-shopping text-7xl mb-4"></i><p className="font-black uppercase tracking-widest text-xs">Panier vide</p></div> : 
+                  <div className="space-y-4">
+                    {cats.map(c => {
+                        if(!grouped[c.id]) return null;
+                        const isCol = collapsedCategories[c.id] !== false;
+                        return (
+                            <div key={c.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm transition-all">
+                                <div onClick={() => setCollapsedCategories({...collapsedCategories, [c.id]: !isCol})} className="bg-gray-50 px-5 py-4 flex items-center gap-3 cursor-pointer group select-none">
+                                    <span className="text-xl">{c.icon}</span>
+                                    <h3 className="font-black text-gray-800 text-[10px] uppercase tracking-widest">{c.name}</h3>
+                                    <div className="ml-auto flex items-center gap-3">
+                                        <span className="bg-white px-2 py-1 rounded-full text-[9px] font-bold text-gray-400 border">{grouped[c.id].length}</span>
+                                        <i className={`fa-solid fa-chevron-down text-[10px] text-gray-300 transition-transform duration-300 ${!isCol?'rotate-180 text-orange-500':''}`}></i>
+                                    </div>
+                                </div>
+                                {!isCol && <div className="animate-fadeIn">
+                                    {grouped[c.id].map((it, i) => (
+                                        <div key={i} className="flex items-center gap-4 p-4 sm:px-5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
+                                            <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 accent-orange-500 cursor-pointer" onChange={() => setTimeout(() => removeAggregatedFromShoppingList(it.rawItems), 300)} />
+                                            <span className="text-sm font-bold text-gray-700 flex-1">{it.displayStr}</span>
+                                        </div>
+                                    ))}
+                                </div>}
+                            </div>
+                        )
+                    })}
+                  </div>
+                }
+              </div>
+            );
+          };
+
+          const renderDetail = () => {
+            if(!selectedRecipe) return null; const r=selectedRecipe;
+            const tip = getRecipeTip(r.ingredients);
+            return (
+              <div className="animate-fadeIn space-y-6 pb-32">
+                <button onClick={() => {setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-500 font-bold bg-white px-4 py-2 rounded-full border border-gray-100 shadow-sm flex items-center gap-2"><i className="fa-solid fa-arrow-left"></i> Retour</button>
+                <div className="relative"><img src={r.image} className="w-full h-72 object-cover rounded-[3rem] shadow-xl"/><div className="absolute bottom-4 right-4 bg-white/90 p-3 rounded-2xl font-black text-xs shadow-lg">⏱ {r.time}</div></div>
+                <h1 className="text-3xl font-black text-gray-800 leading-tight px-2">{r.title}</h1>
+                <div className="pt-2 flex gap-3 px-2">
+                    <select value={selectedDayForAgenda} onChange={e=>setSelectedDayForAgenda(e.target.value)} className="flex-1 p-4 rounded-2xl bg-white border border-gray-200 font-black text-sm outline-none shadow-sm appearance-none">
+                      {DAYS_OF_WEEK.map(d=><option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <button onClick={()=>addToAgenda(selectedDayForAgenda, r.id)} className="bg-gray-900 text-white px-8 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition hover:bg-black">Planifier</button>
+                </div>
+                {children.length > 0 && <div className="space-y-3 mt-4">
+                    {children.map((c, idx) => {
+                        const age = calculateAgeInMonths(c.birthdate);
+                        const steps = r.babyAdaptations || [];
+                        let txt = age !== null ? (steps.find(a => age <= a.maxAge)?.text || steps[steps.length-1]?.text) : "Âge non renseigné.";
+                        const colors = ["bg-orange-500", "bg-amber-500", "bg-rose-500"];
+                        return (
+                            <div key={c.id} className={`${colors[idx%3]} p-6 rounded-[2.5rem] text-white shadow-md relative overflow-hidden`}>
+                                <div className="flex items-center gap-3 mb-3 relative z-10 border-b border-white/20 pb-3">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white flex items-center justify-center shadow-sm">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-xs"></i>}</div>
+                                    <h4 className="font-black text-xs uppercase tracking-widest">Part de {c.name || "Bébé"} {age!==null?`(${age} mois)` : ''}</h4>
+                                </div>
+                                <p className="text-sm leading-relaxed whitespace-pre-line font-medium">{txt}</p>
+                            </div>
+                        );
+                    })}
+                </div>}
+                <div className="space-y-8 pt-6 px-2">
+                  <section>
+                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 border-b pb-2 tracking-widest">Ingrédients</h3>
+                    <div className="grid gap-2">
+                      {r.ingredients?.map((ing, i) => <div key={i} className="flex items-center gap-4 text-sm bg-white p-4 rounded-2xl shadow-sm border border-gray-50 font-medium text-gray-700"><span className="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></span><span>{ing}</span></div>)}
+                    </div>
+                  </section>
+                  <section>
+                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 border-b pb-2 tracking-widest">Préparation</h3>
+                    <div className="space-y-6">
+                      {r.adultSteps?.map((s, i) => <div key={i} className="flex gap-5 bg-white p-5 rounded-3xl border border-gray-50 shadow-sm"><span className="text-3xl text-orange-100 font-black italic">{i+1}</span><p className="text-sm leading-relaxed text-gray-600 font-medium">{s}</p></div>)}
+                    </div>
+                    <div className="bg-yellow-50 p-6 rounded-[2rem] border border-yellow-100 mt-6 shadow-sm"><h4 className="font-black text-yellow-800 text-[10px] uppercase mb-3 tracking-widest"><i className="fa-solid fa-lightbulb"></i> Astuce d'organisation</h4><p className="text-sm font-medium text-yellow-900 leading-relaxed"><strong>{tip.title}</strong><br/>{tip.text}</p></div>
+                  </section>
                 </div>
               </div>
             );
@@ -670,360 +617,69 @@
 
           const renderCoach = () => (
             <div className="animate-fadeIn space-y-6 pb-24">
-                <div className="flex justify-between items-center mb-2">
-                    <h1 className="text-2xl font-black text-gray-800">Coach Bébé</h1>
-                </div>
-
-                {children.length === 0 ? (
-                    <div className="text-center py-12 opacity-60 bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
-                        <i className="fa-solid fa-baby text-4xl mb-3 text-indigo-300"></i>
-                        <p className="text-sm font-medium">Ajoutez un enfant dans le profil pour activer les conseils.</p>
-                        <button onClick={() => setCurrentTab('profile')} className="mt-4 text-xs font-bold text-indigo-500 uppercase tracking-widest bg-indigo-50 px-4 py-2 rounded-xl">Aller au profil</button>
-                    </div>
-                ) : (
-                    children.map(child => {
-                        const ageInMonths = calculateAgeInMonths(child.birthdate);
-                        if (ageInMonths === null) return null;
-                        
+                <h1 className="text-2xl font-black text-gray-800">Coach Bébé</h1>
+                {!children.length ? <div className="text-center py-12 opacity-40 bg-white rounded-[2rem] p-6 border border-gray-100"><p className="font-bold">Ajoutez un enfant pour voir les conseils.</p></div> : 
+                    children.map(c => {
+                        const age = calculateAgeInMonths(c.birthdate); if(age === null) return null;
+                        const adv = getCoachAdvice(age);
                         return (
-                            <div key={child.id} className="bg-white rounded-[3rem] p-6 shadow-sm border border-gray-100 mb-8 last:mb-0 relative overflow-hidden">
-                                <i className="fa-solid fa-graduation-cap absolute -right-6 -bottom-6 text-8xl opacity-[0.03] transform -rotate-12"></i>
-                                
-                                <div className="flex items-center gap-4 mb-6 border-b border-gray-50 pb-5 relative z-10">
-                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-indigo-50 border-2 border-white shadow-md flex items-center justify-center flex-shrink-0 text-indigo-200">
-                                        {child.photo ? <img src={child.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-2xl"></i>}
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-black text-gray-800">{child.name || "Bébé"}</h2>
-                                        <p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">{ageInMonths} mois</p>
-                                    </div>
+                            <div key={c.id} className="bg-white rounded-[3rem] p-6 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+                                <div className="flex items-center gap-4 mb-6 border-b border-gray-50 pb-5">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-indigo-50 border-2 border-white shadow-md flex items-center justify-center">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-2xl text-indigo-200"></i>}</div>
+                                    <div><h2 className="text-xl font-black text-gray-800">{c.name || "Bébé"}</h2><p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">{age} mois</p></div>
                                 </div>
-
-                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-5 mb-5 border border-indigo-100 relative z-10">
-                                    <h3 className="font-black text-indigo-800 mb-3 flex items-center gap-2 uppercase text-[10px] tracking-widest">
-                                        <i className="fa-solid fa-bullseye text-indigo-500"></i> Étape actuelle
-                                    </h3>
-                                    <p className="text-sm text-indigo-900 font-medium mb-4 leading-relaxed">{getCoachAdvice(ageInMonths).text}</p>
-                                    
+                                <div className="bg-indigo-50/50 rounded-3xl p-5 mb-5 border border-indigo-100">
+                                    <h3 className="font-black text-indigo-800 mb-3 text-[10px] uppercase tracking-widest"><i className="fa-solid fa-bullseye text-indigo-400"></i> Étape actuelle</h3>
+                                    <p className="text-sm text-indigo-900 mb-4 font-medium leading-relaxed">{adv.text}</p>
                                     <div className="grid grid-cols-3 gap-2">
-                                        <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col justify-center">
-                                            <span className="block text-xl mb-1">🥣</span>
-                                            <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Texture</span>
-                                            <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).texture}</span>
-                                        </div>
-                                        <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col justify-center">
-                                            <span className="block text-xl mb-1">🥩</span>
-                                            <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Protéines</span>
-                                            <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).prot}</span>
-                                        </div>
-                                        <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col justify-center">
-                                            <span className="block text-xl mb-1">🧈</span>
-                                            <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Matières gr.</span>
-                                            <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).fat}</span>
-                                        </div>
+                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥣</span><span className="block text-[8px] text-gray-400 font-black uppercase">Texture</span><span className="text-[10px] font-black text-indigo-700">{adv.texture}</span></div>
+                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥩</span><span className="block text-[8px] text-gray-400 font-black uppercase">Protéines</span><span className="text-[10px] font-black text-indigo-700">{adv.prot}</span></div>
+                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🧈</span><span className="block text-[8px] text-gray-400 font-black uppercase">MG</span><span className="text-[10px] font-black text-indigo-700">{adv.fat}</span></div>
                                     </div>
                                 </div>
-
-                                <div className="bg-red-50 rounded-3xl p-5 border border-red-100 relative z-10">
-                                    <h4 className="font-black text-red-800 text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <i className="fa-solid fa-triangle-exclamation text-red-500"></i> Précautions importantes
-                                    </h4>
+                                <div className="bg-red-50 rounded-3xl p-5 border border-red-100 shadow-inner">
+                                    <h4 className="font-black text-red-800 text-[10px] uppercase mb-4 tracking-widest"><i className="fa-solid fa-triangle-exclamation text-red-400"></i> Précautions importantes</h4>
                                     <div className="space-y-3">
-                                        {getGoldenRules(ageInMonths).map((rule, idx) => (
-                                            <div key={idx} className="flex gap-3 items-start bg-white/50 p-3 rounded-2xl">
-                                                <span className="text-lg leading-none mt-0.5">{rule.icon}</span>
-                                                <p className="text-xs font-bold text-red-900 leading-relaxed">{rule.text}</p>
-                                            </div>
-                                        ))}
+                                        {getGoldenRules(age).map((r, i) => <div key={i} className="flex gap-3 items-start bg-white/40 p-3 rounded-2xl"><span className="text-lg leading-none">{r.icon}</span><p className="text-xs font-bold text-red-900 leading-relaxed">{r.text}</p></div>)}
                                     </div>
                                 </div>
-                                <p className="text-[9px] text-gray-400 mt-5 text-center font-medium italic relative z-10">* Conseils donnés à titre indicatif, ne remplaçant pas une consultation médicale.</p>
+                                <p className="text-[9px] text-gray-400 mt-5 text-center font-medium italic">* Conseils indicatifs ne remplaçant pas un pédiatre.</p>
                             </div>
-                        );
+                        )
                     })
-                )}
+                }
             </div>
           );
 
           const renderCarnet = () => {
-            let recipesToDisplay = RECIPES;
-            if (isSeasonalModeActive) {
-                recipesToDisplay = RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0);
-            }
-
-            const grouped = recipesToDisplay.reduce((acc, r) => {
+            const list = isSeasonalModeActive ? RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0) : RECIPES;
+            const grouped = list.reduce((acc, r) => {
               const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") ? "Desserts" : "Plats");
               if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
             }, {});
-
             return (
               <div className="animate-fadeIn space-y-8 pb-24">
-                <div className="flex justify-between items-center mb-2">
-                    <h1 className="text-2xl font-black text-gray-800">Recettes</h1>
+                <h1 className="text-2xl font-black text-gray-800">Recettes</h1>
+                <div onClick={() => setShowGeneratorModal(true)} className="bg-gradient-to-r from-orange-400 to-rose-400 rounded-[2rem] p-6 text-white cursor-pointer active:scale-95 transition shadow-lg flex items-center justify-between overflow-hidden relative">
+                    <i className="fa-solid fa-wand-magic-sparkles absolute -right-4 -bottom-4 text-8xl opacity-10 transform -rotate-12"></i>
+                    <div className="relative z-10"><h3 className="font-black text-lg">Besoin d'inspiration ?</h3><p className="text-sm opacity-90 font-medium">Générer un menu complet pour la semaine.</p></div>
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center relative z-10"><i className="fa-solid fa-arrow-right"></i></div>
                 </div>
-
-                <div onClick={() => setShowGeneratorModal(true)} className="bg-gradient-to-r from-orange-400 to-rose-400 rounded-[2rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform hover:-translate-y-1 active:scale-95 flex items-center justify-between">
-                    <div className="relative z-10">
-                        <h3 className="font-black text-lg mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles"></i> Besoin d'inspiration ?</h3>
-                        <p className="text-sm font-medium text-orange-50">Générer un menu de la semaine complet.</p>
-                    </div>
-                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center relative z-10 flex-shrink-0">
-                        <i className="fa-solid fa-arrow-right"></i>
-                    </div>
-                </div>
-
-                {isSeasonalModeActive && (
-                    <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                        <div className="px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest whitespace-nowrap bg-green-500 text-white shadow-md flex items-center gap-1.5">
-                            {currentActiveSeasons.map(s => s.icon).join('')} De saison ({currentActiveSeasons.map(s => s.name).join(' & ')})
-                        </div>
-                    </div>
-                )}
-                
-                {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && grouped[c].length > 0 && (
+                {isSeasonalModeActive && <div className="bg-green-500 text-white px-4 py-2 rounded-2xl font-black text-[10px] uppercase w-fit shadow-md flex items-center gap-2"><i className="fa-solid fa-leaf"></i> Mode Saison Actif</div>}
+                {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
                     <div key={c} className="mb-8">
-                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2 flex items-center justify-between">
-                         <span>{c}</span>
-                         <span className="bg-gray-100 px-2 py-1 rounded-full text-[8px]">{grouped[c].length} recettes</span>
-                      </h2>
-                      <div className="grid grid-cols-1 gap-3">
-                        {grouped[c].sort((a,b)=>a.id-b.id).map(r => {
-                          const matchingSeasons = getMatchingActiveSeasons(r.ingredients, currentActiveSeasons);
-                          const isSeasonMatch = matchingSeasons.length > 0;
-                          return (
-                              <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer group shadow-sm">
-                                <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner relative">
-                                    <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
-                                    {isSeasonalModeActive && isSeasonMatch && (
-                                        <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full text-[10px] shadow-sm flex items-center justify-center h-5 leading-none gap-0.5">
-                                            {matchingSeasons.map(s => <span key={s.id}>{s.icon}</span>)}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                  <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4>
-                                  <p className="text-[10px] text-gray-400 font-bold mt-1">⏱ {r.time}</p>
-                                </div>
-                                <i className="fa-solid fa-chevron-right text-gray-200 text-xs mr-2"></i>
-                              </div>
-                          )
-                        })}
+                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2 flex justify-between px-2"><span>{c}</span><span>{grouped[c].length} recettes</span></h2>
+                      <div className="grid gap-3">
+                        {grouped[c].map(r => (
+                          <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 shadow-sm cursor-pointer hover:bg-orange-50/50 transition group">
+                            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-inner flex-shrink-0"><img src={r.image} className="w-full h-full object-cover transition duration-500 group-hover:scale-110" /></div>
+                            <div className="flex-1"><h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4><p className="text-[10px] text-gray-400 font-bold">⏱ {r.time}</p></div>
+                            <i className="fa-solid fa-chevron-right text-gray-200 text-xs transition-transform group-hover:translate-x-1"></i>
+                          </div>
+                        ))}
                       </div>
                     </div>
                 ))}
-
-                {isSeasonalModeActive && Object.keys(grouped).length === 0 && (
-                    <div className="text-center py-12 opacity-60">
-                        <i className="fa-solid fa-leaf text-4xl mb-3 text-green-300"></i>
-                        <p className="text-sm font-medium">Aucune recette trouvée pour cette saison.</p>
-                        <button onClick={() => setIsSeasonalModeActive(false)} className="mt-4 text-xs font-bold text-gray-500 uppercase tracking-widest bg-gray-200 px-4 py-2 rounded-xl">Désactiver le filtre</button>
-                    </div>
-                )}
-              </div>
-            );
-          };
-
-          const renderShopping = () => {
-            const aggregatedList = aggregateShoppingList(shoppingList);
-            const groupedShopping = aggregatedList.reduce((acc, itemObj) => {
-                const catId = categorizeIngredient(itemObj.displayStr);
-                if (!acc[catId]) acc[catId] = [];
-                acc[catId].push(itemObj);
-                return acc;
-            }, {});
-
-            const allCategories = [...SHOPPING_CATEGORIES, { id: 'autres', icon: '🛒', name: 'Autres' }];
-            const totalItems = aggregatedList.length;
-
-            return (
-              <div className="animate-fadeIn space-y-6 pb-24">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-black text-gray-800">Ma Liste <span className="text-sm text-gray-400 font-bold ml-2">({totalItems})</span></h1>
-                    <div className="flex gap-2">
-                        <button onClick={() => setShowTipsModal(true)} className="text-yellow-600 bg-yellow-50 p-3 rounded-2xl hover:bg-yellow-100 transition active:scale-95 flex items-center gap-2" title="Astuces d'organisation">
-                            <i className="fa-solid fa-lightbulb text-lg"></i>
-                        </button>
-                        {aggregatedList.length > 0 && (
-                            <button onClick={copyShoppingList} className="text-orange-500 bg-orange-50 p-3 rounded-2xl hover:bg-orange-100 transition active:scale-95" title="Copier la liste">
-                                <i className="fa-solid fa-copy text-lg"></i>
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {aggregatedList.length === 0 ? (
-                    <div className="text-center py-24 opacity-20 flex flex-col items-center">
-                        <i className="fa-solid fa-basket-shopping text-7xl mb-4"></i>
-                        <p className="font-black uppercase tracking-widest text-xs">Panier vide</p>
-                    </div>
-                ) : (
-                  <div className="space-y-4">
-                    {allCategories.map(cat => {
-                        if (!groupedShopping[cat.id] || groupedShopping[cat.id].length === 0) return null;
-                        
-                        const isCollapsed = collapsedCategories[cat.id] !== false;
-                        
-                        return (
-                            <div key={cat.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm transition-all">
-                                <div onClick={() => setCollapsedCategories({...collapsedCategories, [cat.id]: !isCollapsed})} className="bg-gray-50 px-5 py-4 border-b border-gray-100 flex items-center gap-3 cursor-pointer select-none hover:bg-gray-100 transition group">
-                                    <span className="text-xl">{cat.icon}</span>
-                                    <h3 className="font-black text-gray-800 uppercase tracking-widest text-[10px]">{cat.name}</h3>
-                                    <div className="ml-auto flex items-center gap-3">
-                                        <span className="bg-white px-2 py-1 rounded-full text-[9px] font-bold text-gray-500 shadow-sm border border-gray-100">{groupedShopping[cat.id].length}</span>
-                                        <div className={`w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400 transition-transform duration-300 ${!isCollapsed ? 'rotate-180 bg-orange-50 text-orange-500' : ''}`}>
-                                            <i className="fa-solid fa-chevron-down text-[10px]"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                {!isCollapsed && (
-                                    <div className="animate-fadeIn">
-                                        {groupedShopping[cat.id].map((itemObj, i) => (
-                                            <div key={i} className="flex items-center gap-4 p-4 sm:px-5 border-b border-gray-50 last:border-0 hover:bg-orange-50/30 transition group">
-                                                <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer accent-orange-500" onChange={() => setTimeout(() => removeAggregatedFromShoppingList(itemObj.rawItems), 300)} />
-                                                <span className="text-sm font-bold text-gray-700 flex-1">{itemObj.displayStr}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          };
-
-          const renderDetail = () => {
-            if (!selectedRecipe) return null;
-            const r = selectedRecipe;
-            const recipeTip = getRecipeTip(r.ingredients);
-
-            return (
-              <div className="animate-fadeIn space-y-6 pb-32">
-                <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-500 font-bold flex items-center gap-2 transition hover:text-gray-800 bg-white/80 px-4 py-2 rounded-full shadow-sm w-fit backdrop-blur-md border border-gray-100">
-                    <i className="fa-solid fa-arrow-left"></i> Retour
-                </button>
-                
-                <div className="relative">
-                    <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} className="w-full h-72 object-cover rounded-[3rem] shadow-xl" alt={r.title} />
-                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg">
-                        <span className="text-xs font-black text-gray-800">⏱ {r.time}</span>
-                    </div>
-                </div>
-
-                <h1 className="text-3xl font-black text-gray-800 leading-tight px-2">{r.title}</h1>
-                
-                <div className="pt-2 flex gap-3 px-2">
-                    <select value={selectedDayForAgenda} onChange={(e)=>setSelectedDayForAgenda(e.target.value)} className="flex-1 p-4 rounded-2xl bg-white border border-gray-200 font-black outline-none text-sm appearance-none shadow-sm focus:border-orange-400">
-                      {DAYS_OF_WEEK.map(d=><option key={d} value={d}>{d}</option>)}
-                    </select>
-                    <button onClick={()=>{addToAgenda(selectedDayForAgenda, r.id);}} className="bg-gray-900 text-white px-8 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition hover:bg-black">
-                        Planifier
-                    </button>
-                </div>
-
-                {children.length > 1 && (
-                    <div className="mx-2 bg-red-50 border border-red-100 p-4 rounded-3xl text-red-700 shadow-sm flex gap-4 items-start">
-                        <i className="fa-solid fa-triangle-exclamation text-2xl text-red-400 mt-1 flex-shrink-0"></i>
-                        <p className="text-xs font-medium leading-relaxed">
-                            <strong className="block font-black uppercase tracking-widest mb-1">Attention aux quantités</strong>
-                            Cette recette est prévue pour 2 adultes et 1 enfant. Pensez à ajuster vos quantités pour régaler toute la tribu !
-                        </p>
-                    </div>
-                )}
-
-                {children.length === 0 ? (
-                    <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl mt-4 relative overflow-hidden">
-                        <i className="fa-solid fa-baby absolute -right-4 -bottom-4 text-7xl opacity-10"></i>
-                        <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2 relative z-10"><i className="fa-solid fa-spoon"></i> Part de bébé</h4>
-                        <p className="text-sm font-medium relative z-10">Ajoutez un enfant dans le profil pour voir les adaptations.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-3 mt-4">
-                        {children.map((child, index) => {
-                            const ageInMonths = calculateAgeInMonths(child.birthdate);
-                            const babySteps = r.babyAdaptations || [];
-                            let babyStepText = "Âge non renseigné.";
-                            if (ageInMonths !== null) {
-                                const step = babySteps.find(a => ageInMonths <= a.maxAge);
-                                babyStepText = step ? step.text : (babySteps[babySteps.length - 1]?.text || "Adaptation familiale standard");
-                            }
-                            const bgColors = ["bg-orange-500", "bg-amber-500", "bg-rose-500"];
-                            const bgColor = bgColors[index % bgColors.length];
-
-                            return (
-                                <div key={child.id} className={`${bgColor} p-6 sm:p-8 rounded-[2.5rem] text-white shadow-md relative overflow-hidden`}>
-                                    <i className="fa-solid fa-spoon absolute -right-4 -bottom-4 text-7xl opacity-10"></i>
-                                    <div className="flex items-center gap-3 mb-3 relative z-10 border-b border-white/20 pb-3">
-                                        <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20 border-2 border-white flex items-center justify-center flex-shrink-0">
-                                            {child.photo ? <img src={child.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-xs"></i>}
-                                        </div>
-                                        <h4 className="font-black text-xs uppercase">Part de {child.name || "Bébé"} {ageInMonths !== null ? `(${ageInMonths} mois)` : ''}</h4>
-                                    </div>
-                                    <p className="text-sm leading-relaxed font-medium relative z-10 whitespace-pre-line">{babyStepText}</p>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                <div className="space-y-8 pt-6 px-2">
-                  <section>
-                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 tracking-widest border-b pb-2">Ingrédients</h3>
-                    <div className="grid grid-cols-1 gap-2">
-                      {r.ingredients?.map((ing, idx) => (
-                        <div key={idx} className="flex items-center gap-4 text-sm text-gray-700 bg-white p-4 rounded-2xl shadow-sm border border-gray-50">
-                          <span className="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></span>
-                          <span className="font-medium">{ing}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  <section>
-                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 tracking-widest border-b pb-2">Préparation</h3>
-                    <div className="space-y-6">
-                      {r.adultSteps?.map((s, idx) => (
-                        <div key={idx} className="flex gap-5 bg-white p-5 rounded-3xl shadow-sm border border-gray-50">
-                          <span className="font-black text-3xl text-orange-100 italic leading-none">{idx+1}</span>
-                          <p className="text-sm leading-relaxed text-gray-600 font-medium pt-1">{s}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="bg-yellow-50 p-6 rounded-[2rem] border border-yellow-100 shadow-sm relative overflow-hidden mt-6">
-                        <div className="text-5xl absolute -right-3 -top-3 opacity-10 transform rotate-12">{recipeTip.icon}</div>
-                        <h4 className="font-black text-yellow-800 text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
-                            <i className="fa-solid fa-lightbulb"></i> Astuce d'Orga
-                        </h4>
-                        <p className="text-sm font-medium text-yellow-900 leading-relaxed relative z-10">
-                            <strong className="block mb-1 font-black">{recipeTip.title}</strong>
-                            {recipeTip.text}
-                        </p>
-                    </div>
-                  </section>
-                  
-                  <section className="pt-4">
-                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 tracking-widest border-b pb-2">Les Réflexes en Cuisine</h3>
-                    <div className="grid grid-cols-1 gap-4">
-                        <div className="flex gap-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-50 items-start">
-                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 text-xl flex-shrink-0"><i className="fa-solid fa-broom"></i></div>
-                            <div className="pt-1">
-                                <h4 className="font-black text-gray-800 text-sm mb-1">Nettoyez au fur et à mesure</h4>
-                                <p className="text-xs text-gray-500 leading-relaxed font-medium">Vous n'avez plus besoin d'un ustensile ? Nettoyez-le et rangez-le. C'est du temps de gagné à la fin du repas !</p>
-                            </div>
-                        </div>
-                        <div className="flex gap-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-50 items-start">
-                            <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-500 text-xl flex-shrink-0"><i className="fa-solid fa-snowflake"></i></div>
-                            <div className="pt-1">
-                                <h4 className="font-black text-gray-800 text-sm mb-1">Recyclez les restes</h4>
-                                <p className="text-xs text-gray-500 leading-relaxed font-medium">Il vous reste des portions ? Congelez-les pour un futur repas où vous n'aurez pas le temps de cuisiner.</p>
-                            </div>
-                        </div>
-                    </div>
-                  </section>
-                </div>
               </div>
             );
           };
@@ -1031,77 +687,45 @@
           const renderProfile = () => (
             <div className="animate-fadeIn space-y-6 pb-24">
               <h1 className="text-2xl font-black text-gray-800">La Famille</h1>
-              
-              <div className="space-y-6 mb-8">
-                  {children.map((child, index) => (
-                      <div key={child.id} className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm relative group">
-                          <button onClick={() => removeChild(child.id)} className="absolute top-6 right-6 w-8 h-8 bg-red-50 text-red-400 rounded-full flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition"><i className="fa-solid fa-trash-can text-xs"></i></button>
-
-                          <div className="relative w-28 h-28 mx-auto mb-6 cursor-pointer transform hover:scale-105 transition" onClick={() => document.getElementById(`photo-${child.id}`).click()}>
-                              <div className="w-full h-full rounded-full bg-orange-50 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden text-orange-200">
-                                  {child.photo ? <img src={child.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-5xl"></i>}
-                              </div>
-                              <div className="absolute bottom-0 right-0 bg-white p-2.5 rounded-full shadow-lg text-orange-500 border border-gray-100 flex items-center justify-center"><i className="fa-solid fa-camera text-sm"></i></div>
-                              <input type="file" id={`photo-${child.id}`} accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e, child.id)} />
+              <div className="space-y-6">
+                  {children.map((c, i) => (
+                      <div key={c.id} className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm relative group">
+                          <button onClick={() => removeChild(c.id)} className="absolute top-6 right-6 text-gray-300 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash-can"></i></button>
+                          <div className="relative w-28 h-28 mb-6 cursor-pointer transform hover:scale-105 transition" onClick={() => document.getElementById(`f-${c.id}`).click()}>
+                              <div className="w-full h-full rounded-full bg-orange-50 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-5xl text-orange-200"></i>}</div>
+                              <div className="absolute bottom-0 right-0 bg-white p-2.5 rounded-full shadow-lg text-orange-500 border border-gray-50 flex items-center justify-center"><i className="fa-solid fa-camera text-sm"></i></div>
+                              <input type="file" id={`f-${c.id}`} className="hidden" onChange={e => handlePhoto(e, c.id)} />
                           </div>
-
                           <div className="w-full space-y-4 text-center">
-                              <div>
-                                  <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Prénom</label>
-                                  <input type="text" value={child.name} onChange={(e) => updateChild(child.id, { name: e.target.value })} placeholder={`Enfant ${index + 1}`} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-black outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
-                              </div>
-                              <div>
-                                  <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Date de naissance</label>
-                                  <input type="date" value={child.birthdate} onChange={(e) => updateChild(child.id, { birthdate: e.target.value })} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
-                              </div>
+                              <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-1 tracking-widest">Prénom</label><input type="text" value={c.name} onChange={e=>updateChild(c.id, {name:e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-black outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" placeholder={`Enfant ${i+1}`} /></div>
+                              <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-1 tracking-widest">Date de naissance</label><input type="date" value={c.birthdate} onChange={e=>updateChild(c.id, {birthdate:e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" /></div>
                           </div>
                       </div>
                   ))}
-
-                  {children.length < 3 && (
-                      <button onClick={addChild} className="w-full bg-orange-50 hover:bg-orange-100 text-orange-600 border-2 border-dashed border-orange-200 py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-xs transition flex items-center justify-center gap-2">
-                          <i className="fa-solid fa-plus"></i> Ajouter un enfant
-                      </button>
-                  )}
+                  {children.length < 3 && <button onClick={addChild} className="w-full bg-orange-50 text-orange-600 border-2 border-dashed border-orange-200 py-6 rounded-[2.5rem] font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-orange-100 transition"><i className="fa-solid fa-plus"></i> Ajouter un enfant</button>}
               </div>
-
-              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm mb-6 flex justify-between items-center">
-                <div className="pr-4">
-                  <h3 className="font-black mb-1 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800"><i className="fa-solid fa-graduation-cap text-indigo-500"></i> Coach Diversification</h3>
-                  <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Débloquez un onglet dédié au suivi de l'alimentation.</p>
-                </div>
-                <button onClick={handleCoachToggle} className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex flex-shrink-0 shadow-inner ${isCoachEnabled ? 'bg-indigo-500 justify-end' : 'bg-gray-300 justify-start'}`}><div className="w-4 h-4 rounded-full bg-white shadow-sm"></div></button>
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 flex justify-between items-center shadow-sm">
+                <div className="flex-1 pr-4"><h3 className="font-black text-xs uppercase tracking-widest text-gray-800">Coach Diversification</h3><p className="text-[10px] text-gray-500 font-medium leading-relaxed">Activez les conseils personnalisés selon l'âge.</p></div>
+                <button onClick={handleCoachToggle} className={`w-12 h-6 rounded-full p-1 flex items-center transition shadow-inner ${isCoachEnabled?'bg-indigo-500 justify-end':'bg-gray-300 justify-start'}`}><div className="w-4 h-4 rounded-full bg-white shadow-sm"></div></button>
               </div>
-
-              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm mb-6 flex justify-between items-center">
-                <div className="pr-4">
-                  <h3 className="font-black mb-1 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800"><i className="fa-solid fa-leaf text-green-500"></i> Mode 100% Saison</h3>
-                  <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Mettre en avant les recettes pour la saison en cours.</p>
-                </div>
-                <button onClick={() => setIsSeasonalModeActive(!isSeasonalModeActive)} className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex flex-shrink-0 shadow-inner ${isSeasonalModeActive ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}><div className="w-4 h-4 rounded-full bg-white shadow-sm"></div></button>
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 flex justify-between items-center shadow-sm">
+                <div className="flex-1 pr-4"><h3 className="font-black text-xs uppercase tracking-widest text-gray-800">Mode 100% Saison</h3><p className="text-[10px] text-gray-500 font-medium leading-relaxed">Filtre automatique pour consommer de saison.</p></div>
+                <button onClick={() => setIsSeasonalModeActive(!isSeasonalModeActive)} className={`w-12 h-6 rounded-full p-1 flex items-center transition shadow-inner ${isSeasonalModeActive?'bg-green-500 justify-end':'bg-gray-300 justify-start'}`}><div className="w-4 h-4 rounded-full bg-white shadow-sm"></div></button>
               </div>
-
               <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
                 <i className="fa-solid fa-cloud absolute -right-6 -bottom-6 text-8xl text-blue-50 opacity-50"></i>
-                <div className="relative z-10">
-                    <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800"><i className="fa-solid fa-link text-blue-500"></i> Partage Familial</h3>
-                    <p className="text-xs text-gray-500 mb-6 font-medium leading-relaxed">Entrez un code secret pour synchroniser vos données.</p>
-                    <div className="flex gap-2">
-                      <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="CODE SECRET" className="flex-1 bg-gray-50 p-4 rounded-2xl uppercase font-mono text-xs font-black outline-none border border-transparent focus:border-blue-200 transition" />
-                      <button onClick={() => { if(!tempFamilyCode) return; setFamilyCode(tempFamilyCode); localStorage.setItem('cookidoudou_family_code', tempFamilyCode); alert("Synchronisation activée !"); }} className="bg-blue-600 text-white px-6 rounded-2xl font-black uppercase text-[10px] shadow-md active:scale-95 transition">Valider</button>
-                    </div>
-                    {familyCode && (
-                        <div className="mt-5 inline-flex items-center gap-2 bg-green-50 px-3 py-2 rounded-xl">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> 
-                            <span className="text-[10px] text-green-700 font-black uppercase tracking-widest">Connecté : {familyCode}</span>
-                        </div>
-                    )}
+                <h3 className="font-black text-xs uppercase mb-2 tracking-widest text-gray-800">Partage Familial</h3>
+                <p className="text-[10px] text-gray-400 mb-6 font-medium">Synchronisez vos données avec un code secret.</p>
+                <div className="flex gap-2 relative z-10">
+                    <input type="text" value={tempFamilyCode} onChange={e=>setTempFamilyCode(e.target.value.toUpperCase())} className="flex-1 bg-gray-50 p-4 rounded-2xl text-xs font-black outline-none border border-transparent focus:border-blue-200" placeholder="CODE SECRET" />
+                    <button onClick={()=>{ if(tempFamilyCode) { setFamilyCode(tempFamilyCode); localStorage.setItem('cookidoudou_family_code', tempFamilyCode); alert("Synchronisation activée !"); } }} className="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase shadow-md active:scale-95 transition">Valider</button>
                 </div>
+                {familyCode && <div className="mt-4 text-[10px] text-green-700 font-black uppercase tracking-widest flex items-center gap-2"><div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> Connecté : {familyCode}</div>}
               </div>
             </div>
           );
 
-          const activeTypicalDayChild = children.find(c => c.id === activeModalChildId) || children[0];
+          const activeDayChild = children.find(c => c.id === activeModalChildId) || children[0];
 
           return (
             <div className="min-h-screen bg-gray-50 flex flex-col relative overflow-x-hidden">
@@ -1114,170 +738,82 @@
                 {currentTab === 'recipe_detail' && renderDetail()}
               </main>
 
-              {/* FENÊTRE MODALE GÉNÉRATEUR MAGIQUE */}
               {showGeneratorModal && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fadeIn">
                     <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="bg-gradient-to-r from-orange-400 to-rose-400 p-6 text-white relative flex-shrink-0">
-                            <button onClick={() => setShowGeneratorModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition"><i className="fa-solid fa-xmark"></i></button>
-                            <h2 className="text-2xl font-black mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles"></i> Inspiration</h2>
-                            <p className="text-orange-50 text-sm font-medium">Paramétrez la génération de votre menu.</p>
+                        <div className="bg-gradient-to-r from-orange-400 to-rose-400 p-6 text-white flex justify-between items-center">
+                            <h2 className="text-2xl font-black"><i className="fa-solid fa-wand-magic-sparkles"></i> Inspiration</h2>
+                            <button onClick={() => setShowGeneratorModal(false)} className="w-8 h-8 bg-black/10 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
                         </div>
-                        
                         <div className="p-6 overflow-y-auto space-y-6 bg-gray-50 flex-1 hide-scrollbar">
-                            <div>
-                                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Repas par jour (Semaine)</label>
-                                <div className="flex gap-2">
-                                    {[1, 2].map(num => (
-                                        <button key={num} onClick={() => setGenConfig({...genConfig, weekdayMeals: num})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekdayMeals === num ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>{num} repas</button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Repas par jour (Week-end)</label>
-                                <div className="flex gap-2">
-                                    {[1, 2, 3].map(num => (
-                                        <button key={num} onClick={() => setGenConfig({...genConfig, weekendMeals: num})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekendMeals === num ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>{num} repas</button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Structure du repas</label>
-                                <div className="flex flex-col gap-2">
-                                    {['Plat', 'Entrée + Plat', 'Plat + Dessert', 'Entrée + Plat + Dessert'].map(struct => (
-                                        <button key={struct} onClick={() => setGenConfig({...genConfig, structure: struct})} className={`w-full py-3 rounded-2xl font-black text-sm transition ${genConfig.structure === struct ? 'bg-rose-400 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>{struct}</button>
-                                    ))}
-                                </div>
-                            </div>
-                            
-                            <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-                                <p className="text-xs text-orange-800 font-medium leading-relaxed">
-                                    <i className="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Attention :</strong> Générer un nouveau menu écrasera votre planning actuel de la semaine.
-                                </p>
-                            </div>
+                            <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-2 tracking-widest">Menus par jour (Semaine)</label><div className="flex gap-2">{[1,2].map(n=><button key={n} onClick={()=>setGenConfig({...genConfig, weekdayMeals:n})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekdayMeals===n?'bg-orange-500 text-white shadow-md':'bg-white text-gray-400 border border-gray-200'}`}>{n} menu{n>1?'s':''}</button>)}</div></div>
+                            <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-2 tracking-widest">Menus par jour (Week-end)</label><div className="flex gap-2">{[1,2,3].map(n=><button key={n} onClick={()=>setGenConfig({...genConfig, weekendMeals:n})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekendMeals===n?'bg-orange-500 text-white shadow-md':'bg-white text-gray-400 border border-gray-200'}`}>{n} menu{n>1?'s':''}</button>)}</div></div>
+                            <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-2 tracking-widest">Structure des repas</label><div className="flex flex-col gap-2">{['Plat', 'Entrée + Plat', 'Plat + Dessert', 'Entrée + Plat + Dessert'].map(s=><button key={s} onClick={()=>setGenConfig({...genConfig, structure:s})} className={`w-full py-3 rounded-2xl font-black text-sm transition ${genConfig.structure===s?'bg-rose-400 text-white shadow-md':'bg-white text-gray-400 border border-gray-200'}`}>{s}</button>)}</div></div>
+                            <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100"><p className="text-[10px] text-orange-800 font-medium leading-relaxed"><i className="fa-solid fa-triangle-exclamation mr-1"></i> Attention : Générer un nouveau menu remplacera votre planning actuel.</p></div>
                         </div>
-                        
-                        <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
-                            <button onClick={generateWeeklyMenu} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition flex items-center justify-center gap-2">
-                                <i className="fa-solid fa-wand-magic-sparkles"></i> Générer mon menu
-                            </button>
-                        </div>
+                        <div className="p-6 bg-white border-t border-gray-100"><button onClick={generateWeeklyMenu} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-xs active:scale-95 transition">Générer mon menu</button></div>
                     </div>
                 </div>
               )}
 
-              {/* FENÊTRE MODALE ONBOARDING */}
+              {showTypicalDayModal && activeDayChild && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="bg-blue-500 pt-6 px-6 pb-4 text-white relative">
+                            <button onClick={()=>setShowTypicalDayModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
+                            <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-4 pr-10">
+                                {children.map(c => <button key={c.id} onClick={()=>setActiveModalChildId(c.id)} className={`px-4 py-2 rounded-2xl text-[10px] font-black transition whitespace-nowrap ${activeModalChildId===c.id?'bg-white text-blue-500 shadow-md':'bg-blue-600 text-blue-100'}`}>{c.name||"Bébé"}</button>)}
+                            </div>
+                            {(() => { const age = calculateAgeInMonths(activeDayChild.birthdate); const td = getTypicalDayForAge(age); return <><h2 className="text-2xl font-black">{td?.title||"Âge inconnu"}</h2><p className="text-blue-100 text-sm font-medium">{td?.subtitle}</p></>; })()}
+                        </div>
+                        <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
+                            {(() => { const age = calculateAgeInMonths(activeDayChild.birthdate); const td = getTypicalDayForAge(age); return td?.meals.map((m, i) => (
+                                <div key={i} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                                    <h4 className="font-black text-gray-800 flex items-center gap-2 mb-2"><span className="text-xl">{m.icon}</span> {m.name}</h4>
+                                    <p className="text-sm text-gray-600 leading-relaxed pl-8 border-l-2 border-blue-100 whitespace-pre-line font-medium">{m.text}</p>
+                                </div>
+                            )); })()}
+                        </div>
+                        <div className="p-6 bg-white border-t border-gray-100"><button onClick={()=>setShowTypicalDayModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-xs active:scale-95 transition">J'ai compris</button></div>
+                    </div>
+                </div>
+              )}
+
               {showOnboardingModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
-                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-8 text-center relative overflow-hidden">
-                        <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6 text-orange-400"><i className="fa-solid fa-spoon text-5xl"></i></div>
-                        <h2 className="text-2xl font-black text-gray-800 mb-3">Bienvenue dans Cookidoudou !</h2>
-                        <p className="text-sm text-gray-600 font-medium leading-relaxed mb-8">L'application pour nourrir toute la famille simplement. Trouvez des idées de saison, planifiez vos menus et organisez vos courses en un clin d'œil !</p>
-                        <button onClick={closeOnboarding} className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">C'est parti !</button>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 p-4 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] p-8 text-center shadow-2xl overflow-hidden relative">
+                        <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6 text-orange-400 text-4xl shadow-inner"><i className="fa-solid fa-spoon"></i></div>
+                        <h2 className="text-2xl font-black mb-2 text-gray-800">Bienvenue dans Cookidoudou !</h2>
+                        <p className="text-sm text-gray-600 mb-8 font-medium leading-relaxed">L'appli pour nourrir toute la famille simplement, de saison et avec gourmandise. C'est parti !</p>
+                        <button onClick={closeOnboard} className="w-full bg-orange-500 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition">Commencer</button>
                     </div>
                 </div>
               )}
 
-              {/* FENÊTRE MODALE CONSENTEMENT MÉDICAL */}
               {showMedicalConsentModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4 sm:p-6 animate-fadeIn">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-md animate-fadeIn">
                     <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden">
-                        <div className="bg-red-50 p-8 text-center border-b border-red-100">
-                            <i className="fa-solid fa-stethoscope text-4xl text-red-400 mb-4"></i>
-                            <h2 className="text-xl font-black text-red-900 mb-2">Avertissement Médical</h2>
-                            <p className="text-xs text-red-700 font-bold uppercase tracking-widest">À lire attentivement</p>
-                        </div>
-                        <div className="p-8">
-                            <p className="text-sm text-gray-600 font-medium leading-relaxed mb-6 text-center">
-                                Cookidoudou est un outil d'accompagnement culinaire. Les informations du Coach Diversification sont données à titre indicatif. <br/><br/>
-                                <strong className="text-gray-800">Elles ne remplacent en aucun cas une consultation chez un médecin généraliste ou un pédiatre</strong>, particulièrement en cas de trouble alimentaire, de retard de croissance ou de suspicion d'allergie.
-                            </p>
-                            <div className="space-y-3">
-                                <button onClick={acceptMedicalConsent} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition shadow-md">J'ai compris et j'accepte</button>
-                                <button onClick={() => setShowMedicalConsentModal(false)} className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">Annuler</button>
-                            </div>
-                        </div>
+                        <div className="bg-red-50 p-8 text-center border-b border-red-100"><i className="fa-solid fa-stethoscope text-4xl text-red-400 mb-4"></i><h2 className="text-xl font-black text-red-900 tracking-tight">Avertissement Médical</h2></div>
+                        <div className="p-8 text-sm text-gray-600 space-y-4 text-center"><p className="font-medium leading-relaxed">Les informations du Coach Diversification sont indicatives. <strong>Elles ne remplacent en aucun cas une consultation chez un médecin ou un pédiatre.</strong></p><button onClick={acceptConsent} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-xs shadow-md tracking-widest active:scale-95 transition">J'ai compris et j'accepte</button></div>
                     </div>
                 </div>
               )}
 
-              {/* FENÊTRE MODALE JOURNÉE TYPE */}
-              {showTypicalDayModal && activeTypicalDayChild && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
-                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="bg-blue-500 pt-6 px-6 pb-4 text-white relative flex-shrink-0">
-                            <button onClick={() => setShowTypicalDayModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/20 rounded-full flex items-center justify-center hover:bg-black/30 transition z-10"><i className="fa-solid fa-xmark"></i></button>
-                            {children.length > 1 && (
-                                <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-6 pr-10">
-                                    {children.map(child => (
-                                        <button key={child.id} onClick={() => setActiveModalChildId(child.id)} className={`px-4 py-2 rounded-2xl font-black text-xs transition whitespace-nowrap flex items-center gap-2 ${activeModalChildId === child.id ? 'bg-white text-blue-600 shadow-md' : 'bg-blue-600/50 text-blue-100 hover:bg-blue-600'}`}>
-                                            {child.photo ? <img src={child.photo} className="w-4 h-4 rounded-full object-cover" /> : <i className="fa-solid fa-baby"></i>} {child.name || "Bébé"}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                            {(() => {
-                                const ageInMonths = calculateAgeInMonths(activeTypicalDayChild.birthdate);
-                                const typicalDayData = getTypicalDayForAge(ageInMonths);
-                                return (
-                                    <>
-                                        <h2 className="text-2xl font-black mb-1">{typicalDayData ? typicalDayData.title : 'Âge inconnu'}</h2>
-                                        <p className="text-blue-100 text-sm font-medium">{typicalDayData ? typicalDayData.subtitle : 'Veuillez renseigner une date de naissance.'}</p>
-                                    </>
-                                );
-                            })()}
-                        </div>
-                        <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
-                            {(() => {
-                                const ageInMonths = calculateAgeInMonths(activeTypicalDayChild.birthdate);
-                                const typicalDayData = getTypicalDayForAge(ageInMonths);
-                                if (!typicalDayData) return <p className="text-center py-10 text-gray-500 font-medium">Information indisponible.</p>;
-                                return typicalDayData.meals.map((meal, idx) => (
-                                    <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                                        <h4 className="font-black text-gray-800 flex items-center gap-2 mb-3"><span className="text-xl">{meal.icon}</span> {meal.name}</h4>
-                                        <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-line pl-8 border-l-2 border-blue-100">{meal.text}</p>
-                                        {(meal.name === "Déjeuner" || meal.name === "Dîner" || meal.name === "Midi" || meal.name === "Soir") && ageInMonths >= 6 && (
-                                            <button onClick={() => { setShowTypicalDayModal(false); setCurrentTab('carnet'); }} className="mt-4 ml-8 text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition">Trouver une recette <i className="fa-solid fa-arrow-right ml-1"></i></button>
-                                        )}
-                                    </div>
-                                ));
-                            })()}
-                        </div>
-                        <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
-                            <button onClick={() => setShowTypicalDayModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">J'ai compris</button>
-                        </div>
-                    </div>
-                </div>
-              )}
-
-              {/* FENÊTRE MODALE BOÎTE À ASTUCES GLOBALES */}
               {showTipsModal && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
-                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="bg-yellow-400 p-6 text-yellow-900 relative flex-shrink-0">
-                            <button onClick={() => setShowTipsModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition text-yellow-900"><i className="fa-solid fa-xmark"></i></button>
-                            <h2 className="text-2xl font-black mb-1 flex items-center gap-2"><i className="fa-solid fa-lightbulb"></i> Boîte à Astuces</h2>
-                            <p className="text-yellow-800 text-sm font-medium">L'organisation est le maître mot pour gagner du temps en cuisine.</p>
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 p-4 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                        <div className="bg-yellow-400 p-6 text-yellow-900 flex justify-between items-center relative">
+                            <h2 className="text-2xl font-black flex items-center gap-2"><i className="fa-solid fa-lightbulb"></i> Boîte à Astuces</h2>
+                            <button onClick={()=>setShowTipsModal(false)} className="w-8 h-8 bg-black/10 rounded-full flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
                         </div>
-                        <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
-                            {GENERAL_TIPS.map((tip, idx) => (
-                                <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex gap-4 items-start">
-                                    <div className="text-3xl flex-shrink-0">{tip.icon}</div>
-                                    <div>
-                                        <h4 className="font-black text-gray-800 mb-1">{tip.title}</h4>
-                                        <p className="text-sm text-gray-600 font-medium leading-relaxed">{tip.text}</p>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="p-6 overflow-y-auto space-y-4 flex-1 hide-scrollbar bg-gray-50">
+                            {GENERAL_TIPS.map((t, i) => <div key={i} className="flex gap-4 items-start bg-white p-5 rounded-3xl shadow-sm border border-gray-100"><span className="text-3xl">{t.icon}</span><div><h4 className="font-black text-gray-800 text-sm mb-1">{t.title}</h4><p className="text-xs text-gray-500 font-medium leading-relaxed">{t.text}</p></div></div>)}
                         </div>
-                        <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
-                            <button onClick={() => setShowTipsModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">C'est noté !</button>
-                        </div>
+                        <div className="p-6 bg-white border-t border-gray-100"><button onClick={()=>setShowTipsModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest active:scale-95 transition">Fermer</button></div>
                     </div>
                 </div>
               )}
 
-              {/* Barre de navigation */}
               <nav className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around py-4 px-2 z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
                 {[
                   { id: 'home', icon: 'fa-house', label: 'Accueil' },
@@ -1285,17 +821,15 @@
                   ...(isCoachEnabled ? [{ id: 'coach', icon: 'fa-graduation-cap', label: 'Coach' }] : []),
                   { id: 'shopping', icon: 'fa-cart-shopping', label: 'Courses' },
                   { id: 'profile', icon: 'fa-user', label: 'Profil' }
-                ].map(t => (
-                  <button key={t.id} onClick={() => { setCurrentTab(t.id); setSelectedRecipe(null); }} className={`flex flex-col items-center gap-1.5 relative w-16 ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'} transition-colors duration-200`}>
-                    <div className={`transition-transform duration-300 ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? '-translate-y-1 scale-110' : ''}`}>
-                        <i className={`fa-solid ${t.icon} text-xl`}></i>
-                    </div>
-                    <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity duration-300 ${currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail') ? 'opacity-100' : 'opacity-70'}`}>{t.label}</span>
-                    {(currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail')) && (
-                        <span className="absolute -bottom-2 w-1 h-1 bg-orange-500 rounded-full"></span>
-                    )}
-                  </button>
-                ))}
+                ].map(t => {
+                  const isActive = currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail');
+                  return (
+                    <button key={t.id} onClick={() => { setCurrentTab(t.id); setSelectedRecipe(null); }} className={`flex flex-col items-center gap-1.5 w-16 transition-all duration-300 ${isActive ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'}`}>
+                      <div className={`transition-transform duration-300 ${isActive ? '-translate-y-1 scale-110' : ''}`}><i className={`fa-solid ${t.icon} text-xl`}></i></div>
+                      <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`}>{t.label}</span>
+                    </button>
+                  );
+                })}
               </nav>
             </div>
           );
