@@ -41,10 +41,10 @@
     <script type="text/babel">
         const { useState, useEffect, useCallback, useMemo } = React;
 
-        // Image de secours au cas où une photo manque dans le dossier /images/
+        // Image de secours au cas où une photo manque
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
 
-        // --- CONFIGURATION FIREBASE DÉFINITIVE ---
+        // --- CONFIGURATION FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
             authDomain: "cookidoudou-4ac92.firebaseapp.com",
@@ -54,7 +54,7 @@
             appId: "1:590128476695:web:821122bbc1e8280694e252"
         };
         
-        const appId = "cookidoudou-app"; // Nom de l'espace de stockage dans Firebase
+        const appId = "cookidoudou-app";
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -75,18 +75,12 @@
         };
 
         const getCurrentActiveSeasons = () => {
-          const month = new Date().getMonth(); // 0 = Janvier, 11 = Décembre
+          const month = new Date().getMonth();
           const activeIds = [];
-          
-          // Hiver: Novembre à Mars (10, 11, 0, 1, 2)
           if ([10, 11, 0, 1, 2].includes(month)) activeIds.push('hiver');
-          // Printemps: Février à Juin (1, 2, 3, 4, 5)
           if ([1, 2, 3, 4, 5].includes(month)) activeIds.push('printemps');
-          // Été: Mai à Septembre (4, 5, 6, 7, 8)
           if ([4, 5, 6, 7, 8].includes(month)) activeIds.push('ete');
-          // Automne: Août à Décembre (7, 8, 9, 10, 11)
           if ([7, 8, 9, 10, 11].includes(month)) activeIds.push('automne');
-          
           return activeIds.map(id => SEASONS_DATA[id]);
         };
 
@@ -95,29 +89,88 @@
           const text = ingredientsArray.join(' ').toLowerCase();
           const scores = { printemps: 0, ete: 0, automne: 0, hiver: 0 };
           
-          // 1. Attribution des points selon les ingrédients
           Object.keys(SEASONAL_INGREDIENTS).forEach(season => {
               SEASONAL_INGREDIENTS[season].forEach(ing => {
                   if (text.includes(ing)) scores[season]++;
               });
           });
 
-          // 2. Recherche du score maximum
           let maxScore = 0;
           Object.values(scores).forEach(score => { if (score > maxScore) maxScore = score; });
-
           if (maxScore === 0) return [];
-
-          // 3. On retourne la ou les saisons "gagnantes" pour cette recette
           return Object.keys(scores).filter(season => scores[season] === maxScore);
         };
 
         const getMatchingActiveSeasons = (ingredientsArray, activeSeasons) => {
           const dominantSeasonsIds = getRecipeDominantSeasons(ingredientsArray);
-          // On garde les saisons actuellement actives qui font partie des saisons gagnantes de la recette
           return activeSeasons.filter(activeSeason => dominantSeasonsIds.includes(activeSeason.id));
         };
-        // --- FIN LOGIQUE MODE SAISON ---
+
+        // --- LOGIQUE GÉNÉRATEUR JOURNÉE TYPE ---
+        const TYPICAL_DAYS = [
+            {
+                maxAge: 5,
+                title: "Avant 6 mois",
+                subtitle: "Lait exclusif",
+                meals: [
+                    { name: "Matin", icon: "🍼", text: "Allaitement maternel exclusif OU lait 1er âge." },
+                    { name: "Midi", icon: "🍼", text: "Allaitement maternel OU lait 1er âge.\nDébut possible de la diversification vers 4-5 mois sur avis médical (quelques cuillères de purée lisse)." },
+                    { name: "Goûter", icon: "🍼", text: "Allaitement maternel OU lait 1er âge." },
+                    { name: "Soir", icon: "🌙", text: "Allaitement maternel OU lait 1er âge." }
+                ]
+            },
+            {
+                maxAge: 7,
+                title: "De 6 à 7 mois",
+                subtitle: "Début de la diversification",
+                meals: [
+                    { name: "Petit-déjeuner", icon: "🍼", text: "200 à 240 ml de lait 2e âge (ou allaitement).\nQuelques cuillerées de fruits." },
+                    { name: "Déjeuner", icon: "🥣", text: "200 g de purée de légumes.\n10 g de viande, poisson ou œuf.\n5 g de beurre ou huile végétale.\n1/2 yaourt." },
+                    { name: "Goûter", icon: "🍎", text: "200 à 240 ml de lait 2e âge.\n80 à 100 g de fruits." },
+                    { name: "Dîner", icon: "🌙", text: "Lait (biberon ou tétée).\nSi insuffisant, petite purée avec des féculents." }
+                ]
+            },
+            {
+                maxAge: 9,
+                title: "De 8 à 9 mois",
+                subtitle: "Introduction des textures",
+                meals: [
+                    { name: "Petit-déjeuner", icon: "🍼", text: "250 ml de lait 2e âge (ou allaitement).\n1 petit fruit (cru, cuit ou jus)." },
+                    { name: "Déjeuner", icon: "🥣", text: "140 g de purée de légumes + 50 g de féculents.\n15 g de viande, poisson ou œuf.\n5 g de beurre ou huile végétale.\n1/2 yaourt + 80 à 100 g de fruits." },
+                    { name: "Goûter", icon: "🍎", text: "200 à 240 ml de lait 2e âge.\n80 à 100 g de fruits." },
+                    { name: "Dîner", icon: "🌙", text: "140 g de légumes + 50 g de féculents.\n5 g de matières grasses.\n1/2 yaourt + 80 à 100 g de fruits.\n(Pas de protéines le soir)." }
+                ]
+            },
+            {
+                maxAge: 12,
+                title: "De 10 à 12 mois",
+                subtitle: "Les petits morceaux",
+                meals: [
+                    { name: "Petit-déjeuner", icon: "🥖", text: "250 ml de lait 2e âge.\n1 petit fruit.\n1 tartine de pain avec un peu de beurre." },
+                    { name: "Déjeuner", icon: "🥣", text: "150 g d'écrasé de légumes + 50 à 60 g de féculents.\n20 g de viande, poisson ou œuf.\n5 g de matières grasses.\n1 yaourt ou petit-suisse + 80 à 100 g de fruits." },
+                    { name: "Goûter", icon: "🍎", text: "250 ml de lait 2e âge.\n80 à 100 g de fruits." },
+                    { name: "Dîner", icon: "🌙", text: "150 g de légumes + 50 à 60 g de féculents.\n5 g de matières grasses.\n1 yaourt ou petit-suisse + 80 à 100 g de fruits." }
+                ]
+            },
+            {
+                maxAge: 24,
+                title: "De 1 à 2 ans",
+                subtitle: "Comme les grands",
+                meals: [
+                    { name: "Petit-déjeuner", icon: "🥖", text: "250 ml de lait de croissance.\n1 petit fruit.\n1 tartine de pain avec un peu de beurre." },
+                    { name: "Déjeuner", icon: "🥗", text: "30 g de crudités.\n90 à 110 g de légumes + 50 à 60 g de féculents.\n25 g de viande, poisson ou œuf.\n5 g de matières grasses.\n1 laitage + 80 à 100 g de fruits." },
+                    { name: "Goûter", icon: "🍪", text: "250 ml de lait de croissance.\n80 à 100 g de fruits.\n1 biscuit ou tartine beurrée." },
+                    { name: "Dîner", icon: "🌙", text: "30 g de crudités + 90 à 110 g de légumes + 50 à 60 g de féculents.\n5 g de matières grasses.\n1 laitage + 80 à 100 g de fruits." }
+                ]
+            }
+        ];
+
+        const getTypicalDayForAge = (ageInMonths) => {
+            if (ageInMonths === null) return null;
+            const profile = TYPICAL_DAYS.find(td => ageInMonths <= td.maxAge);
+            return profile || TYPICAL_DAYS[TYPICAL_DAYS.length - 1]; // Fallback au dernier si plus de 2 ans
+        };
+
 
         function App() {
           const [currentTab, setCurrentTab] = useState('home');
@@ -133,6 +186,9 @@
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
 
+          // État pour la fenêtre modale de la journée type
+          const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
+
           // --- ÉTATS POUR LE MODE SAISON ---
           const currentActiveSeasons = useMemo(() => getCurrentActiveSeasons(), []);
           const [isSeasonalModeActive, setIsSeasonalModeActive] = useState(() => {
@@ -141,13 +197,10 @@
           });
           const [activeFilter, setActiveFilter] = useState('Tous');
 
-          // Sauvegarde automatique de l'interrupteur
           useEffect(() => {
             localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive));
-            // Si on désactive le mode alors qu'on était sur le filtre saisonnier, on remet sur "Tous"
             if (!isSeasonalModeActive && activeFilter === 'Saison') setActiveFilter('Tous');
           }, [isSeasonalModeActive, activeFilter]);
-          // ---------------------------------
 
           // Calcul de l'âge de bébé en mois
           const ageInMonths = useMemo(() => {
@@ -172,12 +225,9 @@
                     setUser(cred.user);
                     setAppError(null);
                 } catch (authErr) {
-                    console.error("Erreur Auth Firebase:", authErr);
                     setAppError("Impossible de se connecter à la base de données de synchronisation.");
                 }
-              } catch (e) { 
-                  console.error("Firebase Init Error", e); 
-              }
+              } catch (e) { console.error("Firebase Init Error", e); }
             };
             start();
           }, []);
@@ -235,15 +285,14 @@
                   document.execCommand('copy'); 
                   navigator.clipboard.writeText(textToCopy);
                   alert("Liste copiée !");
-              } catch (err) {
-                  alert("Impossible de copier la liste.");
-              }
+              } catch (err) { alert("Impossible de copier la liste."); }
           };
 
           // --- VUES DE L'APPLICATION ---
           const renderHome = () => {
             const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
             const todayRecipe = RECIPES.find(r => r.id === agenda[todayStr]);
+            const currentTypicalDay = getTypicalDayForAge(ageInMonths);
             
             return (
               <div className="space-y-6 animate-fadeIn pb-24">
@@ -261,6 +310,7 @@
                     </div>
                 )}
 
+                {/* Bloc Menu du Jour */}
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-day text-orange-500"></i> Menu du jour</h3>
                     {todayRecipe ? (
@@ -281,18 +331,40 @@
                         </div>
                     )}
                 </div>
+
+                {/* NOUVEAU : Bloc Journée Type */}
+                <div 
+                    onClick={() => { if(ageInMonths !== null) setShowTypicalDayModal(true); else setCurrentTab('profile'); }}
+                    className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform active:scale-95"
+                >
+                    <i className="fa-solid fa-clipboard-list absolute -right-6 -bottom-6 text-8xl opacity-10 transform -rotate-12"></i>
+                    <div className="relative z-10">
+                        <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest">
+                            <i className="fa-solid fa-lightbulb text-yellow-300"></i> Journée Type
+                        </h3>
+                        {ageInMonths !== null ? (
+                            <>
+                                <p className="text-sm font-medium leading-relaxed mb-3">Découvrez les portions et menus recommandés pour l'âge de {babyProfile.name || "bébé"} ({currentTypicalDay.title}).</p>
+                                <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
+                                    Voir le menu <i className="fa-solid fa-arrow-right"></i>
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-sm font-medium leading-relaxed">Renseignez l'âge de votre enfant dans le profil pour découvrir sa journée type recommandée !</p>
+                        )}
+                    </div>
+                </div>
+
               </div>
             );
           };
 
           const renderCarnet = () => {
-            // Filtrage des recettes selon le mode saison actif
             let recipesToDisplay = RECIPES;
             if (isSeasonalModeActive && activeFilter === 'Saison') {
                 recipesToDisplay = RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0);
             }
 
-            // Groupement par catégories
             const grouped = recipesToDisplay.reduce((acc, r) => {
               const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") ? "Desserts" : "Plats");
               if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
@@ -304,7 +376,6 @@
                     <h1 className="text-2xl font-black text-gray-800">Le Livre</h1>
                 </div>
 
-                {/* Barre de filtres de Saison */}
                 {isSeasonalModeActive && (
                     <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
                         <button 
@@ -336,7 +407,6 @@
                               <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 hover:bg-orange-50 transition cursor-pointer group shadow-sm">
                                 <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-inner relative">
                                     <img src={r.image} onError={(e)=>e.target.src=FALLBACK_IMAGE} loading="lazy" className="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt={r.title} />
-                                    {/* Petit badge saison sur l'image */}
                                     {isSeasonalModeActive && isSeasonMatch && (
                                         <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full text-[10px] shadow-sm flex items-center justify-center h-5 leading-none gap-0.5">
                                             {matchingSeasons.map(s => <span key={s.id}>{s.icon}</span>)}
@@ -355,7 +425,6 @@
                     </div>
                 ))}
 
-                {/* Message si le filtre de saison ne retourne rien */}
                 {isSeasonalModeActive && activeFilter === 'Saison' && Object.keys(grouped).length === 0 && (
                     <div className="text-center py-12 opacity-60">
                         <i className="fa-solid fa-leaf text-4xl mb-3 text-green-300"></i>
@@ -401,7 +470,6 @@
             const r = selectedRecipe;
             const babySteps = r.babyAdaptations || [];
             
-            // Logique pour trouver l'adaptation bébé correcte
             let babyStepText = "Indiquez l'âge de bébé dans Profil pour voir les adaptations.";
             if (babyProfile.birthdate && ageInMonths !== null) {
                 const step = babySteps.find(a => ageInMonths <= a.maxAge);
@@ -489,7 +557,6 @@
                 </div>
               </div>
 
-              {/* BLOC MODE 100% SAISON */}
               <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm mb-6 flex justify-between items-center">
                 <div className="pr-4">
                   <h3 className="font-black mb-1 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800">
@@ -536,6 +603,52 @@
                 {currentTab === 'profile' && renderProfile()}
                 {currentTab === 'recipe_detail' && renderDetail()}
               </main>
+
+              {/* FENÊTRE MODALE JOURNÉE TYPE */}
+              {showTypicalDayModal && ageInMonths !== null && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* En-tête de la modale */}
+                        <div className="bg-blue-500 p-6 text-white relative flex-shrink-0">
+                            <button onClick={() => setShowTypicalDayModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/20 rounded-full flex items-center justify-center hover:bg-black/30 transition">
+                                <i className="fa-solid fa-xmark"></i>
+                            </button>
+                            <h2 className="text-2xl font-black mb-1">{getTypicalDayForAge(ageInMonths).title}</h2>
+                            <p className="text-blue-100 text-sm font-medium">{getTypicalDayForAge(ageInMonths).subtitle}</p>
+                        </div>
+                        
+                        {/* Contenu déroulant avec les repas */}
+                        <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
+                            {getTypicalDayForAge(ageInMonths).meals.map((meal, idx) => (
+                                <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                                    <h4 className="font-black text-gray-800 flex items-center gap-2 mb-3">
+                                        <span className="text-xl">{meal.icon}</span> {meal.name}
+                                    </h4>
+                                    <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-line pl-8 border-l-2 border-blue-100">
+                                        {meal.text}
+                                    </p>
+                                    {/* Bouton raccourci vers le carnet pour le déjeuner et le dîner */}
+                                    {(meal.name === "Déjeuner" || meal.name === "Dîner" || meal.name === "Midi" || meal.name === "Soir") && ageInMonths >= 6 && (
+                                        <button 
+                                            onClick={() => { setShowTypicalDayModal(false); setCurrentTab('carnet'); }}
+                                            className="mt-4 ml-8 text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition"
+                                        >
+                                            Trouver une recette <i className="fa-solid fa-arrow-right ml-1"></i>
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        
+                        {/* Pied de la modale */}
+                        <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
+                            <button onClick={() => setShowTypicalDayModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">
+                                J'ai compris
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              )}
 
               {/* Barre de navigation */}
               <nav className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around py-4 px-2 z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
