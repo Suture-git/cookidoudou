@@ -114,6 +114,28 @@
           return activeSeasons.filter(activeSeason => dominantSeasonsIds.includes(activeSeason.id));
         };
 
+        // --- LOGIQUE CATÉGORIES DE COURSES ---
+        const SHOPPING_CATEGORIES = [
+            { id: 'frais', icon: '🥦', name: 'Fruits & Légumes', keywords: ['pomme', 'carotte', 'courgette', 'oignon', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron', 'salade', 'laitue', 'mâche', 'endive', 'citron', 'fraise', 'framboise', 'banane', 'ail', 'poivron', 'champignon', 'avocat', 'épinard', 'patate', 'terre', 'radis', 'brocoli', 'chou', 'asperge', 'mangue', 'pêche', 'poire', 'raisin', 'clémentine', 'orange'] },
+            { id: 'viande', icon: '🥩', name: 'Boucherie & Poissonnerie', keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon', 'poisson', 'saumon', 'cabillaud', 'crevette', 'lardon', 'merlu', 'thon', 'colin', 'truite'] },
+            { id: 'laitier', icon: '🧀', name: 'Rayon Frais', keywords: ['beurre', 'crème', 'yaourt', 'fromage', 'œuf', 'oeuf', 'lait', 'gruyère', 'emmental', 'parmesan', 'mozzarella', 'mascarpone', 'feta', 'chèvre', 'suisse', 'laitage'] },
+            { id: 'sale', icon: '🍝', name: 'Épicerie Salée', keywords: ['pâte', 'riz', 'lentille', 'huile', 'sel', 'poivre', 'épice', 'conserve', 'bouillon', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne', 'moutarde', 'vinaigre', 'sauce', 'soja', 'pois chiche', 'haricot', 'purée', 'farine de pois', 'tomates pelées', 'ketchup', 'mayonnaise', 'olive'] },
+            { id: 'sucre', icon: '🍯', name: 'Épicerie Sucrée', keywords: ['farine', 'sucre', 'chocolat', 'miel', 'biscuit', 'confiture', 'compote', 'cacao', 'vanille', 'levure', 'amande', 'noisette', 'noix', 'gâteau'] },
+            { id: 'surgelé', icon: '❄️', name: 'Surgelés', keywords: ['surgelé', 'petit pois', 'glace', 'épinard haché', 'frites'] },
+            { id: 'boulangerie', icon: '🥖', name: 'Boulangerie', keywords: ['pain', 'baguette', 'mie', 'brioche', 'biscotte', 'croissant'] }
+        ];
+
+        const categorizeIngredient = (ingredient) => {
+            if (!ingredient) return 'autres';
+            const lowerIng = ingredient.toLowerCase();
+            for (const cat of SHOPPING_CATEGORIES) {
+                if (cat.keywords.some(kw => lowerIng.includes(kw))) {
+                    return cat.id;
+                }
+            }
+            return 'autres';
+        };
+
         // --- LOGIQUE GÉNÉRATEUR JOURNÉE TYPE ---
         const TYPICAL_DAYS = [
             { maxAge: 5, title: "Avant 6 mois", subtitle: "Lait exclusif", meals: [{ name: "Matin", icon: "🍼", text: "Allaitement maternel exclusif OU lait 1er âge." }, { name: "Midi", icon: "🍼", text: "Allaitement maternel OU lait 1er âge.\nDébut possible de la diversification vers 4-5 mois sur avis médical." }, { name: "Goûter", icon: "🍼", text: "Allaitement maternel OU lait 1er âge." }, { name: "Soir", icon: "🌙", text: "Allaitement maternel OU lait 1er âge." }] },
@@ -208,6 +230,14 @@
           const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
           const [activeModalChildId, setActiveModalChildId] = useState(null); 
           const [showTipsModal, setShowTipsModal] = useState(false);
+
+          // --- MODALES GÉNÉRATEUR DE SEMAINE ---
+          const [showGeneratorModal, setShowGeneratorModal] = useState(false);
+          const [genConfig, setGenConfig] = useState({
+              weekdayMeals: 1,
+              weekendMeals: 2,
+              structure: 'Plat + Dessert'
+          });
           
           const [showOnboardingModal, setShowOnboardingModal] = useState(() => localStorage.getItem('cookidoudou_onboarded') !== 'true');
           const [showMedicalConsentModal, setShowMedicalConsentModal] = useState(false);
@@ -357,33 +387,66 @@
 
           // --- GÉNÉRATEUR DE SEMAINE MAGIQUE ---
           const generateWeeklyMenu = () => {
-            if (!window.confirm("Besoin d'inspiration ? Cela va remplacer votre planning actuel par un tout nouveau menu pour la semaine. Continuer ?")) return;
-            
             let availableRecipes = RECIPES;
             if (isSeasonalModeActive) {
                 const seasonal = RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0);
-                if (seasonal.length > 10) availableRecipes = seasonal; // Sécurité si peu de recettes de saison
+                if (seasonal.length > 5) availableRecipes = seasonal; // Sécurité au cas où il n'y aurait pas assez de recettes pour la saison
             }
+
+            const entrees = availableRecipes.filter(r => r.category?.includes("Entrée"));
+            const plats = availableRecipes.filter(r => r.category?.includes("Plat"));
+            const desserts = availableRecipes.filter(r => r.category?.includes("Dessert"));
+
+            // Helper pour éviter de manger 4 fois la même chose dans la semaine
+            const getRandom = (arr, excludeIds) => {
+                let available = arr.filter(r => !excludeIds.includes(r.id));
+                if (available.length === 0) available = arr; // On recommence s'il n'y a plus de choix
+                return available[Math.floor(Math.random() * available.length)];
+            };
 
             const newAgenda = {};
             let newShoppingList = [...shoppingList];
+            let usedIds = [];
 
             DAYS_OF_WEEK.forEach(day => {
-                const shuffled = [...availableRecipes].sort(() => 0.5 - Math.random());
-                const pickedRecipes = shuffled.slice(0, 2); // 2 recettes par jour (ex: Plat + Dessert)
+                const isWeekend = day === 'Samedi' || day === 'Dimanche';
+                const mealsCount = isWeekend ? genConfig.weekendMeals : genConfig.weekdayMeals;
                 
-                newAgenda[day] = pickedRecipes.map(r => r.id);
-                pickedRecipes.forEach(r => {
-                    if(r.ingredients) r.ingredients.forEach(i => {
-                        if(!newShoppingList.includes(i)) newShoppingList.push(i);
-                    });
+                let dayRecipes = [];
+                for(let i=0; i<mealsCount; i++) {
+                    if (genConfig.structure.includes('Entrée') && entrees.length > 0) {
+                        const r = getRandom(entrees, usedIds);
+                        if (r) { dayRecipes.push(r); usedIds.push(r.id); }
+                    }
+                    if (genConfig.structure.includes('Plat') && plats.length > 0) {
+                        const r = getRandom(plats, usedIds);
+                        if (r) { dayRecipes.push(r); usedIds.push(r.id); }
+                    }
+                    if (genConfig.structure.includes('Dessert') && desserts.length > 0) {
+                        const r = getRandom(desserts, usedIds);
+                        if (r) { dayRecipes.push(r); usedIds.push(r.id); }
+                    }
+                }
+
+                // Déduplication & limite à 6 recettes max par jour
+                const uniqueDayIds = Array.from(new Set(dayRecipes.map(r => r.id))).slice(0, 6);
+                newAgenda[day] = uniqueDayIds;
+
+                uniqueDayIds.forEach(id => {
+                    const rec = RECIPES.find(r => r.id === id);
+                    if(rec?.ingredients) {
+                        rec.ingredients.forEach(i => {
+                            if(!newShoppingList.includes(i)) newShoppingList.push(i);
+                        });
+                    }
                 });
             });
 
             setAgenda(newAgenda);
             setShoppingList(newShoppingList);
             saveToCloud({ agenda: newAgenda, shoppingList: newShoppingList });
-            alert("✨ Semaine magique générée avec succès ! Allez voir votre Accueil.");
+            setShowGeneratorModal(false);
+            alert("✨ Menu de la semaine généré avec succès !");
             setCurrentTab('home');
           };
 
@@ -430,7 +493,7 @@
                 {/* MA SEMAINE EN UN COUP D'OEIL */}
                 <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 uppercase text-[10px] tracking-widest px-2"><i className="fa-solid fa-calendar-week text-blue-500"></i> La Semaine</h3>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-2 pt-2">
+                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-2">
                        {DAYS_OF_WEEK.map(day => {
                            const dayRecs = (agenda[day] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
                            const isToday = day === todayStr;
@@ -608,7 +671,7 @@
                 </div>
 
                 {/* BOUTON INSPIRATION MAGIQUE */}
-                <div onClick={generateWeeklyMenu} className="bg-gradient-to-r from-orange-400 to-rose-400 rounded-[2rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform hover:-translate-y-1 active:scale-95 flex items-center justify-between">
+                <div onClick={() => setShowGeneratorModal(true)} className="bg-gradient-to-r from-orange-400 to-rose-400 rounded-[2rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform hover:-translate-y-1 active:scale-95 flex items-center justify-between">
                     <div className="relative z-10">
                         <h3 className="font-black text-lg mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles"></i> Besoin d'inspiration ?</h3>
                         <p className="text-sm font-medium text-orange-50">Générer un menu de la semaine complet.</p>
@@ -669,39 +732,66 @@
             );
           };
 
-          const renderShopping = () => (
-            <div className="animate-fadeIn space-y-6 pb-24">
-              <div className="flex justify-between items-center">
-                  <h1 className="text-2xl font-black text-gray-800">Ma Liste</h1>
-                  <div className="flex gap-2">
-                      <button onClick={() => setShowTipsModal(true)} className="text-yellow-600 bg-yellow-50 p-3 rounded-2xl hover:bg-yellow-100 transition active:scale-95 flex items-center gap-2" title="Astuces d'organisation">
-                          <i className="fa-solid fa-lightbulb text-lg"></i>
-                      </button>
-                      {shoppingList.length > 0 && (
-                          <button onClick={copyShoppingList} className="text-orange-500 bg-orange-50 p-3 rounded-2xl hover:bg-orange-100 transition active:scale-95" title="Copier la liste">
-                              <i className="fa-solid fa-copy text-lg"></i>
-                          </button>
-                      )}
-                  </div>
-              </div>
+          const renderShopping = () => {
+            // Regroupement par catégorie
+            const groupedShopping = shoppingList.reduce((acc, item) => {
+                const catId = categorizeIngredient(item);
+                if (!acc[catId]) acc[catId] = [];
+                acc[catId].push(item);
+                return acc;
+            }, {});
 
-              {shoppingList.length === 0 ? (
-                  <div className="text-center py-24 opacity-20 flex flex-col items-center">
-                      <i className="fa-solid fa-basket-shopping text-7xl mb-4"></i>
-                      <p className="font-black uppercase tracking-widest text-xs">Panier vide</p>
-                  </div>
-              ) : (
-                <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
-                  {shoppingList.map((item, i) => (
-                    <div key={i} className="flex items-center gap-5 p-5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
-                      <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer accent-orange-500" onChange={() => setTimeout(() => removeFromShoppingList(item), 300)} />
-                      <span className="text-sm font-bold text-gray-600 flex-1">{item}</span>
+            const allCategories = [...SHOPPING_CATEGORIES, { id: 'autres', icon: '🛒', name: 'Autres' }];
+
+            return (
+              <div className="animate-fadeIn space-y-6 pb-24">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-black text-gray-800">Ma Liste</h1>
+                    <div className="flex gap-2">
+                        <button onClick={() => setShowTipsModal(true)} className="text-yellow-600 bg-yellow-50 p-3 rounded-2xl hover:bg-yellow-100 transition active:scale-95 flex items-center gap-2" title="Astuces d'organisation">
+                            <i className="fa-solid fa-lightbulb text-lg"></i>
+                        </button>
+                        {shoppingList.length > 0 && (
+                            <button onClick={copyShoppingList} className="text-orange-500 bg-orange-50 p-3 rounded-2xl hover:bg-orange-100 transition active:scale-95" title="Copier la liste">
+                                <i className="fa-solid fa-copy text-lg"></i>
+                            </button>
+                        )}
                     </div>
-                  ))}
                 </div>
-              )}
-            </div>
-          );
+
+                {shoppingList.length === 0 ? (
+                    <div className="text-center py-24 opacity-20 flex flex-col items-center">
+                        <i className="fa-solid fa-basket-shopping text-7xl mb-4"></i>
+                        <p className="font-black uppercase tracking-widest text-xs">Panier vide</p>
+                    </div>
+                ) : (
+                  <div className="space-y-6">
+                    {allCategories.map(cat => {
+                        if (!groupedShopping[cat.id] || groupedShopping[cat.id].length === 0) return null;
+                        
+                        return (
+                            <div key={cat.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
+                                <div className="bg-gray-50 px-5 py-3 border-b border-gray-100 flex items-center gap-3">
+                                    <span className="text-xl">{cat.icon}</span>
+                                    <h3 className="font-black text-gray-800 uppercase tracking-widest text-[10px]">{cat.name}</h3>
+                                    <span className="ml-auto bg-white px-2 py-1 rounded-full text-[9px] font-bold text-gray-400 shadow-sm border border-gray-100">{groupedShopping[cat.id].length}</span>
+                                </div>
+                                <div>
+                                    {groupedShopping[cat.id].map((item, i) => (
+                                        <div key={i} className="flex items-center gap-5 p-5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
+                                            <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer accent-orange-500" onChange={() => setTimeout(() => removeFromShoppingList(item), 300)} />
+                                            <span className="text-sm font-bold text-gray-600 flex-1">{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          };
 
           const renderDetail = () => {
             if (!selectedRecipe) return null;
@@ -927,6 +1017,58 @@
                 {currentTab === 'recipe_detail' && renderDetail()}
               </main>
 
+              {/* FENÊTRE MODALE GÉNÉRATEUR MAGIQUE */}
+              {showGeneratorModal && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="bg-gradient-to-r from-orange-400 to-rose-400 p-6 text-white relative flex-shrink-0">
+                            <button onClick={() => setShowGeneratorModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition"><i className="fa-solid fa-xmark"></i></button>
+                            <h2 className="text-2xl font-black mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles"></i> Inspiration</h2>
+                            <p className="text-orange-50 text-sm font-medium">Paramétrez la génération de votre menu.</p>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto space-y-6 bg-gray-50 flex-1 hide-scrollbar">
+                            <div>
+                                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Repas par jour (Semaine)</label>
+                                <div className="flex gap-2">
+                                    {[1, 2].map(num => (
+                                        <button key={num} onClick={() => setGenConfig({...genConfig, weekdayMeals: num})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekdayMeals === num ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>{num} repas</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Repas par jour (Week-end)</label>
+                                <div className="flex gap-2">
+                                    {[1, 2, 3].map(num => (
+                                        <button key={num} onClick={() => setGenConfig({...genConfig, weekendMeals: num})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekendMeals === num ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>{num} repas</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">Structure du repas</label>
+                                <div className="flex flex-col gap-2">
+                                    {['Plat', 'Entrée + Plat', 'Plat + Dessert', 'Entrée + Plat + Dessert'].map(struct => (
+                                        <button key={struct} onClick={() => setGenConfig({...genConfig, structure: struct})} className={`w-full py-3 rounded-2xl font-black text-sm transition ${genConfig.structure === struct ? 'bg-rose-400 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}>{struct}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+                                <p className="text-xs text-orange-800 font-medium leading-relaxed">
+                                    <i className="fa-solid fa-triangle-exclamation mr-1"></i> <strong>Attention :</strong> Générer un nouveau menu écrasera votre planning actuel de la semaine.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
+                            <button onClick={generateWeeklyMenu} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition flex items-center justify-center gap-2">
+                                <i className="fa-solid fa-wand-magic-sparkles"></i> Générer mon menu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+              )}
+
               {/* FENÊTRE MODALE ONBOARDING */}
               {showOnboardingModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
@@ -1067,4 +1209,3 @@
     </script>
 </body>
 </html>
-
