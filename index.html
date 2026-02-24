@@ -41,7 +41,6 @@
     <script type="text/babel">
         const { useState, useEffect, useCallback, useMemo } = React;
 
-        // Image de secours au cas où une photo manque
         const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
 
         // --- CONFIGURATION FIREBASE ---
@@ -53,7 +52,6 @@
             messagingSenderId: "590128476695",
             appId: "1:590128476695:web:821122bbc1e8280694e252"
         };
-        
         const appId = "cookidoudou-app";
 
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
@@ -168,7 +166,52 @@
         const getTypicalDayForAge = (ageInMonths) => {
             if (ageInMonths === null) return null;
             const profile = TYPICAL_DAYS.find(td => ageInMonths <= td.maxAge);
-            return profile || TYPICAL_DAYS[TYPICAL_DAYS.length - 1]; // Fallback au dernier si plus de 2 ans
+            return profile || TYPICAL_DAYS[TYPICAL_DAYS.length - 1];
+        };
+
+        // --- LOGIQUE TIPS D'ORGANISATION ---
+        const TIPS_DICTIONARY = [
+            {
+                keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon'],
+                icon: '🥩',
+                title: "Astuce Multitâche",
+                text: "Préparez la viande ou coupez vos légumes pendant que l'eau bout ou que la poêle chauffe pour gagner un temps précieux en cuisine."
+            },
+            {
+                keywords: ['carotte', 'courgette', 'pomme', 'légume', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron'],
+                icon: '🥕',
+                title: "Ne pelez plus !",
+                text: "Si vous achetez bio (ou sans pesticides), ne pelez pas vos légumes. Un bon brossage suffit ! La peau est un vrai cocktail nutritionnel riche en vitamines."
+            },
+            {
+                keywords: ['pâtes', 'riz', 'eau', 'bouillon', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne'],
+                icon: '🫖',
+                title: "L'allié Bouilloire",
+                text: "Utilisez votre bouilloire pour faire bouillir l'eau rapidement avant de la verser dans la casserole. Cuisson express garantie pour vos féculents et légumes !"
+            },
+            {
+                keywords: ['salade', 'vinaigre', 'huile', 'laitue', 'mâche', 'endive'],
+                icon: '🥗',
+                title: "Préparation à l'avance",
+                text: "Vous mangez souvent des salades ? Préparez votre base de vinaigrette pour la semaine dans un shaker, elle se conservera très bien et sera prête à l'emploi !"
+            }
+        ];
+
+        const FALLBACK_TIP = {
+            icon: '⏱️',
+            title: "Organisation Chef",
+            text: "Soyez multitâche : mettez la table pendant que le plat rissole ou que la préparation est en train de mixer. Chaque minute compte !"
+        };
+
+        const getRecipeTip = (ingredientsArray) => {
+            if (!ingredientsArray) return FALLBACK_TIP;
+            const text = ingredientsArray.join(' ').toLowerCase();
+            for (let tip of TIPS_DICTIONARY) {
+                if (tip.keywords.some(kw => text.includes(kw))) {
+                    return tip;
+                }
+            }
+            return FALLBACK_TIP;
         };
 
 
@@ -186,10 +229,8 @@
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
 
-          // État pour la fenêtre modale de la journée type
           const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
 
-          // --- ÉTATS POUR LE MODE SAISON ---
           const currentActiveSeasons = useMemo(() => getCurrentActiveSeasons(), []);
           const [isSeasonalModeActive, setIsSeasonalModeActive] = useState(() => {
             const saved = localStorage.getItem('cookidoudou_season_mode');
@@ -202,7 +243,6 @@
             if (!isSeasonalModeActive && activeFilter === 'Saison') setActiveFilter('Tous');
           }, [isSeasonalModeActive, activeFilter]);
 
-          // Calcul de l'âge de bébé en mois
           const ageInMonths = useMemo(() => {
             if (!babyProfile.birthdate) return null;
             try {
@@ -211,7 +251,7 @@
             } catch(e) { return null; }
           }, [babyProfile.birthdate]);
 
-          // --- 1. FIREBASE AUTHENTIFICATION ---
+          // --- FIREBASE AUTH & SYNC ---
           useEffect(() => {
             const start = async () => {
               if (!window.FirebaseHelper) return;
@@ -219,24 +259,19 @@
                 const app = window.FirebaseHelper.initializeApp(firebaseConfig);
                 const auth = window.FirebaseHelper.getAuth(app);
                 window._db = window.FirebaseHelper.getFirestore(app);
-                
                 try {
                     const cred = await window.FirebaseHelper.signInAnonymously(auth);
                     setUser(cred.user);
                     setAppError(null);
-                } catch (authErr) {
-                    setAppError("Impossible de se connecter à la base de données de synchronisation.");
-                }
+                } catch (authErr) { setAppError("Impossible de se connecter à la base."); }
               } catch (e) { console.error("Firebase Init Error", e); }
             };
             start();
           }, []);
 
-          // --- 2. SYNCHRONISATION DES DONNÉES FAMILIALES ---
           useEffect(() => {
             if (!user || !window._db || !familyCode) return;
             const fid = familyCode.trim().toLowerCase();
-            
             const pRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
             const unsubP = window.FirebaseHelper.onSnapshot(pRef, (s) => {
               if (s.exists()) {
@@ -246,7 +281,6 @@
                 if (d.shoppingList) setShoppingList(d.shoppingList);
               }
             });
-
             return () => unsubP(); 
           }, [user, familyCode]);
 
@@ -257,7 +291,6 @@
             try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { console.error("Save error", e); }
           }, [user, familyCode]);
 
-          // --- HANDLERS ---
           const handleUpdateProfile = (newP) => { setBabyProfile(newP); saveToCloud({ babyProfile: newP }); };
           
           const addToAgenda = (day, rid) => {
@@ -303,14 +336,11 @@
                 
                 {appError && (
                     <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
-                        <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest">
-                           <i className="fa-solid fa-triangle-exclamation"></i> Info
-                        </div>
+                        <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest"><i className="fa-solid fa-triangle-exclamation"></i> Info</div>
                         <p className="leading-relaxed mb-3">{appError}</p>
                     </div>
                 )}
 
-                {/* Bloc Menu du Jour */}
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-calendar-day text-orange-500"></i> Menu du jour</h3>
                     {todayRecipe ? (
@@ -332,7 +362,6 @@
                     )}
                 </div>
 
-                {/* NOUVEAU : Bloc Journée Type */}
                 <div 
                     onClick={() => { if(ageInMonths !== null) setShowTypicalDayModal(true); else setCurrentTab('profile'); }}
                     className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform active:scale-95"
@@ -354,7 +383,6 @@
                         )}
                     </div>
                 </div>
-
               </div>
             );
           };
@@ -476,6 +504,9 @@
                 babyStepText = step ? step.text : (babySteps[babySteps.length - 1]?.text || "Adaptation familiale standard");
             }
 
+            // Génération de l'astuce contextuelle pour cette recette
+            const recipeTip = getRecipeTip(r.ingredients);
+
             return (
               <div className="animate-fadeIn space-y-6 pb-32">
                 <button onClick={()=>{setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-500 font-bold flex items-center gap-2 transition hover:text-gray-800 bg-white/80 px-4 py-2 rounded-full shadow-sm w-fit backdrop-blur-md border border-gray-100">
@@ -530,6 +561,43 @@
                           <p className="text-sm leading-relaxed text-gray-600 font-medium pt-1">{s}</p>
                         </div>
                       ))}
+                    </div>
+
+                    {/* ENCART : ASTUCE DU CHEF (CONTEXTUELLE) */}
+                    <div className="bg-yellow-50 p-6 rounded-[2rem] border border-yellow-100 shadow-sm relative overflow-hidden mt-6">
+                        <div className="text-5xl absolute -right-3 -top-3 opacity-10 transform rotate-12">{recipeTip.icon}</div>
+                        <h4 className="font-black text-yellow-800 text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
+                            <i className="fa-solid fa-lightbulb"></i> Astuce d'Orga
+                        </h4>
+                        <p className="text-sm font-medium text-yellow-900 leading-relaxed relative z-10">
+                            <strong className="block mb-1 font-black">{recipeTip.title}</strong>
+                            {recipeTip.text}
+                        </p>
+                    </div>
+                  </section>
+
+                  {/* SECTION : CONSERVATION ET NETTOYAGE (PERMANENTE) */}
+                  <section className="pt-4">
+                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 tracking-widest border-b pb-2">Les Réflexes en Cuisine</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                        <div className="flex gap-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-50 items-start">
+                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 text-xl flex-shrink-0">
+                                <i className="fa-solid fa-broom"></i>
+                            </div>
+                            <div className="pt-1">
+                                <h4 className="font-black text-gray-800 text-sm mb-1">Nettoyez au fur et à mesure</h4>
+                                <p className="text-xs text-gray-500 leading-relaxed font-medium">Vous n'avez plus besoin d'un ustensile ? Nettoyez-le et rangez-le. C'est du temps de gagné à la fin du repas !</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-50 items-start">
+                            <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-500 text-xl flex-shrink-0">
+                                <i className="fa-solid fa-snowflake"></i>
+                            </div>
+                            <div className="pt-1">
+                                <h4 className="font-black text-gray-800 text-sm mb-1">Recyclez les restes</h4>
+                                <p className="text-xs text-gray-500 leading-relaxed font-medium">Il vous reste des portions ? Congelez-les pour un futur repas où vous n'aurez pas le temps de cuisiner.</p>
+                            </div>
+                        </div>
                     </div>
                   </section>
                 </div>
@@ -608,7 +676,6 @@
               {showTypicalDayModal && ageInMonths !== null && (
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
                     <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        {/* En-tête de la modale */}
                         <div className="bg-blue-500 p-6 text-white relative flex-shrink-0">
                             <button onClick={() => setShowTypicalDayModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/20 rounded-full flex items-center justify-center hover:bg-black/30 transition">
                                 <i className="fa-solid fa-xmark"></i>
@@ -617,7 +684,6 @@
                             <p className="text-blue-100 text-sm font-medium">{getTypicalDayForAge(ageInMonths).subtitle}</p>
                         </div>
                         
-                        {/* Contenu déroulant avec les repas */}
                         <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
                             {getTypicalDayForAge(ageInMonths).meals.map((meal, idx) => (
                                 <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
@@ -627,7 +693,6 @@
                                     <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-line pl-8 border-l-2 border-blue-100">
                                         {meal.text}
                                     </p>
-                                    {/* Bouton raccourci vers le carnet pour le déjeuner et le dîner */}
                                     {(meal.name === "Déjeuner" || meal.name === "Dîner" || meal.name === "Midi" || meal.name === "Soir") && ageInMonths >= 6 && (
                                         <button 
                                             onClick={() => { setShowTypicalDayModal(false); setCurrentTab('carnet'); }}
@@ -640,7 +705,6 @@
                             ))}
                         </div>
                         
-                        {/* Pied de la modale */}
                         <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
                             <button onClick={() => setShowTypicalDayModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition">
                                 J'ai compris
