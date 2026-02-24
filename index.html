@@ -194,6 +194,24 @@
                 icon: '🥗',
                 title: "Préparation à l'avance",
                 text: "Vous mangez souvent des salades ? Préparez votre base de vinaigrette pour la semaine dans un shaker, elle se conservera très bien et sera prête à l'emploi !"
+            },
+            {
+                keywords: ['surgelé', 'pois', 'haricot', 'épinard', 'framboise', 'myrtille', 'salsifis'],
+                icon: '🧊',
+                title: "Pensez aux surgelés",
+                text: "Les aliments natures surgelés ont quasiment les mêmes apports nutritionnels que les frais. Un gain de temps précieux en semaine pour choisir la juste quantité !"
+            },
+            {
+                keywords: ['gratin', 'purée', 'soupe', 'velouté', 'compote', 'sauce'],
+                icon: '❄️',
+                title: "Voyez double !",
+                text: "Ce plat se conserve très bien. Prévoyez de doubler les quantités afin de congeler la moitié de la préparation pour un soir où vous n'aurez pas le temps."
+            },
+            {
+                keywords: ['pâte', 'biscuit', 'gâteau', 'tarte', 'pizza', 'crêpe', 'pancake'],
+                icon: '👨‍👩‍👧‍👦',
+                title: "Cuisinez à plusieurs",
+                text: "La cuisine, c'est du partage ! Faites participer votre enfant à cette recette ludique. Les enfants apprécient d'autant plus lors de la dégustation."
             }
         ];
 
@@ -206,11 +224,18 @@
         const getRecipeTip = (ingredientsArray) => {
             if (!ingredientsArray) return FALLBACK_TIP;
             const text = ingredientsArray.join(' ').toLowerCase();
-            for (let tip of TIPS_DICTIONARY) {
-                if (tip.keywords.some(kw => text.includes(kw))) {
-                    return tip;
-                }
+            
+            // 1. On cherche TOUTES les astuces qui correspondent
+            const matchingTips = TIPS_DICTIONARY.filter(tip => 
+                tip.keywords.some(kw => text.includes(kw))
+            );
+
+            // 2. S'il y a des correspondances, on en tire une au sort
+            if (matchingTips.length > 0) {
+                const randomIndex = Math.floor(Math.random() * matchingTips.length);
+                return matchingTips[randomIndex];
             }
+            
             return FALLBACK_TIP;
         };
 
