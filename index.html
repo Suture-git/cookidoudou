@@ -114,13 +114,15 @@
           return activeSeasons.filter(activeSeason => dominantSeasonsIds.includes(activeSeason.id));
         };
 
-        // --- LOGIQUE CATÉGORIES DE COURSES ---
+        // --- LOGIQUE CATÉGORIES DE COURSES ET AGRÉGATEUR INTELLIGENT ---
         const SHOPPING_CATEGORIES = [
-            { id: 'frais', icon: '🥦', name: 'Fruits & Légumes', keywords: ['pomme', 'carotte', 'courgette', 'oignon', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron', 'salade', 'laitue', 'mâche', 'endive', 'citron', 'fraise', 'framboise', 'banane', 'ail', 'poivron', 'champignon', 'avocat', 'épinard', 'patate', 'terre', 'radis', 'brocoli', 'chou', 'asperge', 'mangue', 'pêche', 'poire', 'raisin', 'clémentine', 'orange'] },
+            { id: 'legumes', icon: '🥦', name: 'Légumes', keywords: ['carotte', 'courgette', 'oignon', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron', 'salade', 'laitue', 'mâche', 'endive', 'ail', 'poivron', 'champignon', 'avocat', 'épinard', 'patate', 'terre', 'radis', 'brocoli', 'chou', 'asperge'] },
+            { id: 'fruits', icon: '🍎', name: 'Fruits', keywords: ['pomme', 'citron', 'fraise', 'framboise', 'banane', 'mangue', 'pêche', 'poire', 'raisin', 'clémentine', 'orange', 'abricot', 'kiwi', 'melon', 'pastèque'] },
             { id: 'viande', icon: '🥩', name: 'Boucherie & Poissonnerie', keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon', 'poisson', 'saumon', 'cabillaud', 'crevette', 'lardon', 'merlu', 'thon', 'colin', 'truite'] },
             { id: 'laitier', icon: '🧀', name: 'Rayon Frais', keywords: ['beurre', 'crème', 'yaourt', 'fromage', 'œuf', 'oeuf', 'lait', 'gruyère', 'emmental', 'parmesan', 'mozzarella', 'mascarpone', 'feta', 'chèvre', 'suisse', 'laitage'] },
-            { id: 'sale', icon: '🍝', name: 'Épicerie Salée', keywords: ['pâte', 'riz', 'lentille', 'huile', 'sel', 'poivre', 'épice', 'conserve', 'bouillon', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne', 'moutarde', 'vinaigre', 'sauce', 'soja', 'pois chiche', 'haricot', 'purée', 'farine de pois', 'tomates pelées', 'ketchup', 'mayonnaise', 'olive'] },
-            { id: 'sucre', icon: '🍯', name: 'Épicerie Sucrée', keywords: ['farine', 'sucre', 'chocolat', 'miel', 'biscuit', 'confiture', 'compote', 'cacao', 'vanille', 'levure', 'amande', 'noisette', 'noix', 'gâteau'] },
+            { id: 'sale', icon: '🍝', name: 'Épicerie Salée', keywords: ['pâte', 'riz', 'lentille', 'huile', 'conserve', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne', 'moutarde', 'vinaigre', 'sauce', 'soja', 'pois chiche', 'haricot', 'purée', 'farine de pois', 'tomates pelées', 'ketchup', 'mayonnaise', 'olive', 'bouillon'] },
+            { id: 'epices', icon: '🧂', name: 'Épices & Condiments', keywords: ['sel', 'poivre', 'épice', 'curry', 'cumin', 'paprika', 'herbe', 'thym', 'laurier', 'basilic', 'persil', 'ciboulette', 'coriandre', 'muscade', 'cannelle', 'gingembre'] },
+            { id: 'sucre', icon: '🍯', name: 'Épicerie Sucrée', keywords: ['farine', 'sucre', 'chocolat', 'miel', 'biscuit', 'confiture', 'compote', 'cacao', 'vanille', 'levure', 'amande', 'noisette', 'noix', 'gâteau', 'sucre vanillé'] },
             { id: 'surgelé', icon: '❄️', name: 'Surgelés', keywords: ['surgelé', 'petit pois', 'glace', 'épinard haché', 'frites'] },
             { id: 'boulangerie', icon: '🥖', name: 'Boulangerie', keywords: ['pain', 'baguette', 'mie', 'brioche', 'biscotte', 'croissant'] }
         ];
@@ -134,6 +136,97 @@
                 }
             }
             return 'autres';
+        };
+
+        const parseIngredient = (rawStr) => {
+            // Extrait (1.5) (kg|cuillères) (de) (nom de l'ingrédient)
+            const match = rawStr.toLowerCase().trim().match(/^([\d.,/]+)?\s*(g|kg|ml|cl|l|c\.à\.s|c\.à\.c|cuillères?|pincées?|gousses?|tranches?|feuilles?)?\s*(?:de\s+|d'|d’)?(.*)$/);
+            if (!match) return { qty: 0, unit: '', name: rawStr.toLowerCase().trim(), originalName: rawStr.trim(), raw: rawStr };
+            
+            let qtyStr = match[1] || '0';
+            let qty = 0;
+            if (qtyStr.includes('/')) {
+                const parts = qtyStr.split('/');
+                if (parts.length === 2 && parseFloat(parts[1]) !== 0) qty = parseFloat(parts[0]) / parseFloat(parts[1]);
+            } else {
+                qty = parseFloat(qtyStr.replace(',', '.'));
+            }
+            
+            let unit = (match[2] || '').trim();
+            if (unit.startsWith('cuillère')) unit = 'cuillère';
+            if (unit.startsWith('pincée')) unit = 'pincée';
+            if (unit.startsWith('gousse')) unit = 'gousse';
+            if (unit.startsWith('tranche')) unit = 'tranche';
+            if (unit.startsWith('feuille')) unit = 'feuille';
+
+            let name = (match[3] || rawStr).trim();
+            let normalizedName = name.replace(/^(les|des|du|de la)\s+/, '');
+            if (normalizedName.endsWith('s') && !['is', 'os', 'as', 'us'].some(end => normalizedName.endsWith(end))) {
+                normalizedName = normalizedName.slice(0, -1);
+            }
+
+            return { qty, unit, name: normalizedName, originalName: name, raw: rawStr };
+        };
+
+        const aggregateShoppingList = (rawList) => {
+            const aggregated = {};
+            rawList.forEach(rawStr => {
+                const parsed = parseIngredient(rawStr);
+                let baseUnit = parsed.unit;
+                let baseQty = parsed.qty;
+                
+                // Conversions mathématiques pour regrouper kg/g et L/ml
+                if (baseUnit === 'kg') { baseUnit = 'g'; baseQty *= 1000; }
+                else if (baseUnit === 'l' || baseUnit === 'L') { baseUnit = 'ml'; baseQty *= 1000; }
+                else if (baseUnit === 'cl') { baseUnit = 'ml'; baseQty *= 10; }
+                
+                const key = parsed.name;
+                if (!aggregated[key]) aggregated[key] = {};
+                if (!aggregated[key][baseUnit]) {
+                    aggregated[key][baseUnit] = { qty: 0, rawItems: [], displayName: parsed.originalName };
+                }
+                
+                aggregated[key][baseUnit].qty += baseQty;
+                aggregated[key][baseUnit].rawItems.push(rawStr);
+            });
+            
+            const result = [];
+            Object.values(aggregated).forEach(unitsObj => {
+                Object.keys(unitsObj).forEach(unit => {
+                    let { qty, rawItems, displayName } = unitsObj[unit];
+                    let displayUnit = unit;
+                    let displayQty = qty;
+                    
+                    if (unit === 'g' && qty >= 1000) { displayQty = qty / 1000; displayUnit = 'kg'; }
+                    if (unit === 'ml' && qty >= 1000) { displayQty = qty / 1000; displayUnit = 'L'; }
+                    
+                    let displayStr = "";
+                    if (displayQty > 0) {
+                        displayStr += Number.isInteger(displayQty) ? displayQty : displayQty.toFixed(1);
+                        
+                        // Accords textuels
+                        if (['cuillère', 'pincée', 'gousse', 'tranche', 'feuille'].includes(displayUnit)) {
+                            displayUnit = displayQty > 1 ? displayUnit + 's' : displayUnit;
+                        }
+
+                        if (displayUnit) {
+                            let linkWord = /^[aeiouyhéèê]/i.test(displayName) ? " d'" : " de ";
+                            displayStr += (displayUnit.length <= 2 ? displayUnit : ' ' + displayUnit) + linkWord;
+                        } else {
+                            displayStr += " ";
+                            if (displayQty > 1 && !displayName.endsWith('s') && !displayName.endsWith('x') && !displayName.endsWith('z')) {
+                                displayName += 's';
+                            }
+                        }
+                    }
+                    displayStr += displayName;
+                    // Majuscule de début de phrase
+                    displayStr = displayStr.charAt(0).toUpperCase() + displayStr.slice(1); 
+                    
+                    result.push({ displayStr, rawItems });
+                });
+            });
+            return result;
         };
 
         // --- LOGIQUE GÉNÉRATEUR JOURNÉE TYPE ---
@@ -239,6 +332,8 @@
               structure: 'Plat + Dessert'
           });
           
+          const [collapsedCategories, setCollapsedCategories] = useState({}); // Gère l'accordéon des rayons
+
           const [showOnboardingModal, setShowOnboardingModal] = useState(() => localStorage.getItem('cookidoudou_onboarded') !== 'true');
           const [showMedicalConsentModal, setShowMedicalConsentModal] = useState(false);
           const [isCoachEnabled, setIsCoachEnabled] = useState(() => {
@@ -457,9 +552,16 @@
             saveToCloud({ shoppingList: newS });
           };
 
+          const removeAggregatedFromShoppingList = (rawItemsToRemove) => {
+            const newS = shoppingList.filter(i => !rawItemsToRemove.includes(i));
+            setShoppingList(newS);
+            saveToCloud({ shoppingList: newS });
+          };
+
           const copyShoppingList = () => {
               if (shoppingList.length === 0) return;
-              const textToCopy = "Ma liste de courses Cookidoudou :\n\n- " + shoppingList.join("\n- ");
+              const aggregated = aggregateShoppingList(shoppingList);
+              const textToCopy = "Ma liste de courses Cookidoudou :\n\n- " + aggregated.map(a => a.displayStr).join("\n- ");
               try { document.execCommand('copy'); navigator.clipboard.writeText(textToCopy); alert("Liste copiée !"); } catch (err) { alert("Erreur copie."); }
           };
 
@@ -733,25 +835,27 @@
           };
 
           const renderShopping = () => {
-            // Regroupement par catégorie
-            const groupedShopping = shoppingList.reduce((acc, item) => {
-                const catId = categorizeIngredient(item);
+            // Regroupement par catégorie après agrégation mathématique
+            const aggregatedList = aggregateShoppingList(shoppingList);
+            const groupedShopping = aggregatedList.reduce((acc, itemObj) => {
+                const catId = categorizeIngredient(itemObj.displayStr);
                 if (!acc[catId]) acc[catId] = [];
-                acc[catId].push(item);
+                acc[catId].push(itemObj);
                 return acc;
             }, {});
 
             const allCategories = [...SHOPPING_CATEGORIES, { id: 'autres', icon: '🛒', name: 'Autres' }];
+            const totalItems = aggregatedList.length;
 
             return (
               <div className="animate-fadeIn space-y-6 pb-24">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-black text-gray-800">Ma Liste</h1>
+                    <h1 className="text-2xl font-black text-gray-800">Ma Liste <span className="text-sm text-gray-400 font-bold ml-2">({totalItems})</span></h1>
                     <div className="flex gap-2">
                         <button onClick={() => setShowTipsModal(true)} className="text-yellow-600 bg-yellow-50 p-3 rounded-2xl hover:bg-yellow-100 transition active:scale-95 flex items-center gap-2" title="Astuces d'organisation">
                             <i className="fa-solid fa-lightbulb text-lg"></i>
                         </button>
-                        {shoppingList.length > 0 && (
+                        {aggregatedList.length > 0 && (
                             <button onClick={copyShoppingList} className="text-orange-500 bg-orange-50 p-3 rounded-2xl hover:bg-orange-100 transition active:scale-95" title="Copier la liste">
                                 <i className="fa-solid fa-copy text-lg"></i>
                             </button>
@@ -759,31 +863,41 @@
                     </div>
                 </div>
 
-                {shoppingList.length === 0 ? (
+                {aggregatedList.length === 0 ? (
                     <div className="text-center py-24 opacity-20 flex flex-col items-center">
                         <i className="fa-solid fa-basket-shopping text-7xl mb-4"></i>
                         <p className="font-black uppercase tracking-widest text-xs">Panier vide</p>
                     </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {allCategories.map(cat => {
                         if (!groupedShopping[cat.id] || groupedShopping[cat.id].length === 0) return null;
                         
+                        // Par défaut (undefined !== false) -> le rayon est "fermé"
+                        const isCollapsed = collapsedCategories[cat.id] !== false;
+                        
                         return (
-                            <div key={cat.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
-                                <div className="bg-gray-50 px-5 py-3 border-b border-gray-100 flex items-center gap-3">
+                            <div key={cat.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm transition-all">
+                                <div onClick={() => setCollapsedCategories({...collapsedCategories, [cat.id]: !isCollapsed})} className="bg-gray-50 px-5 py-4 border-b border-gray-100 flex items-center gap-3 cursor-pointer select-none hover:bg-gray-100 transition group">
                                     <span className="text-xl">{cat.icon}</span>
                                     <h3 className="font-black text-gray-800 uppercase tracking-widest text-[10px]">{cat.name}</h3>
-                                    <span className="ml-auto bg-white px-2 py-1 rounded-full text-[9px] font-bold text-gray-400 shadow-sm border border-gray-100">{groupedShopping[cat.id].length}</span>
-                                </div>
-                                <div>
-                                    {groupedShopping[cat.id].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-5 p-5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
-                                            <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer accent-orange-500" onChange={() => setTimeout(() => removeFromShoppingList(item), 300)} />
-                                            <span className="text-sm font-bold text-gray-600 flex-1">{item}</span>
+                                    <div className="ml-auto flex items-center gap-3">
+                                        <span className="bg-white px-2 py-1 rounded-full text-[9px] font-bold text-gray-500 shadow-sm border border-gray-100">{groupedShopping[cat.id].length}</span>
+                                        <div className={`w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400 transition-transform duration-300 ${!isCollapsed ? 'rotate-180 bg-orange-50 text-orange-500' : ''}`}>
+                                            <i className="fa-solid fa-chevron-down text-[10px]"></i>
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
+                                {!isCollapsed && (
+                                    <div className="animate-fadeIn">
+                                        {groupedShopping[cat.id].map((itemObj, i) => (
+                                            <div key={i} className="flex items-center gap-4 p-4 sm:px-5 border-b border-gray-50 last:border-0 hover:bg-orange-50/30 transition group">
+                                                <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 text-orange-500 focus:ring-orange-500 cursor-pointer accent-orange-500" onChange={() => setTimeout(() => removeAggregatedFromShoppingList(itemObj.rawItems), 300)} />
+                                                <span className="text-sm font-bold text-gray-700 flex-1">{itemObj.displayStr}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
@@ -1209,4 +1323,3 @@
     </script>
 </body>
 </html>
-
