@@ -139,8 +139,8 @@
         };
 
         const parseIngredient = (rawStr) => {
-            // Extrait (1.5) (kg|cuillères) (de) (nom de l'ingrédient)
-            const match = rawStr.toLowerCase().trim().match(/^([\d.,/]+)?\s*(g|kg|ml|cl|l|c\.à\.s|c\.à\.c|cuillères?|pincées?|gousses?|tranches?|feuilles?)?\s*(?:de\s+|d'|d’)?(.*)$/);
+            // Le "lookahead" (?=\s|$|d'|d’|de\b) empêche de couper "grosses" en "g + rosses"
+            const match = rawStr.toLowerCase().trim().match(/^([\d.,/]+)?\s*(?:(g|kg|ml|cl|l|c\.à\.s|c\.à\.c|cuillères?|pincées?|gousses?|tranches?|feuilles?)(?=\s|$|d'|d’|de\b))?\s*(?:de\s+|d'|d’)?(.*)$/);
             if (!match) return { qty: 0, unit: '', name: rawStr.toLowerCase().trim(), originalName: rawStr.trim(), raw: rawStr };
             
             let qtyStr = match[1] || '0';
@@ -160,7 +160,9 @@
             if (unit.startsWith('feuille')) unit = 'feuille';
 
             let name = (match[3] || rawStr).trim();
-            let normalizedName = name.replace(/^(les|des|du|de la)\s+/, '');
+            let normalizedName = name.replace(/^(les|des|du|de la|un|une)\s+/, '');
+            
+            // Retrait basique du pluriel pour regrouper "courgette" et "courgettes"
             if (normalizedName.endsWith('s') && !['is', 'os', 'as', 'us'].some(end => normalizedName.endsWith(end))) {
                 normalizedName = normalizedName.slice(0, -1);
             }
@@ -214,13 +216,13 @@
                             displayStr += (displayUnit.length <= 2 ? displayUnit : ' ' + displayUnit) + linkWord;
                         } else {
                             displayStr += " ";
+                            // Ajout du 's' si quantité > 1
                             if (displayQty > 1 && !displayName.endsWith('s') && !displayName.endsWith('x') && !displayName.endsWith('z')) {
                                 displayName += 's';
                             }
                         }
                     }
                     displayStr += displayName;
-                    // Majuscule de début de phrase
                     displayStr = displayStr.charAt(0).toUpperCase() + displayStr.slice(1); 
                     
                     result.push({ displayStr, rawItems });
@@ -310,9 +312,9 @@
           
           const todayStrGlobal = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
           const [selectedHomeDay, setSelectedHomeDay] = useState(todayStrGlobal);
-
+          
           const [children, setChildren] = useState([]); 
-          const [agenda, setAgenda] = useState({}); // Format: { "Lundi": [id1, id2], ... }
+          const [agenda, setAgenda] = useState({}); 
           const [shoppingList, setShoppingList] = useState([]); 
           
           const [user, setUser] = useState(null);
@@ -323,8 +325,7 @@
           const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
           const [activeModalChildId, setActiveModalChildId] = useState(null); 
           const [showTipsModal, setShowTipsModal] = useState(false);
-
-          // --- MODALES GÉNÉRATEUR DE SEMAINE ---
+          
           const [showGeneratorModal, setShowGeneratorModal] = useState(false);
           const [genConfig, setGenConfig] = useState({
               weekdayMeals: 1,
@@ -332,7 +333,7 @@
               structure: 'Plat + Dessert'
           });
           
-          const [collapsedCategories, setCollapsedCategories] = useState({}); // Gère l'accordéon des rayons
+          const [collapsedCategories, setCollapsedCategories] = useState({});
 
           const [showOnboardingModal, setShowOnboardingModal] = useState(() => localStorage.getItem('cookidoudou_onboarded') !== 'true');
           const [showMedicalConsentModal, setShowMedicalConsentModal] = useState(false);
@@ -376,21 +377,14 @@
             const unsubP = window.FirebaseHelper.onSnapshot(pRef, (s) => {
               if (s.exists()) {
                 const d = s.data();
+                if (d.children && d.children.length > 0) setChildren(d.children);
+                else if (d.babyProfile && (d.babyProfile.name || d.babyProfile.birthdate)) setChildren([{ id: 'child-migrated-1', ...d.babyProfile }]);
                 
-                if (d.children && d.children.length > 0) {
-                    setChildren(d.children);
-                } else if (d.babyProfile && (d.babyProfile.name || d.babyProfile.birthdate)) {
-                    setChildren([{ id: 'child-migrated-1', ...d.babyProfile }]);
-                }
-                
-                // Migration du planning (si l'ancienne version avait un ID simple au lieu d'un tableau)
                 if (d.agenda) {
                     const migratedAgenda = {};
                     Object.keys(d.agenda).forEach(day => {
                         const val = d.agenda[day];
-                        if (val) {
-                            migratedAgenda[day] = Array.isArray(val) ? val : [val];
-                        }
+                        if (val) migratedAgenda[day] = Array.isArray(val) ? val : [val];
                     });
                     setAgenda(migratedAgenda);
                 }
@@ -410,23 +404,17 @@
           // --- GESTION DES ENFANTS ---
           const updateChild = (childId, updates) => {
               const newChildren = children.map(c => c.id === childId ? { ...c, ...updates } : c);
-              setChildren(newChildren);
-              saveToCloud({ children: newChildren });
+              setChildren(newChildren); saveToCloud({ children: newChildren });
           };
-
           const addChild = () => {
               if (children.length >= 3) return;
               const newChildren = [...children, { id: `child-${Date.now()}`, name: '', birthdate: '', photo: null }];
-              setChildren(newChildren);
-              saveToCloud({ children: newChildren });
+              setChildren(newChildren); saveToCloud({ children: newChildren });
           };
-
           const removeChild = (childId) => {
               const newChildren = children.filter(c => c.id !== childId);
-              setChildren(newChildren);
-              saveToCloud({ children: newChildren });
+              setChildren(newChildren); saveToCloud({ children: newChildren });
           };
-
           const handlePhotoUpload = (e, childId) => {
               const file = e.target.files[0];
               if (!file) return;
@@ -449,17 +437,11 @@
               reader.readAsDataURL(file);
           };
 
-          // --- GESTION DU PLANNING (MULTI-RECETTES) ---
+          // --- GESTION DU PLANNING ---
           const addToAgenda = (day, rid) => {
             const currentDayList = agenda[day] || [];
-            if (currentDayList.length >= 6) {
-                alert("Menu complet ! Vous ne pouvez pas ajouter plus de 6 recettes pour ce jour.");
-                return;
-            }
-            if (currentDayList.includes(rid)) {
-                alert("Cette recette est déjà prévue pour ce jour !");
-                return;
-            }
+            if (currentDayList.length >= 6) { alert("Menu complet ! Vous ne pouvez pas ajouter plus de 6 recettes pour ce jour."); return; }
+            if (currentDayList.includes(rid)) { alert("Cette recette est déjà prévue pour ce jour !"); return; }
             const newA = { ...agenda, [day]: [...currentDayList, rid] };
             setAgenda(newA);
             
@@ -476,8 +458,7 @@
           const removeFromAgenda = (day, rid) => {
              const currentDayList = agenda[day] || [];
              const newA = { ...agenda, [day]: currentDayList.filter(id => id !== rid) };
-             setAgenda(newA);
-             saveToCloud({ agenda: newA });
+             setAgenda(newA); saveToCloud({ agenda: newA });
           };
 
           // --- GÉNÉRATEUR DE SEMAINE MAGIQUE ---
@@ -485,17 +466,16 @@
             let availableRecipes = RECIPES;
             if (isSeasonalModeActive) {
                 const seasonal = RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0);
-                if (seasonal.length > 5) availableRecipes = seasonal; // Sécurité au cas où il n'y aurait pas assez de recettes pour la saison
+                if (seasonal.length > 5) availableRecipes = seasonal; 
             }
 
             const entrees = availableRecipes.filter(r => r.category?.includes("Entrée"));
             const plats = availableRecipes.filter(r => r.category?.includes("Plat"));
             const desserts = availableRecipes.filter(r => r.category?.includes("Dessert"));
 
-            // Helper pour éviter de manger 4 fois la même chose dans la semaine
             const getRandom = (arr, excludeIds) => {
                 let available = arr.filter(r => !excludeIds.includes(r.id));
-                if (available.length === 0) available = arr; // On recommence s'il n'y a plus de choix
+                if (available.length === 0) available = arr;
                 return available[Math.floor(Math.random() * available.length)];
             };
 
@@ -522,40 +502,25 @@
                         if (r) { dayRecipes.push(r); usedIds.push(r.id); }
                     }
                 }
-
-                // Déduplication & limite à 6 recettes max par jour
                 const uniqueDayIds = Array.from(new Set(dayRecipes.map(r => r.id))).slice(0, 6);
                 newAgenda[day] = uniqueDayIds;
 
                 uniqueDayIds.forEach(id => {
                     const rec = RECIPES.find(r => r.id === id);
                     if(rec?.ingredients) {
-                        rec.ingredients.forEach(i => {
-                            if(!newShoppingList.includes(i)) newShoppingList.push(i);
-                        });
+                        rec.ingredients.forEach(i => { if(!newShoppingList.includes(i)) newShoppingList.push(i); });
                     }
                 });
             });
 
-            setAgenda(newAgenda);
-            setShoppingList(newShoppingList);
-            saveToCloud({ agenda: newAgenda, shoppingList: newShoppingList });
-            setShowGeneratorModal(false);
-            alert("✨ Menu de la semaine généré avec succès !");
-            setCurrentTab('home');
+            setAgenda(newAgenda); setShoppingList(newShoppingList); saveToCloud({ agenda: newAgenda, shoppingList: newShoppingList });
+            setShowGeneratorModal(false); alert("✨ Menu de la semaine généré avec succès !"); setCurrentTab('home');
           };
 
-          // --- AUTRES HANDLERS ---
-          const removeFromShoppingList = (item) => {
-            const newS = shoppingList.filter(i => i !== item);
-            setShoppingList(newS);
-            saveToCloud({ shoppingList: newS });
-          };
-
+          // --- LISTE DE COURSES ---
           const removeAggregatedFromShoppingList = (rawItemsToRemove) => {
             const newS = shoppingList.filter(i => !rawItemsToRemove.includes(i));
-            setShoppingList(newS);
-            saveToCloud({ shoppingList: newS });
+            setShoppingList(newS); saveToCloud({ shoppingList: newS });
           };
 
           const copyShoppingList = () => {
@@ -575,7 +540,6 @@
           };
 
           const closeOnboarding = () => { setShowOnboardingModal(false); localStorage.setItem('cookidoudou_onboarded', 'true'); };
-
           const greetingNames = children.length > 0 ? children.map(c => c.name || "Bébé").join(' et ') : "!";
 
           // --- VUES DE L'APPLICATION ---
@@ -592,10 +556,17 @@
                     <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {greetingNames}</h1>
                 </div>
 
+                {appError && (
+                    <div className="bg-red-50 border border-red-200 p-5 rounded-3xl text-red-600 text-xs shadow-sm">
+                        <div className="flex items-center gap-2 mb-2 font-black uppercase tracking-widest"><i className="fa-solid fa-triangle-exclamation"></i> Info</div>
+                        <p className="leading-relaxed mb-3">{appError}</p>
+                    </div>
+                )}
+
                 {/* MA SEMAINE EN UN COUP D'OEIL */}
                 <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 uppercase text-[10px] tracking-widest px-2"><i className="fa-solid fa-calendar-week text-blue-500"></i> La Semaine</h3>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-2 pt-2">
+                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pt-2 pb-2 px-2">
                        {DAYS_OF_WEEK.map(day => {
                            const dayRecs = (agenda[day] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
                            const isToday = day === todayStr;
@@ -622,7 +593,7 @@
                     </div>
                 </div>
 
-                {/* MENU DU JOUR SÉLECTIONNÉ (MULTI-RECETTES) */}
+                {/* MENU DU JOUR */}
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
                     <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-utensils text-orange-500"></i> {menuTitle}</h3>
                     {displayRecipes.length > 0 ? (
@@ -638,10 +609,7 @@
                                             <p className="text-[10px] text-orange-600 font-bold mt-1">⏱ {r.time}</p>
                                         </div>
                                     </div>
-                                    {/* BOUTON SUPPRIMER */}
-                                    <button onClick={(e) => { e.stopPropagation(); removeFromAgenda(selectedHomeDay, r.id); }} className="w-8 h-8 bg-white text-gray-400 rounded-full flex items-center justify-center shadow-sm hover:text-red-500 hover:bg-red-50 transition flex-shrink-0" title="Retirer du menu">
-                                        <i className="fa-solid fa-trash-can text-xs"></i>
-                                    </button>
+                                    <button onClick={(e) => { e.stopPropagation(); removeFromAgenda(selectedHomeDay, r.id); }} className="w-8 h-8 bg-white text-gray-400 rounded-full flex items-center justify-center shadow-sm hover:text-red-500 hover:bg-red-50 transition flex-shrink-0" title="Retirer du menu"><i className="fa-solid fa-trash-can text-xs"></i></button>
                                 </div>
                             ))}
                         </div>
@@ -654,18 +622,12 @@
                     )}
                 </div>
 
-                <div 
-                    onClick={() => { if(children.length > 0) { setActiveModalChildId(children[0].id); setShowTypicalDayModal(true); } else { setCurrentTab('profile'); } }}
-                    className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform active:scale-95"
-                >
+                <div onClick={() => { if(children.length > 0) { setActiveModalChildId(children[0].id); setShowTypicalDayModal(true); } else { setCurrentTab('profile'); } }} className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform active:scale-95">
                     <i className="fa-solid fa-clipboard-list absolute -right-6 -bottom-6 text-8xl opacity-10 transform -rotate-12"></i>
                     <div className="relative z-10">
                         <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-lightbulb text-yellow-300"></i> Journée Type</h3>
                         {children.length > 0 ? (
-                            <>
-                                <p className="text-sm font-medium leading-relaxed mb-3">Découvrez les portions et menus recommandés selon l'âge.</p>
-                                <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">Voir le menu <i className="fa-solid fa-arrow-right"></i></div>
-                            </>
+                            <><p className="text-sm font-medium leading-relaxed mb-3">Découvrez les portions et menus recommandés selon l'âge.</p><div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">Voir le menu <i className="fa-solid fa-arrow-right"></i></div></>
                         ) : (
                             <p className="text-sm font-medium leading-relaxed">Ajoutez un enfant dans le profil pour découvrir sa journée type !</p>
                         )}
@@ -696,7 +658,6 @@
                             <div key={child.id} className="bg-white rounded-[3rem] p-6 shadow-sm border border-gray-100 mb-8 last:mb-0 relative overflow-hidden">
                                 <i className="fa-solid fa-graduation-cap absolute -right-6 -bottom-6 text-8xl opacity-[0.03] transform -rotate-12"></i>
                                 
-                                {/* EN-TÊTE ENFANT */}
                                 <div className="flex items-center gap-4 mb-6 border-b border-gray-50 pb-5 relative z-10">
                                     <div className="w-14 h-14 rounded-full overflow-hidden bg-indigo-50 border-2 border-white shadow-md flex items-center justify-center flex-shrink-0 text-indigo-200">
                                         {child.photo ? <img src={child.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-2xl"></i>}
@@ -707,7 +668,6 @@
                                     </div>
                                 </div>
 
-                                {/* BLOC ÉTAPE */}
                                 <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-5 mb-5 border border-indigo-100 relative z-10">
                                     <h3 className="font-black text-indigo-800 mb-3 flex items-center gap-2 uppercase text-[10px] tracking-widest">
                                         <i className="fa-solid fa-bullseye text-indigo-500"></i> Étape actuelle
@@ -733,7 +693,6 @@
                                     </div>
                                 </div>
 
-                                {/* BLOC PRÉCAUTIONS IMPORTANTES */}
                                 <div className="bg-red-50 rounded-3xl p-5 border border-red-100 relative z-10">
                                     <h4 className="font-black text-red-800 text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
                                         <i className="fa-solid fa-triangle-exclamation text-red-500"></i> Précautions importantes
@@ -772,7 +731,6 @@
                     <h1 className="text-2xl font-black text-gray-800">Recettes</h1>
                 </div>
 
-                {/* BOUTON INSPIRATION MAGIQUE */}
                 <div onClick={() => setShowGeneratorModal(true)} className="bg-gradient-to-r from-orange-400 to-rose-400 rounded-[2rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform hover:-translate-y-1 active:scale-95 flex items-center justify-between">
                     <div className="relative z-10">
                         <h3 className="font-black text-lg mb-1 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles"></i> Besoin d'inspiration ?</h3>
@@ -835,7 +793,6 @@
           };
 
           const renderShopping = () => {
-            // Regroupement par catégorie après agrégation mathématique
             const aggregatedList = aggregateShoppingList(shoppingList);
             const groupedShopping = aggregatedList.reduce((acc, itemObj) => {
                 const catId = categorizeIngredient(itemObj.displayStr);
@@ -873,7 +830,6 @@
                     {allCategories.map(cat => {
                         if (!groupedShopping[cat.id] || groupedShopping[cat.id].length === 0) return null;
                         
-                        // Par défaut (undefined !== false) -> le rayon est "fermé"
                         const isCollapsed = collapsedCategories[cat.id] !== false;
                         
                         return (
@@ -1048,17 +1004,13 @@
               <div className="space-y-6 mb-8">
                   {children.map((child, index) => (
                       <div key={child.id} className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm relative group">
-                          <button onClick={() => removeChild(child.id)} className="absolute top-6 right-6 w-8 h-8 bg-red-50 text-red-400 rounded-full flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition">
-                              <i className="fa-solid fa-trash-can text-xs"></i>
-                          </button>
+                          <button onClick={() => removeChild(child.id)} className="absolute top-6 right-6 w-8 h-8 bg-red-50 text-red-400 rounded-full flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition"><i className="fa-solid fa-trash-can text-xs"></i></button>
 
                           <div className="relative w-28 h-28 mx-auto mb-6 cursor-pointer transform hover:scale-105 transition" onClick={() => document.getElementById(`photo-${child.id}`).click()}>
                               <div className="w-full h-full rounded-full bg-orange-50 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden text-orange-200">
                                   {child.photo ? <img src={child.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-5xl"></i>}
                               </div>
-                              <div className="absolute bottom-0 right-0 bg-white p-2.5 rounded-full shadow-lg text-orange-500 border border-gray-100 flex items-center justify-center">
-                                  <i className="fa-solid fa-camera text-sm"></i>
-                              </div>
+                              <div className="absolute bottom-0 right-0 bg-white p-2.5 rounded-full shadow-lg text-orange-500 border border-gray-100 flex items-center justify-center"><i className="fa-solid fa-camera text-sm"></i></div>
                               <input type="file" id={`photo-${child.id}`} accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e, child.id)} />
                           </div>
 
