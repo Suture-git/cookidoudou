@@ -193,6 +193,9 @@
           const [selectedRecipe, setSelectedRecipe] = useState(null);
           const [selectedDayForAgenda, setSelectedDayForAgenda] = useState(DAYS_OF_WEEK[0]);
           
+          const todayStrGlobal = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
+          const [selectedHomeDay, setSelectedHomeDay] = useState(todayStrGlobal);
+
           const [children, setChildren] = useState([]); 
           const [agenda, setAgenda] = useState({}); // Format: { "Lundi": [id1, id2], ... }
           const [shoppingList, setShoppingList] = useState([]); 
@@ -413,8 +416,9 @@
           // --- VUES DE L'APPLICATION ---
           const renderHome = () => {
             const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
-            const todayRecipeIds = agenda[todayStr] || [];
-            const todayRecipes = todayRecipeIds.map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
+            const displayRecipeIds = agenda[selectedHomeDay] || [];
+            const displayRecipes = displayRecipeIds.map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
+            const menuTitle = selectedHomeDay === todayStr ? "Menu d'aujourd'hui" : `Menu du ${selectedHomeDay}`;
             
             return (
               <div className="space-y-6 animate-fadeIn pb-24">
@@ -430,9 +434,13 @@
                        {DAYS_OF_WEEK.map(day => {
                            const dayRecs = (agenda[day] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
                            const isToday = day === todayStr;
+                           const isSelected = day === selectedHomeDay;
                            return (
-                               <div key={day} className={`flex flex-col items-center bg-gray-50 p-3 rounded-2xl min-w-[4rem] shadow-inner border border-gray-100/50 ${isToday ? 'ring-2 ring-orange-200 bg-orange-50' : ''}`}>
-                                   <span className={`text-[10px] font-black uppercase tracking-widest mb-2 ${isToday ? 'text-orange-500' : 'text-gray-400'}`}>{day.substring(0,3)}</span>
+                               <div key={day} onClick={() => setSelectedHomeDay(day)} className={`flex flex-col items-center p-3 rounded-2xl min-w-[4rem] shadow-inner border cursor-pointer transition-all transform active:scale-95 ${isSelected ? 'ring-2 ring-orange-400 bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-100/50 hover:bg-gray-100'}`}>
+                                   <span className={`text-[10px] font-black uppercase tracking-widest mb-2 relative ${isSelected ? 'text-orange-600' : isToday ? 'text-orange-400' : 'text-gray-400'}`}>
+                                       {day.substring(0,3)}
+                                       {isToday && !isSelected && <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"></span>}
+                                   </span>
                                    <div className="flex flex-col gap-1 items-center">
                                        {dayRecs.length > 0 ? dayRecs.slice(0, 3).map((r, i) => (
                                            <div key={i} className="relative z-10" style={{ marginTop: i > 0 ? '-10px' : '0' }}>
@@ -449,12 +457,12 @@
                     </div>
                 </div>
 
-                {/* MENU DU JOUR (MULTI-RECETTES) */}
+                {/* MENU DU JOUR SÉLECTIONNÉ (MULTI-RECETTES) */}
                 <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-utensils text-orange-500"></i> Menu d'aujourd'hui</h3>
-                    {todayRecipes.length > 0 ? (
+                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest"><i className="fa-solid fa-utensils text-orange-500"></i> {menuTitle}</h3>
+                    {displayRecipes.length > 0 ? (
                         <div className="space-y-3">
-                            {todayRecipes.map((r, idx) => (
+                            {displayRecipes.map((r, idx) => (
                                 <div key={idx} className="flex gap-4 bg-orange-50 p-3 pr-4 rounded-3xl items-center relative group">
                                     <div onClick={() => { setSelectedRecipe(r); setCurrentTab('recipe_detail'); }} className="flex gap-4 items-center flex-1 cursor-pointer">
                                         <div className="w-16 h-16 rounded-2xl bg-orange-100 overflow-hidden flex-shrink-0 shadow-sm relative">
@@ -466,7 +474,7 @@
                                         </div>
                                     </div>
                                     {/* BOUTON SUPPRIMER */}
-                                    <button onClick={(e) => { e.stopPropagation(); removeFromAgenda(todayStr, r.id); }} className="w-8 h-8 bg-white text-gray-400 rounded-full flex items-center justify-center shadow-sm hover:text-red-500 hover:bg-red-50 transition flex-shrink-0" title="Retirer du menu">
+                                    <button onClick={(e) => { e.stopPropagation(); removeFromAgenda(selectedHomeDay, r.id); }} className="w-8 h-8 bg-white text-gray-400 rounded-full flex items-center justify-center shadow-sm hover:text-red-500 hover:bg-red-50 transition flex-shrink-0" title="Retirer du menu">
                                         <i className="fa-solid fa-trash-can text-xs"></i>
                                     </button>
                                 </div>
@@ -475,7 +483,7 @@
                     ) : (
                         <div className="text-center py-6 opacity-60">
                             <i className="fa-solid fa-plate-wheat text-3xl text-gray-300 mb-2"></i>
-                            <p className="text-sm text-gray-500 italic">Rien de prévu pour le moment.</p>
+                            <p className="text-sm text-gray-500 italic">Rien de prévu pour ce jour.</p>
                             <button onClick={() => setCurrentTab('carnet')} className="mt-4 text-xs font-bold text-orange-500 uppercase tracking-widest bg-orange-50 px-4 py-2 rounded-xl">Voir les recettes</button>
                         </div>
                     )}
