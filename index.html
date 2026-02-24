@@ -57,6 +57,15 @@
         const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
         const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
+        // --- FONCTION UTILITAIRE : AGE EN MOIS ---
+        const calculateAgeInMonths = (birthdate) => {
+            if (!birthdate) return null;
+            try {
+                const diffTime = Math.abs(new Date() - new Date(birthdate));
+                return Math.floor(Math.ceil(diffTime / (1000 * 60 * 60 * 24)) / 30.44); 
+            } catch(e) { return null; }
+        };
+
         // --- LOGIQUE MODE 100% SAISON ---
         const SEASONAL_INGREDIENTS = {
           printemps: ['asperge', 'carotte', 'champignon', 'chou', 'courgette', 'épinard', 'navet', 'oignon', 'radis', 'tomate', 'abricot', 'cerise', 'citron', 'fraise', 'framboise', 'passion', 'pêche', 'rhubarbe'],
@@ -200,71 +209,22 @@
 
         // --- LOGIQUE TIPS D'ORGANISATION ---
         const TIPS_DICTIONARY = [
-            {
-                keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon'],
-                icon: '🥩',
-                title: "Astuce Multitâche",
-                text: "Préparez la viande ou coupez vos légumes pendant que l'eau bout ou que la poêle chauffe pour gagner un temps précieux en cuisine."
-            },
-            {
-                keywords: ['carotte', 'courgette', 'pomme', 'légume', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron'],
-                icon: '🥕',
-                title: "Ne pelez plus !",
-                text: "Si vous achetez bio (ou sans pesticides), ne pelez pas vos légumes. Un bon brossage suffit ! La peau est un vrai cocktail nutritionnel riche en vitamines."
-            },
-            {
-                keywords: ['pâtes', 'riz', 'eau', 'bouillon', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne'],
-                icon: '🫖',
-                title: "L'allié Bouilloire",
-                text: "Utilisez votre bouilloire pour faire bouillir l'eau rapidement avant de la verser dans la casserole. Cuisson express garantie pour vos féculents et légumes !"
-            },
-            {
-                keywords: ['salade', 'vinaigre', 'huile', 'laitue', 'mâche', 'endive'],
-                icon: '🥗',
-                title: "Préparation à l'avance",
-                text: "Vous mangez souvent des salades ? Préparez votre base de vinaigrette pour la semaine dans un shaker, elle se conservera très bien et sera prête à l'emploi !"
-            },
-            {
-                keywords: ['surgelé', 'pois', 'haricot', 'épinard', 'framboise', 'myrtille', 'salsifis'],
-                icon: '🧊',
-                title: "Pensez aux surgelés",
-                text: "Les aliments natures surgelés ont quasiment les mêmes apports nutritionnels que les frais. Un gain de temps précieux en semaine pour choisir la juste quantité !"
-            },
-            {
-                keywords: ['gratin', 'purée', 'soupe', 'velouté', 'compote', 'sauce'],
-                icon: '❄️',
-                title: "Voyez double !",
-                text: "Ce plat se conserve très bien. Prévoyez de doubler les quantités afin de congeler la moitié de la préparation pour un soir où vous n'aurez pas le temps."
-            },
-            {
-                keywords: ['pâte', 'biscuit', 'gâteau', 'tarte', 'pizza', 'crêpe', 'pancake'],
-                icon: '👨‍👩‍👧‍👦',
-                title: "Cuisinez à plusieurs",
-                text: "La cuisine, c'est du partage ! Faites participer votre enfant à cette recette ludique. Les enfants apprécient d'autant plus lors de la dégustation."
-            }
+            { keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon'], icon: '🥩', title: "Astuce Multitâche", text: "Préparez la viande ou coupez vos légumes pendant que l'eau bout ou que la poêle chauffe pour gagner un temps précieux en cuisine." },
+            { keywords: ['carotte', 'courgette', 'pomme', 'légume', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron'], icon: '🥕', title: "Ne pelez plus !", text: "Si vous achetez bio (ou sans pesticides), ne pelez pas vos légumes. Un bon brossage suffit ! La peau est un vrai cocktail nutritionnel riche en vitamines." },
+            { keywords: ['pâtes', 'riz', 'eau', 'bouillon', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne'], icon: '🫖', title: "L'allié Bouilloire", text: "Utilisez votre bouilloire pour faire bouillir l'eau rapidement avant de la verser dans la casserole. Cuisson express garantie pour vos féculents et légumes !" },
+            { keywords: ['salade', 'vinaigre', 'huile', 'laitue', 'mâche', 'endive'], icon: '🥗', title: "Préparation à l'avance", text: "Vous mangez souvent des salades ? Préparez votre base de vinaigrette pour la semaine dans un shaker, elle se conservera très bien et sera prête à l'emploi !" },
+            { keywords: ['surgelé', 'pois', 'haricot', 'épinard', 'framboise', 'myrtille', 'salsifis'], icon: '🧊', title: "Pensez aux surgelés", text: "Les aliments natures surgelés ont quasiment les mêmes apports nutritionnels que les frais. Un gain de temps précieux en semaine pour choisir la juste quantité !" },
+            { keywords: ['gratin', 'purée', 'soupe', 'velouté', 'compote', 'sauce'], icon: '❄️', title: "Voyez double !", text: "Ce plat se conserve très bien. Prévoyez de doubler les quantités afin de congeler la moitié de la préparation pour un soir où vous n'aurez pas le temps." },
+            { keywords: ['pâte', 'biscuit', 'gâteau', 'tarte', 'pizza', 'crêpe', 'pancake'], icon: '👨‍👩‍👧‍👦', title: "Cuisinez à plusieurs", text: "La cuisine, c'est du partage ! Faites participer votre enfant à cette recette ludique. Les enfants apprécient d'autant plus lors de la dégustation." }
         ];
 
-        const FALLBACK_TIP = {
-            icon: '⏱️',
-            title: "Organisation Chef",
-            text: "Soyez multitâche : mettez la table pendant que le plat rissole ou que la préparation est en train de mixer. Chaque minute compte !"
-        };
+        const FALLBACK_TIP = { icon: '⏱️', title: "Organisation Chef", text: "Soyez multitâche : mettez la table pendant que le plat rissole ou que la préparation est en train de mixer. Chaque minute compte !" };
 
         const getRecipeTip = (ingredientsArray) => {
             if (!ingredientsArray) return FALLBACK_TIP;
             const text = ingredientsArray.join(' ').toLowerCase();
-            
-            // 1. On cherche TOUTES les astuces qui correspondent
-            const matchingTips = TIPS_DICTIONARY.filter(tip => 
-                tip.keywords.some(kw => text.includes(kw))
-            );
-
-            // 2. S'il y a des correspondances, on en tire une au sort
-            if (matchingTips.length > 0) {
-                const randomIndex = Math.floor(Math.random() * matchingTips.length);
-                return matchingTips[randomIndex];
-            }
-            
+            const matchingTips = TIPS_DICTIONARY.filter(tip => tip.keywords.some(kw => text.includes(kw)));
+            if (matchingTips.length > 0) return matchingTips[Math.floor(Math.random() * matchingTips.length)];
             return FALLBACK_TIP;
         };
 
@@ -282,7 +242,9 @@
           const [selectedRecipe, setSelectedRecipe] = useState(null);
           const [selectedDayForAgenda, setSelectedDayForAgenda] = useState(DAYS_OF_WEEK[0]);
           
-          const [babyProfile, setBabyProfile] = useState({ name: '', birthdate: '', photo: null });
+          // --- ÉTAT MULTI-ENFANTS ---
+          const [children, setChildren] = useState([]); 
+
           const [agenda, setAgenda] = useState({}); 
           const [shoppingList, setShoppingList] = useState([]); 
           
@@ -292,9 +254,9 @@
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
 
           const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
+          const [activeModalChildId, setActiveModalChildId] = useState(null); // Pour la modale multi-enfants
           const [showTipsModal, setShowTipsModal] = useState(false);
           
-          // --- NOUVEAUX ÉTATS POUR LE ONBOARDING ET LE COACH ---
           const [showOnboardingModal, setShowOnboardingModal] = useState(() => localStorage.getItem('cookidoudou_onboarded') !== 'true');
           const [showMedicalConsentModal, setShowMedicalConsentModal] = useState(false);
           const [isCoachEnabled, setIsCoachEnabled] = useState(() => {
@@ -307,20 +269,10 @@
             const saved = localStorage.getItem('cookidoudou_season_mode');
             return saved !== null ? JSON.parse(saved) : true;
           });
-          const [activeFilter, setActiveFilter] = useState('Tous');
 
           useEffect(() => {
             localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive));
-            if (!isSeasonalModeActive && activeFilter === 'Saison') setActiveFilter('Tous');
-          }, [isSeasonalModeActive, activeFilter]);
-
-          const ageInMonths = useMemo(() => {
-            if (!babyProfile.birthdate) return null;
-            try {
-                const diffTime = Math.abs(new Date() - new Date(babyProfile.birthdate));
-                return Math.floor(Math.ceil(diffTime / (1000 * 60 * 60 * 24)) / 30.44); 
-            } catch(e) { return null; }
-          }, [babyProfile.birthdate]);
+          }, [isSeasonalModeActive]);
 
           // --- FIREBASE AUTH & SYNC ---
           useEffect(() => {
@@ -334,7 +286,7 @@
                     const cred = await window.FirebaseHelper.signInAnonymously(auth);
                     setUser(cred.user);
                     setAppError(null);
-                } catch (authErr) { setAppError("Impossible de se connecter à la base."); }
+                } catch (authErr) { setAppError("Erreur de connexion (Vérifiez les restrictions d'URL Google Cloud)."); }
               } catch (e) { console.error("Firebase Init Error", e); }
             };
             start();
@@ -347,7 +299,15 @@
             const unsubP = window.FirebaseHelper.onSnapshot(pRef, (s) => {
               if (s.exists()) {
                 const d = s.data();
-                if (d.babyProfile) setBabyProfile(d.babyProfile);
+                
+                // Gestion de la migration (si l'utilisateur avait l'ancienne version avec 1 seul bébé)
+                if (d.children && d.children.length > 0) {
+                    setChildren(d.children);
+                } else if (d.babyProfile && (d.babyProfile.name || d.babyProfile.birthdate)) {
+                    const migratedChild = { id: 'child-migrated-1', ...d.babyProfile };
+                    setChildren([migratedChild]);
+                }
+                
                 if (d.agenda) setAgenda(d.agenda);
                 if (d.shoppingList) setShoppingList(d.shoppingList);
               }
@@ -362,8 +322,59 @@
             try { await window.FirebaseHelper.setDoc(docRef, data, { merge: true }); } catch (e) { console.error("Save error", e); }
           }, [user, familyCode]);
 
-          const handleUpdateProfile = (newP) => { setBabyProfile(newP); saveToCloud({ babyProfile: newP }); };
-          
+          // --- GESTION DES ENFANTS ---
+          const updateChild = (childId, updates) => {
+              const newChildren = children.map(c => c.id === childId ? { ...c, ...updates } : c);
+              setChildren(newChildren);
+              saveToCloud({ children: newChildren });
+          };
+
+          const addChild = () => {
+              if (children.length >= 3) return;
+              const newChild = { id: `child-${Date.now()}`, name: '', birthdate: '', photo: null };
+              const newChildren = [...children, newChild];
+              setChildren(newChildren);
+              saveToCloud({ children: newChildren });
+          };
+
+          const removeChild = (childId) => {
+              const newChildren = children.filter(c => c.id !== childId);
+              setChildren(newChildren);
+              saveToCloud({ children: newChildren });
+          };
+
+          // MINI COMPRESSEUR D'IMAGE 
+          const handlePhotoUpload = (e, childId) => {
+              const file = e.target.files[0];
+              if (!file) return;
+
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                  const img = new Image();
+                  img.onload = () => {
+                      const canvas = document.createElement('canvas');
+                      const MAX_SIZE = 300; // Compression à 300x300 pour économiser Firebase
+                      
+                      // Calcul pour un recadrage carré (crop)
+                      const size = Math.min(img.width, img.height);
+                      const startX = (img.width - size) / 2;
+                      const startY = (img.height - size) / 2;
+
+                      canvas.width = MAX_SIZE;
+                      canvas.height = MAX_SIZE;
+                      const ctx = canvas.getContext('2d');
+                      ctx.drawImage(img, startX, startY, size, size, 0, 0, MAX_SIZE, MAX_SIZE);
+                      
+                      // Conversion en base64 léger
+                      const base64 = canvas.toDataURL('image/jpeg', 0.8);
+                      updateChild(childId, { photo: base64 });
+                  };
+                  img.src = event.target.result;
+              };
+              reader.readAsDataURL(file);
+          };
+
+          // --- AUTRES HANDLERS ---
           const addToAgenda = (day, rid) => {
             const newA = { ...agenda, [day]: rid };
             setAgenda(newA);
@@ -392,7 +403,6 @@
               } catch (err) { alert("Impossible de copier la liste."); }
           };
 
-          // --- GESTION DU COACH ---
           const handleCoachToggle = () => {
               if (isCoachEnabled) {
                   setIsCoachEnabled(false);
@@ -407,25 +417,22 @@
               setIsCoachEnabled(true);
               localStorage.setItem('cookidoudou_coach_enabled', JSON.stringify(true));
               setShowMedicalConsentModal(false);
-              setCurrentTab('coach'); // On redirige fièrement vers le nouvel onglet
+              setCurrentTab('coach');
           };
 
-          const closeOnboarding = () => {
-              setShowOnboardingModal(false);
-              localStorage.setItem('cookidoudou_onboarded', 'true');
-          };
+          // Noms pour l'accueil
+          const greetingNames = children.length > 0 ? children.map(c => c.name || "Bébé").join(' et ') : "!";
 
           // --- VUES DE L'APPLICATION ---
           const renderHome = () => {
             const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
             const todayRecipe = RECIPES.find(r => r.id === agenda[todayStr]);
-            const currentTypicalDay = getTypicalDayForAge(ageInMonths);
             
             return (
               <div className="space-y-6 animate-fadeIn pb-24">
                 <div className="text-center">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
-                    <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {babyProfile.name || "!"}</h1>
+                    <h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {greetingNames}</h1>
                 </div>
                 
                 {appError && (
@@ -456,10 +463,15 @@
                     )}
                 </div>
 
-                {/* LA SECTION COACH A ÉTÉ DÉPLACÉE DANS SON PROPRE ONGLET */}
-
                 <div 
-                    onClick={() => { if(ageInMonths !== null) setShowTypicalDayModal(true); else setCurrentTab('profile'); }}
+                    onClick={() => { 
+                        if(children.length > 0) {
+                            setActiveModalChildId(children[0].id);
+                            setShowTypicalDayModal(true); 
+                        } else {
+                            setCurrentTab('profile'); 
+                        }
+                    }}
                     className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer transition transform active:scale-95"
                 >
                     <i className="fa-solid fa-clipboard-list absolute -right-6 -bottom-6 text-8xl opacity-10 transform -rotate-12"></i>
@@ -467,15 +479,15 @@
                         <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest">
                             <i className="fa-solid fa-lightbulb text-yellow-300"></i> Journée Type
                         </h3>
-                        {ageInMonths !== null ? (
+                        {children.length > 0 ? (
                             <>
-                                <p className="text-sm font-medium leading-relaxed mb-3">Découvrez les portions et menus recommandés pour l'âge de {babyProfile.name || "bébé"} ({currentTypicalDay.title}).</p>
+                                <p className="text-sm font-medium leading-relaxed mb-3">Découvrez les portions et menus recommandés selon l'âge.</p>
                                 <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
                                     Voir le menu <i className="fa-solid fa-arrow-right"></i>
                                 </div>
                             </>
                         ) : (
-                            <p className="text-sm font-medium leading-relaxed">Renseignez l'âge de votre enfant dans le profil pour découvrir sa journée type recommandée !</p>
+                            <p className="text-sm font-medium leading-relaxed">Ajoutez un enfant dans le profil pour découvrir sa journée type recommandée !</p>
                         )}
                     </div>
                 </div>
@@ -483,69 +495,82 @@
             );
           };
 
-          // --- NOUVELLE VUE : ONGLET COACH ---
           const renderCoach = () => (
             <div className="animate-fadeIn space-y-6 pb-24">
                 <div className="flex justify-between items-center mb-2">
                     <h1 className="text-2xl font-black text-gray-800">Coach Bébé</h1>
                 </div>
 
-                {ageInMonths === null ? (
+                {children.length === 0 ? (
                     <div className="text-center py-12 opacity-60 bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
                         <i className="fa-solid fa-baby text-4xl mb-3 text-indigo-300"></i>
-                        <p className="text-sm font-medium">Renseignez l'âge de votre enfant dans le profil pour activer les conseils.</p>
+                        <p className="text-sm font-medium">Ajoutez un enfant dans le profil pour activer les conseils.</p>
                         <button onClick={() => setCurrentTab('profile')} className="mt-4 text-xs font-bold text-indigo-500 uppercase tracking-widest bg-indigo-50 px-4 py-2 rounded-xl">Aller au profil</button>
                     </div>
                 ) : (
-                    <>
-                        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-[2.5rem] p-6 shadow-sm border border-indigo-100 relative overflow-hidden">
-                            <i className="fa-solid fa-graduation-cap absolute -right-4 -bottom-4 text-7xl opacity-5 transform -rotate-12"></i>
-                            <h3 className="font-black text-indigo-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest relative z-10">
-                                <i className="fa-solid fa-graduation-cap text-indigo-500"></i> Coach Diversification
-                            </h3>
-                            <p className="text-sm text-indigo-900 font-medium mb-5 leading-relaxed relative z-10">{getCoachAdvice(ageInMonths).text}</p>
-                            
-                            <div className="grid grid-cols-3 gap-3 relative z-10">
-                                <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
-                                    <span className="block text-2xl mb-1.5">🥣</span>
-                                    <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Texture</span>
-                                    <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).texture}</span>
-                                </div>
-                                <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
-                                    <span className="block text-2xl mb-1.5">🥩</span>
-                                    <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Protéines</span>
-                                    <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).prot}</span>
-                                </div>
-                                <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
-                                    <span className="block text-2xl mb-1.5">🧈</span>
-                                    <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Matière gr.</span>
-                                    <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).fat}</span>
-                                </div>
-                            </div>
-                            <p className="text-[9px] text-indigo-400/80 mt-5 text-center font-medium italic relative z-10">* Conseils donnés à titre indicatif, ne remplaçant pas une consultation médicale.</p>
-                        </div>
-
-                        <div className="bg-red-50 rounded-[2rem] p-6 border border-red-100 shadow-sm">
-                            <h4 className="font-black text-red-800 text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <i className="fa-solid fa-triangle-exclamation text-red-500"></i> Les Règles d'Or ({ageInMonths} mois)
-                            </h4>
-                            <div className="space-y-3">
-                                {getGoldenRules(ageInMonths).map((rule, idx) => (
-                                    <div key={idx} className="flex gap-3 items-start">
-                                        <span className="text-lg leading-none mt-0.5">{rule.icon}</span>
-                                        <p className="text-xs font-bold text-red-900 leading-relaxed">{rule.text}</p>
+                    children.map(child => {
+                        const ageInMonths = calculateAgeInMonths(child.birthdate);
+                        if (ageInMonths === null) return null;
+                        
+                        return (
+                            <div key={child.id} className="mb-10 last:mb-0">
+                                <div className="flex items-center gap-3 mb-4 px-2">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-indigo-100 border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0 text-indigo-300">
+                                        {child.photo ? <img src={child.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby"></i>}
                                     </div>
-                                ))}
+                                    <h2 className="text-lg font-black text-gray-800">Pour {child.name || "Bébé"}</h2>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-[2.5rem] p-6 shadow-sm border border-indigo-100 relative overflow-hidden mb-4">
+                                    <i className="fa-solid fa-graduation-cap absolute -right-4 -bottom-4 text-7xl opacity-5 transform -rotate-12"></i>
+                                    <h3 className="font-black text-indigo-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-widest relative z-10">
+                                        <i className="fa-solid fa-bullseye text-indigo-500"></i> Étape ({ageInMonths} mois)
+                                    </h3>
+                                    <p className="text-sm text-indigo-900 font-medium mb-5 leading-relaxed relative z-10">{getCoachAdvice(ageInMonths).text}</p>
+                                    
+                                    <div className="grid grid-cols-3 gap-3 relative z-10">
+                                        <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                                            <span className="block text-2xl mb-1.5">🥣</span>
+                                            <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Texture</span>
+                                            <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).texture}</span>
+                                        </div>
+                                        <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                                            <span className="block text-2xl mb-1.5">🥩</span>
+                                            <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Protéines</span>
+                                            <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).prot}</span>
+                                        </div>
+                                        <div className="bg-white p-3 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center">
+                                            <span className="block text-2xl mb-1.5">🧈</span>
+                                            <span className="block text-[8px] uppercase tracking-widest text-gray-400 font-black mb-1">Matière gr.</span>
+                                            <span className="text-[10px] leading-tight font-black text-indigo-700">{getCoachAdvice(ageInMonths).fat}</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-[9px] text-indigo-400/80 mt-5 text-center font-medium italic relative z-10">* Conseils donnés à titre indicatif, ne remplaçant pas une consultation médicale.</p>
+                                </div>
+
+                                <div className="bg-red-50 rounded-[2rem] p-6 border border-red-100 shadow-sm">
+                                    <h4 className="font-black text-red-800 text-[10px] uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <i className="fa-solid fa-triangle-exclamation text-red-500"></i> Règles d'Or
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {getGoldenRules(ageInMonths).map((rule, idx) => (
+                                            <div key={idx} className="flex gap-3 items-start">
+                                                <span className="text-lg leading-none mt-0.5">{rule.icon}</span>
+                                                <p className="text-xs font-bold text-red-900 leading-relaxed">{rule.text}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </>
+                        );
+                    })
                 )}
             </div>
           );
 
           const renderCarnet = () => {
             let recipesToDisplay = RECIPES;
-            if (isSeasonalModeActive && activeFilter === 'Saison') {
+            if (isSeasonalModeActive) {
                 recipesToDisplay = RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0);
             }
 
@@ -562,18 +587,9 @@
 
                 {isSeasonalModeActive && (
                     <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-                        <button 
-                            onClick={() => setActiveFilter('Tous')}
-                            className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all ${activeFilter === 'Tous' ? 'bg-gray-800 text-white shadow-md' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'}`}
-                        >
-                            Toutes
-                        </button>
-                        <button 
-                            onClick={() => setActiveFilter('Saison')}
-                            className={`px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all flex items-center gap-1.5 ${activeFilter === 'Saison' ? 'bg-green-500 text-white shadow-md' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'}`}
-                        >
+                        <div className="px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest whitespace-nowrap bg-green-500 text-white shadow-md flex items-center gap-1.5">
                             {currentActiveSeasons.map(s => s.icon).join('')} De saison ({currentActiveSeasons.map(s => s.name).join(' & ')})
-                        </button>
+                        </div>
                     </div>
                 )}
                 
@@ -609,11 +625,11 @@
                     </div>
                 ))}
 
-                {isSeasonalModeActive && activeFilter === 'Saison' && Object.keys(grouped).length === 0 && (
+                {isSeasonalModeActive && Object.keys(grouped).length === 0 && (
                     <div className="text-center py-12 opacity-60">
                         <i className="fa-solid fa-leaf text-4xl mb-3 text-green-300"></i>
                         <p className="text-sm font-medium">Aucune recette trouvée pour cette saison.</p>
-                        <button onClick={() => setActiveFilter('Tous')} className="mt-4 text-xs font-bold text-gray-500 uppercase tracking-widest bg-gray-200 px-4 py-2 rounded-xl">Voir toutes les recettes</button>
+                        <button onClick={() => setIsSeasonalModeActive(false)} className="mt-4 text-xs font-bold text-gray-500 uppercase tracking-widest bg-gray-200 px-4 py-2 rounded-xl">Désactiver le filtre</button>
                     </div>
                 )}
               </div>
@@ -657,15 +673,6 @@
           const renderDetail = () => {
             if (!selectedRecipe) return null;
             const r = selectedRecipe;
-            const babySteps = r.babyAdaptations || [];
-            
-            let babyStepText = "Indiquez l'âge de bébé dans Profil pour voir les adaptations.";
-            if (babyProfile.birthdate && ageInMonths !== null) {
-                const step = babySteps.find(a => ageInMonths <= a.maxAge);
-                babyStepText = step ? step.text : (babySteps[babySteps.length - 1]?.text || "Adaptation familiale standard");
-            }
-
-            // Génération de l'astuce contextuelle pour cette recette
             const recipeTip = getRecipeTip(r.ingredients);
 
             return (
@@ -692,13 +699,54 @@
                     </button>
                 </div>
 
-                <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl mt-4 relative overflow-hidden">
-                  <i className="fa-solid fa-baby absolute -right-4 -bottom-4 text-7xl opacity-10"></i>
-                  <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2 relative z-10">
-                      <i className="fa-solid fa-spoon"></i> Part de bébé ({ageInMonths !== null ? `${ageInMonths} mois` : '?'})
-                  </h4>
-                  <p className="text-sm leading-relaxed font-medium relative z-10 whitespace-pre-line">{babyStepText}</p>
-                </div>
+                {/* ALERTE QUANTITÉ SI MULTI-ENFANTS */}
+                {children.length > 1 && (
+                    <div className="mx-2 bg-red-50 border border-red-100 p-4 rounded-3xl text-red-700 shadow-sm flex gap-4 items-start">
+                        <i className="fa-solid fa-triangle-exclamation text-2xl text-red-400 mt-1 flex-shrink-0"></i>
+                        <p className="text-xs font-medium leading-relaxed">
+                            <strong className="block font-black uppercase tracking-widest mb-1">Attention aux quantités</strong>
+                            Cette recette est prévue pour 2 adultes et 1 enfant. Pensez à ajuster vos quantités pour régaler toute la tribu !
+                        </p>
+                    </div>
+                )}
+
+                {/* PARTS DES ENFANTS */}
+                {children.length === 0 ? (
+                    <div className="bg-orange-500 p-8 rounded-[2.5rem] text-white shadow-xl mt-4 relative overflow-hidden">
+                        <i className="fa-solid fa-baby absolute -right-4 -bottom-4 text-7xl opacity-10"></i>
+                        <h4 className="font-black text-xs uppercase mb-3 flex items-center gap-2 relative z-10"><i className="fa-solid fa-spoon"></i> Part de bébé</h4>
+                        <p className="text-sm font-medium relative z-10">Ajoutez un enfant dans le profil pour voir les adaptations.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-3 mt-4">
+                        {children.map((child, index) => {
+                            const ageInMonths = calculateAgeInMonths(child.birthdate);
+                            const babySteps = r.babyAdaptations || [];
+                            let babyStepText = "Âge non renseigné.";
+                            if (ageInMonths !== null) {
+                                const step = babySteps.find(a => ageInMonths <= a.maxAge);
+                                babyStepText = step ? step.text : (babySteps[babySteps.length - 1]?.text || "Adaptation familiale standard");
+                            }
+                            
+                            // On alterne légèrement les couleurs pour les différencier visuellement
+                            const bgColors = ["bg-orange-500", "bg-amber-500", "bg-rose-500"];
+                            const bgColor = bgColors[index % bgColors.length];
+
+                            return (
+                                <div key={child.id} className={`${bgColor} p-6 sm:p-8 rounded-[2.5rem] text-white shadow-md relative overflow-hidden`}>
+                                    <i className="fa-solid fa-spoon absolute -right-4 -bottom-4 text-7xl opacity-10"></i>
+                                    <div className="flex items-center gap-3 mb-3 relative z-10 border-b border-white/20 pb-3">
+                                        <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20 border-2 border-white flex items-center justify-center flex-shrink-0">
+                                            {child.photo ? <img src={child.photo} className="w-full h-full object-cover" /> : <i className="fa-solid fa-baby text-xs"></i>}
+                                        </div>
+                                        <h4 className="font-black text-xs uppercase">Part de {child.name || "Bébé"} {ageInMonths !== null ? `(${ageInMonths} mois)` : ''}</h4>
+                                    </div>
+                                    <p className="text-sm leading-relaxed font-medium relative z-10 whitespace-pre-line">{babyStepText}</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
 
                 <div className="space-y-8 pt-6 px-2">
                   <section>
@@ -724,7 +772,6 @@
                       ))}
                     </div>
 
-                    {/* ENCART : ASTUCE DU CHEF (CONTEXTUELLE) */}
                     <div className="bg-yellow-50 p-6 rounded-[2rem] border border-yellow-100 shadow-sm relative overflow-hidden mt-6">
                         <div className="text-5xl absolute -right-3 -top-3 opacity-10 transform rotate-12">{recipeTip.icon}</div>
                         <h4 className="font-black text-yellow-800 text-[10px] uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
@@ -736,24 +783,19 @@
                         </p>
                     </div>
                   </section>
-
-                  {/* SECTION : CONSERVATION ET NETTOYAGE (PERMANENTE) */}
+                  
                   <section className="pt-4">
                     <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 tracking-widest border-b pb-2">Les Réflexes en Cuisine</h3>
                     <div className="grid grid-cols-1 gap-4">
                         <div className="flex gap-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-50 items-start">
-                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 text-xl flex-shrink-0">
-                                <i className="fa-solid fa-broom"></i>
-                            </div>
+                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 text-xl flex-shrink-0"><i className="fa-solid fa-broom"></i></div>
                             <div className="pt-1">
                                 <h4 className="font-black text-gray-800 text-sm mb-1">Nettoyez au fur et à mesure</h4>
                                 <p className="text-xs text-gray-500 leading-relaxed font-medium">Vous n'avez plus besoin d'un ustensile ? Nettoyez-le et rangez-le. C'est du temps de gagné à la fin du repas !</p>
                             </div>
                         </div>
                         <div className="flex gap-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-50 items-start">
-                            <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-500 text-xl flex-shrink-0">
-                                <i className="fa-solid fa-snowflake"></i>
-                            </div>
+                            <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center text-teal-500 text-xl flex-shrink-0"><i className="fa-solid fa-snowflake"></i></div>
                             <div className="pt-1">
                                 <h4 className="font-black text-gray-800 text-sm mb-1">Recyclez les restes</h4>
                                 <p className="text-xs text-gray-500 leading-relaxed font-medium">Il vous reste des portions ? Congelez-les pour un futur repas où vous n'aurez pas le temps de cuisiner.</p>
@@ -768,38 +810,60 @@
 
           const renderProfile = () => (
             <div className="animate-fadeIn space-y-6 pb-24">
-              <h1 className="text-2xl font-black text-gray-800">Configuration</h1>
+              <h1 className="text-2xl font-black text-gray-800">La Famille</h1>
               
-              <div className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm mb-6">
-                <div className="w-28 h-28 rounded-full bg-orange-50 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden mb-6 text-orange-200">
-                  <i className="fa-solid fa-baby text-5xl"></i>
-                </div>
-                <div className="w-full space-y-4 text-center">
-                    <div>
-                        <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Prénom de l'enfant</label>
-                        <input type="text" value={babyProfile.name} onChange={(e) => handleUpdateProfile({...babyProfile, name: e.target.value})} placeholder="Ex: Léo" className="w-full bg-gray-50 p-4 rounded-2xl text-center font-black outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Date de naissance</label>
-                        <input type="date" value={babyProfile.birthdate} onChange={(e) => handleUpdateProfile({...babyProfile, birthdate: e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
-                    </div>
-                </div>
+              <div className="space-y-6 mb-8">
+                  {children.map((child, index) => (
+                      <div key={child.id} className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm relative group">
+                          
+                          {/* Bouton supprimer (uniquement si plusieurs enfants) */}
+                          <button onClick={() => removeChild(child.id)} className="absolute top-6 right-6 w-8 h-8 bg-red-50 text-red-400 rounded-full flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition">
+                              <i className="fa-solid fa-trash-can text-xs"></i>
+                          </button>
+
+                          {/* Zone Photo cliquable */}
+                          <div className="relative w-28 h-28 mx-auto mb-6 cursor-pointer transform hover:scale-105 transition" onClick={() => document.getElementById(`photo-${child.id}`).click()}>
+                              <div className="w-full h-full rounded-full bg-orange-50 flex items-center justify-center border-4 border-white shadow-xl overflow-hidden text-orange-200">
+                                  {child.photo ? (
+                                      <img src={child.photo} className="w-full h-full object-cover" alt={`Photo de ${child.name}`} />
+                                  ) : (
+                                      <i className="fa-solid fa-baby text-5xl"></i>
+                                  )}
+                              </div>
+                              <div className="absolute bottom-0 right-0 bg-white p-2.5 rounded-full shadow-lg text-orange-500 border border-gray-100 flex items-center justify-center">
+                                  <i className="fa-solid fa-camera text-sm"></i>
+                              </div>
+                              <input type="file" id={`photo-${child.id}`} accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(e, child.id)} />
+                          </div>
+
+                          <div className="w-full space-y-4 text-center">
+                              <div>
+                                  <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Prénom</label>
+                                  <input type="text" value={child.name} onChange={(e) => updateChild(child.id, { name: e.target.value })} placeholder={`Enfant ${index + 1}`} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-black outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
+                              </div>
+                              <div>
+                                  <label className="block text-[10px] font-black uppercase text-gray-400 mb-1 tracking-widest">Date de naissance</label>
+                                  <input type="date" value={child.birthdate} onChange={(e) => updateChild(child.id, { birthdate: e.target.value })} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border border-transparent focus:border-orange-200 focus:bg-white transition" />
+                              </div>
+                          </div>
+                      </div>
+                  ))}
+
+                  {children.length < 3 && (
+                      <button onClick={addChild} className="w-full bg-orange-50 hover:bg-orange-100 text-orange-600 border-2 border-dashed border-orange-200 py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-xs transition flex items-center justify-center gap-2">
+                          <i className="fa-solid fa-plus"></i> Ajouter un enfant
+                      </button>
+                  )}
               </div>
 
-              {/* BLOC ACTIVATION DU COACH DIVERSIFICATION */}
               <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm mb-6 flex justify-between items-center">
                 <div className="pr-4">
                   <h3 className="font-black mb-1 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800">
                     <i className="fa-solid fa-graduation-cap text-indigo-500"></i> Coach Diversification
                   </h3>
-                  <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
-                    Débloquez un onglet dédié au suivi de l'alimentation de bébé.
-                  </p>
+                  <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Débloquez un onglet dédié au suivi de l'alimentation.</p>
                 </div>
-                <button 
-                  onClick={handleCoachToggle}
-                  className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex flex-shrink-0 shadow-inner ${isCoachEnabled ? 'bg-indigo-500 justify-end' : 'bg-gray-300 justify-start'}`}
-                >
+                <button onClick={handleCoachToggle} className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex flex-shrink-0 shadow-inner ${isCoachEnabled ? 'bg-indigo-500 justify-end' : 'bg-gray-300 justify-start'}`}>
                   <div className="w-4 h-4 rounded-full bg-white shadow-sm"></div>
                 </button>
               </div>
@@ -809,14 +873,9 @@
                   <h3 className="font-black mb-1 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800">
                     <i className="fa-solid fa-leaf text-green-500"></i> Mode 100% Saison
                   </h3>
-                  <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
-                    Mettre en avant les recettes pour la saison en cours ({currentActiveSeasons.map(s => s.name + ' ' + s.icon).join(' et ')}).
-                  </p>
+                  <p className="text-[10px] text-gray-500 font-medium leading-relaxed">Mettre en avant les recettes pour la saison en cours.</p>
                 </div>
-                <button 
-                  onClick={() => setIsSeasonalModeActive(!isSeasonalModeActive)}
-                  className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex flex-shrink-0 shadow-inner ${isSeasonalModeActive ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}
-                >
+                <button onClick={() => setIsSeasonalModeActive(!isSeasonalModeActive)} className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out flex flex-shrink-0 shadow-inner ${isSeasonalModeActive ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}>
                   <div className="w-4 h-4 rounded-full bg-white shadow-sm"></div>
                 </button>
               </div>
@@ -825,7 +884,7 @@
                 <i className="fa-solid fa-cloud absolute -right-6 -bottom-6 text-8xl text-blue-50 opacity-50"></i>
                 <div className="relative z-10">
                     <h3 className="font-black mb-2 flex items-center gap-2 uppercase text-xs tracking-widest text-gray-800"><i className="fa-solid fa-link text-blue-500"></i> Partage Familial</h3>
-                    <p className="text-xs text-gray-500 mb-6 font-medium leading-relaxed">Entrez un code secret pour synchroniser vos menus et courses sur un autre téléphone.</p>
+                    <p className="text-xs text-gray-500 mb-6 font-medium leading-relaxed">Entrez un code secret pour synchroniser vos données.</p>
                     <div className="flex gap-2">
                       <input type="text" value={tempFamilyCode} onChange={(e)=>setTempFamilyCode(e.target.value.toUpperCase())} placeholder="CODE SECRET" className="flex-1 bg-gray-50 p-4 rounded-2xl uppercase font-mono text-xs font-black outline-none border border-transparent focus:border-blue-200 transition" />
                       <button onClick={() => { if(!tempFamilyCode) return; setFamilyCode(tempFamilyCode); localStorage.setItem('cookidoudou_family_code', tempFamilyCode); alert("Synchronisation activée !"); }} className="bg-blue-600 text-white px-6 rounded-2xl font-black uppercase text-[10px] shadow-md active:scale-95 transition">Valider</button>
@@ -841,6 +900,9 @@
             </div>
           );
 
+          // Sélection de l'enfant actif pour la modale Journée Type
+          const activeTypicalDayChild = children.find(c => c.id === activeModalChildId) || children[0];
+
           return (
             <div className="min-h-screen bg-gray-50 flex flex-col relative overflow-x-hidden">
               <main className="flex-1 max-w-2xl mx-auto w-full p-6 pt-10 overflow-y-auto">
@@ -852,7 +914,7 @@
                 {currentTab === 'recipe_detail' && renderDetail()}
               </main>
 
-              {/* FENÊTRE MODALE ONBOARDING (PREMIER LANCEMENT) */}
+              {/* FENÊTRE MODALE ONBOARDING */}
               {showOnboardingModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
                     <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl p-8 text-center relative overflow-hidden">
@@ -899,36 +961,66 @@
               )}
 
               {/* FENÊTRE MODALE JOURNÉE TYPE */}
-              {showTypicalDayModal && ageInMonths !== null && (
+              {showTypicalDayModal && activeTypicalDayChild && (
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 sm:p-6 animate-fadeIn">
                     <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="bg-blue-500 p-6 text-white relative flex-shrink-0">
-                            <button onClick={() => setShowTypicalDayModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/20 rounded-full flex items-center justify-center hover:bg-black/30 transition">
+                        
+                        <div className="bg-blue-500 pt-6 px-6 pb-4 text-white relative flex-shrink-0">
+                            <button onClick={() => setShowTypicalDayModal(false)} className="absolute top-6 right-6 w-8 h-8 bg-black/20 rounded-full flex items-center justify-center hover:bg-black/30 transition z-10">
                                 <i className="fa-solid fa-xmark"></i>
                             </button>
-                            <h2 className="text-2xl font-black mb-1">{getTypicalDayForAge(ageInMonths).title}</h2>
-                            <p className="text-blue-100 text-sm font-medium">{getTypicalDayForAge(ageInMonths).subtitle}</p>
+                            
+                            {/* Sélecteur d'enfant (si fratrie) */}
+                            {children.length > 1 && (
+                                <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-6 pr-10">
+                                    {children.map(child => (
+                                        <button 
+                                            key={child.id} 
+                                            onClick={() => setActiveModalChildId(child.id)}
+                                            className={`px-4 py-2 rounded-2xl font-black text-xs transition whitespace-nowrap flex items-center gap-2 ${activeModalChildId === child.id ? 'bg-white text-blue-600 shadow-md' : 'bg-blue-600/50 text-blue-100 hover:bg-blue-600'}`}
+                                        >
+                                            {child.photo ? <img src={child.photo} className="w-4 h-4 rounded-full object-cover" /> : <i className="fa-solid fa-baby"></i>}
+                                            {child.name || "Bébé"}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {(() => {
+                                const ageInMonths = calculateAgeInMonths(activeTypicalDayChild.birthdate);
+                                const typicalDayData = getTypicalDayForAge(ageInMonths);
+                                return (
+                                    <>
+                                        <h2 className="text-2xl font-black mb-1">{typicalDayData ? typicalDayData.title : 'Âge inconnu'}</h2>
+                                        <p className="text-blue-100 text-sm font-medium">{typicalDayData ? typicalDayData.subtitle : 'Veuillez renseigner une date de naissance.'}</p>
+                                    </>
+                                );
+                            })()}
                         </div>
                         
                         <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
-                            {getTypicalDayForAge(ageInMonths).meals.map((meal, idx) => (
-                                <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                                    <h4 className="font-black text-gray-800 flex items-center gap-2 mb-3">
-                                        <span className="text-xl">{meal.icon}</span> {meal.name}
-                                    </h4>
-                                    <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-line pl-8 border-l-2 border-blue-100">
-                                        {meal.text}
-                                    </p>
-                                    {(meal.name === "Déjeuner" || meal.name === "Dîner" || meal.name === "Midi" || meal.name === "Soir") && ageInMonths >= 6 && (
-                                        <button 
-                                            onClick={() => { setShowTypicalDayModal(false); setCurrentTab('carnet'); }}
-                                            className="mt-4 ml-8 text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition"
-                                        >
-                                            Trouver une recette <i className="fa-solid fa-arrow-right ml-1"></i>
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
+                            {(() => {
+                                const ageInMonths = calculateAgeInMonths(activeTypicalDayChild.birthdate);
+                                const typicalDayData = getTypicalDayForAge(ageInMonths);
+                                
+                                if (!typicalDayData) return <p className="text-center py-10 text-gray-500 font-medium">Information indisponible.</p>;
+
+                                return typicalDayData.meals.map((meal, idx) => (
+                                    <div key={idx} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                                        <h4 className="font-black text-gray-800 flex items-center gap-2 mb-3">
+                                            <span className="text-xl">{meal.icon}</span> {meal.name}
+                                        </h4>
+                                        <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-line pl-8 border-l-2 border-blue-100">
+                                            {meal.text}
+                                        </p>
+                                        {(meal.name === "Déjeuner" || meal.name === "Dîner" || meal.name === "Midi" || meal.name === "Soir") && ageInMonths >= 6 && (
+                                            <button onClick={() => { setShowTypicalDayModal(false); setCurrentTab('carnet'); }} className="mt-4 ml-8 text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition">
+                                                Trouver une recette <i className="fa-solid fa-arrow-right ml-1"></i>
+                                            </button>
+                                        )}
+                                    </div>
+                                ));
+                            })()}
                         </div>
                         
                         <div className="p-6 bg-white border-t border-gray-100 flex-shrink-0">
