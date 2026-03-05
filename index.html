@@ -273,37 +273,38 @@
             return TYPICAL_DAYS.find(td => ageInMonths <= td.maxAge) || TYPICAL_DAYS[TYPICAL_DAYS.length - 1];
         }
 
+        // --- CONSEILS COACH (JSX) ---
         function getCoachAdvice(ageInMonths) {
             if (ageInMonths === null) return null;
             
             if (ageInMonths < 4) return { 
                 texture: "Liquide", prot: "0g", fat: "Non", 
-                text: "Le nourrisson ne doit recevoir qu'un seul type d'aliment : un lait répondant à ses besoins[cite: 20]. Le lait de vache est totalement inadapté à cet âge[cite: 31].",
-                textureReason: "Le système digestif de votre enfant n'est prêt que pour déglutir du lait."
+                text: <>Le nourrisson ne doit recevoir qu'un seul type d'aliment : un lait répondant à ses besoins. Le lait de vache est totalement inadapté à cet âge.<sup>1</sup></>,
+                textureReason: <>Le système digestif de votre enfant n'est prêt que pour déglutir du lait.<sup>1</sup></>
             };
             
             if (ageInMonths < 6) return { 
                 texture: "Lisse", prot: "5g", fat: "1 c.à.c", 
-                text: "L'introduction des aliments autres que le lait ne doit jamais se faire avant 4 mois révolus[cite: 42]. Introduisez toutes les familles d'aliments, y compris ceux qui peuvent provoquer une allergie (œufs, arachides...) et le gluten[cite: 286]. Ajoutez de la matière grasse[cite: 349].",
-                textureReason: "Proposez tous les aliments en purée ou en compote lisses pour que le bébé les avale sans risque[cite: 340]."
+                text: <>L'introduction des aliments autres que le lait ne doit jamais se faire avant 4 mois révolus.<sup>3</sup> Introduisez toutes les familles d'aliments, y compris ceux qui peuvent provoquer une allergie (œufs, arachides...) et le gluten.<sup>3</sup> Ajoutez de la matière grasse.<sup>2</sup></>,
+                textureReason: <>Proposez tous les aliments en purée ou en compote lisses pour que le bébé les avale sans risque.<sup>2</sup></>
             };
             
             if (ageInMonths < 8) return { 
                 texture: "Écrasé", prot: "10g", fat: "1 c.à.c", 
-                text: "Tous les aliments hachés ou écrasés grossièrement à la fourchette[cite: 379].",
-                textureReason: "À partir de 6/8 mois, c'est important de proposer progressivement de nouvelles textures à votre enfant[cite: 362]. Il va ainsi pouvoir développer ses capacités à bien mâcher[cite: 363]."
+                text: <>Tous les aliments hachés ou écrasés grossièrement à la fourchette.<sup>2</sup></>,
+                textureReason: <>À partir de 6/8 mois, c'est important de proposer progressivement de nouvelles textures à votre enfant. Il va ainsi pouvoir développer ses capacités à bien mâcher.<sup>2,3</sup></>
             };
             
             if (ageInMonths <= 12) return { 
                 texture: "Morceaux", prot: "20g", fat: "1 c.à.c", 
-                text: "Les aliments protéiques (viandes, poissons, oeufs) ne devraient être proposés qu'une fois par jour et en quantité adaptée (exemple, 5 g à 6 mois, 20 g à 12 mois)[cite: 53].",
-                textureReason: "Aliments en morceaux très mous qui s'écrasent entre la langue et le palais [cite: 381] puis à croquer dès 10 mois[cite: 383]. Proposer un quignon de pain de temps en temps au repas permet de stimuler la mastication et de fortifier la mâchoire[cite: 385]."
+                text: <>Les aliments protéiques (viandes, poissons, oeufs) ne devraient être proposés qu'une fois par jour et en quantité adaptée (exemple, 5 g à 6 mois, 20 g à 12 mois).<sup>3</sup></>,
+                textureReason: <>Aliments en morceaux très mous qui s'écrasent entre la langue et le palais puis à croquer dès 10 mois.<sup>2</sup> Proposer un quignon de pain de temps en temps au repas permet de stimuler la mastication et de fortifier la mâchoire.<sup>3</sup></>
             };
             
             return { 
                 texture: "Familiale", prot: "20-30g", fat: "1-2 c.à.c", 
-                text: "L'enfant passe progressivement d'une alimentation infantile spécifique, adaptée à son âge, à l'alimentation familiale[cite: 68]. 3 repas par jour + 1 goûter (et 1 seul)[cite: 417].",
-                textureReason: "Votre enfant mange presque comme les grands, en quantités adaptées à son âge."
+                text: <>L'enfant passe progressivement d'une alimentation infantile spécifique, adaptée à son âge, à l'alimentation familiale. 3 repas par jour + 1 goûter (et 1 seul).<sup>1,3</sup></>,
+                textureReason: <>Votre enfant mange presque comme les grands, en quantités adaptées à son âge.<sup>2</sup></>
             };
         }
 
@@ -311,12 +312,12 @@
             if (ageInMonths === null) return [];
             const rules = [];
             
-            rules.push({ icon: '🚫', text: "La règle à tout âge est de proposer sans jamais forcer en respectant son appétit[cite: 147]." });
-            rules.push({ icon: '📺', text: "Il est préférable d'éteindre la télé et de laisser son téléphone à distance[cite: 166]." });
+            rules.push({ icon: '🚫', text: <>La règle à tout âge est de proposer sans jamais forcer en respectant son appétit.<sup>2,3</sup></> });
+            rules.push({ icon: '📺', text: <>Il est préférable d'éteindre la télé et de laisser son téléphone à distance.<sup>2</sup></> });
             
             if (ageInMonths < 36) {
-                rules.push({ icon: '🧂', text: "Jusqu'à 3 ans, ne salez pas le fait maison ou les petits pots[cite: 208]." });
-                rules.push({ icon: '🍯', text: "Proposez des fruits tendres crus ou cuits écrasés à la fourchette, toujours sans sucre[cite: 358]." });
+                rules.push({ icon: '🧂', text: <>Jusqu'à 3 ans, ne salez pas le fait maison ou les petits pots.<sup>1,2</sup></> });
+                rules.push({ icon: '🍯', text: <>Proposez des fruits tendres crus ou cuits écrasés à la fourchette, toujours sans sucre.<sup>1,2</sup></> });
             }
             return rules;
         }
@@ -632,61 +633,75 @@
           const renderCoach = () => (
             <div className="animate-fadeIn space-y-6 pb-24">
                 <h1 className="text-2xl font-black text-gray-800">Coach Bébé</h1>
-                {!children.length ? <div className="text-center py-12 opacity-40 bg-white rounded-[2rem] p-6 border border-gray-100 font-bold"><p>Ajoutez un enfant.</p></div> : 
-                    children.map(c => {
-                        const age = calculateAgeInMonths(c.birthdate); if(age === null) return null;
-                        const adv = getCoachAdvice(age);
-                        return (
-                            <div key={c.id} className="bg-white rounded-[3rem] p-6 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
-                                <div className="flex items-center gap-4 mb-6 border-b border-gray-50 pb-5">
-                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-indigo-50 border-2 border-white shadow-md flex items-center justify-center">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-2xl text-indigo-200"></i>}</div>
-                                    <div><h2 className="text-xl font-black text-gray-800">{c.name || "Bébé"}</h2><p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">{age} mois</p></div>
-                                </div>
-                                <div className="bg-indigo-50/50 rounded-3xl p-5 mb-5 border border-indigo-100">
-                                    <h3 className="font-black text-indigo-800 mb-3 text-[10px] uppercase tracking-widest"><i className="fa-solid fa-bullseye text-indigo-400"></i> Étape & Nutrition</h3>
-                                    <p className="text-sm text-indigo-900 mb-4 font-medium leading-relaxed">{adv.text}</p>
-                                    
-                                    <div className="bg-white/60 p-4 rounded-2xl mb-4 border border-indigo-100/50">
-                                        <h4 className="font-black text-indigo-700 text-[10px] uppercase mb-2"><i className="fa-solid fa-tooth"></i> Pourquoi cette texture ?</h4>
-                                        <p className="text-xs text-indigo-800 font-medium">{adv.textureReason}</p>
+                {!children.length ? (
+                    <div className="text-center py-12 opacity-40 bg-white rounded-[2rem] p-6 border border-gray-100 font-bold"><p>Ajoutez un enfant.</p></div>
+                ) : (
+                    <>
+                        {children.map(c => {
+                            const age = calculateAgeInMonths(c.birthdate); if(age === null) return null;
+                            const adv = getCoachAdvice(age);
+                            return (
+                                <div key={c.id} className="bg-white rounded-[3rem] p-6 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+                                    <div className="flex items-center gap-4 mb-6 border-b border-gray-50 pb-5">
+                                        <div className="w-14 h-14 rounded-full overflow-hidden bg-indigo-50 border-2 border-white shadow-md flex items-center justify-center">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-2xl text-indigo-200"></i>}</div>
+                                        <div><h2 className="text-xl font-black text-gray-800">{c.name || "Bébé"}</h2><p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">{age} mois</p></div>
                                     </div>
-
-                                    <div className="grid grid-cols-3 gap-2 mb-4">
-                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥣</span><span className="text-[10px] font-black text-indigo-700">{adv.texture}</span></div>
-                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥩</span><span className="text-[10px] font-black text-indigo-700">{adv.prot}</span></div>
-                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🧈</span><span className="text-[10px] font-black text-indigo-700">{adv.fat}</span></div>
-                                    </div>
-
-                                    {age >= 4 && (
-                                        <div className="bg-white rounded-2xl p-4 shadow-sm mt-4">
-                                            <h4 className="font-black text-indigo-800 text-[10px] uppercase mb-3 tracking-widest"><i className="fa-solid fa-clipboard-check text-green-500"></i> Carnet de découverte</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {['Gluten', 'Œuf', 'Arachide', 'Fruits à coque', 'Laitage', 'Poisson'].map(ing => {
-                                                    const isTested = (testedIngredients[c.id] || []).includes(ing);
-                                                    return (
-                                                        <button 
-                                                            key={ing} 
-                                                            onClick={() => toggleTestedIngredient(c.id, ing)}
-                                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${isTested ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
-                                                        >
-                                                            {isTested && <i className="fa-solid fa-check mr-1"></i>} {ing}
-                                                        </button>
-                                                    )
-                                                })}
-                                            </div>
+                                    <div className="bg-indigo-50/50 rounded-3xl p-5 mb-5 border border-indigo-100">
+                                        <h3 className="font-black text-indigo-800 mb-3 text-[10px] uppercase tracking-widest"><i className="fa-solid fa-bullseye text-indigo-400"></i> Étape & Nutrition</h3>
+                                        <p className="text-sm text-indigo-900 mb-4 font-medium leading-relaxed">{adv.text}</p>
+                                        
+                                        <div className="bg-white/60 p-4 rounded-2xl mb-4 border border-indigo-100/50">
+                                            <h4 className="font-black text-indigo-700 text-[10px] uppercase mb-2"><i className="fa-solid fa-tooth"></i> Pourquoi cette texture ?</h4>
+                                            <p className="text-xs text-indigo-800 font-medium">{adv.textureReason}</p>
                                         </div>
-                                    )}
-                                </div>
-                                <div className="bg-red-50 rounded-3xl p-5 border border-red-100 shadow-inner">
-                                    <h4 className="font-black text-red-800 text-[10px] uppercase mb-4 tracking-widest">Précautions importantes</h4>
-                                    <div className="space-y-3">
-                                        {getGoldenRules(age).map((r, i) => <div key={i} className="flex gap-3 items-start bg-white/40 p-3 rounded-2xl"><span className="text-lg leading-none">{r.icon}</span><p className="text-xs font-bold text-red-900 leading-relaxed">{r.text}</p></div>)}
+
+                                        <div className="grid grid-cols-3 gap-2 mb-4">
+                                            <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥣</span><span className="text-[10px] font-black text-indigo-700">{adv.texture}</span></div>
+                                            <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥩</span><span className="text-[10px] font-black text-indigo-700">{adv.prot}</span></div>
+                                            <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🧈</span><span className="text-[10px] font-black text-indigo-700">{adv.fat}</span></div>
+                                        </div>
+
+                                        {age >= 4 && (
+                                            <div className="bg-white rounded-2xl p-4 shadow-sm mt-4">
+                                                <h4 className="font-black text-indigo-800 text-[10px] uppercase mb-3 tracking-widest"><i className="fa-solid fa-clipboard-check text-green-500"></i> Carnet de découverte</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {['Gluten', 'Œuf', 'Arachide', 'Fruits à coque', 'Laitage', 'Poisson'].map(ing => {
+                                                        const isTested = (testedIngredients[c.id] || []).includes(ing);
+                                                        return (
+                                                            <button 
+                                                                key={ing} 
+                                                                onClick={() => toggleTestedIngredient(c.id, ing)}
+                                                                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${isTested ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
+                                                            >
+                                                                {isTested && <i className="fa-solid fa-check mr-1"></i>} {ing}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="bg-red-50 rounded-3xl p-5 border border-red-100 shadow-inner">
+                                        <h4 className="font-black text-red-800 text-[10px] uppercase mb-4 tracking-widest">Précautions importantes</h4>
+                                        <div className="space-y-3">
+                                            {getGoldenRules(age).map((r, i) => <div key={i} className="flex gap-3 items-start bg-white/40 p-3 rounded-2xl"><span className="text-lg leading-none">{r.icon}</span><p className="text-xs font-bold text-red-900 leading-relaxed">{r.text}</p></div>)}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )
-                    })
-                }
+                            )
+                        })}
+
+                        {/* Bibliographie */}
+                        <div className="mt-8 p-6 bg-gray-100 rounded-[2rem] text-xs text-gray-500 shadow-inner border border-gray-200">
+                            <h4 className="font-black uppercase tracking-widest mb-3 text-gray-400"><i className="fa-solid fa-book-medical mr-2"></i>Sources Scientifiques</h4>
+                            <ol className="list-decimal pl-4 space-y-2">
+                                <li><i>Société Française de Pédiatrie. Alimentation du nourrisson de la naissance à 3 ans. Elsevier Masson; 2009.</i></li>
+                                <li><i>Santé publique France. Pas à pas, votre enfant mange comme un grand : Le petit guide de la diversification alimentaire. 2021.</i></li>
+                                <li><i>Bocquet A. Les nouvelles recommandations du PNNS sur la diversification alimentaire. Perfectionnement en Pédiatrie. 2022;5(2):127-133.</i></li>
+                            </ol>
+                        </div>
+                    </>
+                )}
             </div>
           );
 
