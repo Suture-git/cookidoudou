@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookidoudou</title>
+
+    <script src="./recettes.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+      window.FirebaseHelper = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, doc, setDoc, collection, onSnapshot };
+    </script>
+
+    <style>
+        .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 12px); }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .recipe-mini-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 overflow-x-hidden">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useMemo } = React;
+
+        const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
+
+        // --- DONNÉES ET CONSTANTES ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
+            authDomain: "cookidoudou-4ac92.firebaseapp.com",
+            projectId: "cookidoudou-4ac92",
+            storageBucket: "cookidoudou-4ac92.firebasestorage.app",
+            messagingSenderId: "590128476695",
+            appId: "1:590128476695:web:821122bbc1e8280694e252"
+        };
+        const appId = "cookidoudou-app";
+        const RECIPES = (typeof window !== 'undefined' && window.RECIPES) ? window.RECIPES : [];
+        const DAYS_OF_WEEK = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+        const SHOPPING_CATEGORIES = [
+            { id: 'legumes', icon: '🥦', name: 'Légumes', keywords: ['carotte', 'courgette', 'oignon', 'tomate', 'poireau', 'aubergine', 'navet', 'potiron', 'potimarron', 'salade', 'blette', 'ail', 'poivron', 'champignon', 'avocat', 'épinard', 'patate', 'terre', 'radis', 'brocoli', 'chou', 'asperge', 'endive', 'céleri', 'fève', 'pois', 'lentille'] },
+            { id: 'fruits', icon: '🍎', name: 'Fruits', keywords: ['pomme', 'citron', 'fraise', 'framboise', 'banane', 'mangue', 'pêche', 'poire', 'raisin', 'clémentine', 'orange', 'abricot', 'kiwi', 'melon', 'pastèque', 'ananas', 'passion', 'papaye', 'litchi', 'fruit du dragon'] },
+            { id: 'viande', icon: '🥩', name: 'Boucherie & Poissonnerie', keywords: ['poulet', 'bœuf', 'boeuf', 'porc', 'veau', 'dinde', 'viande', 'agneau', 'saucisse', 'jambon', 'poisson', 'saumon', 'cabillaud', 'crevette', 'lardon', 'merlu', 'thon', 'colin', 'truite', 'daurade', 'bar', 'maquereau', 'crabe', 'pétoncle', 'saint-jacques', 'boudin', 'lapin', 'sardine', 'anchois'] },
+            { id: 'laitier', icon: '🧀', name: 'Rayon Frais', keywords: ['beurre', 'crème', 'yaourt', 'fromage', 'œuf', 'oeuf', 'lait', 'gruyère', 'emmental', 'parmesan', 'mozzarella', 'mascarpone', 'feta', 'chèvre', 'suisse', 'laitage', 'comté', 'mimolette', 'gorgonzola', 'roquefort', 'fourme', 'ricotta'] },
+            { id: 'sale', icon: '🍝', name: 'Épicerie Salée', keywords: ['pâte', 'riz', 'lentille', 'huile', 'conserve', 'quinoa', 'semoule', 'macaroni', 'spaghetti', 'penne', 'moutarde', 'vinaigre', 'sauce', 'soja', 'pois chiche', 'haricot', 'purée', 'farine de pois', 'tomates pelées', 'ketchup', 'mayonnaise', 'olive', 'bouillon', 'blé', 'boulgour', 'brick', 'falafel'] },
+            { id: 'epices', icon: '🧂', name: 'Épices & Condiments', keywords: ['sel', 'poivre', 'épice', 'curry', 'cumin', 'paprika', 'herbe', 'thym', 'laurier', 'basilic', 'persil', 'ciboulette', 'coriandre', 'muscade', 'cannelle', 'gingembre', 'sarriette', 'aneth', 'sauge', 'estragon', 'curcuma', 'citronnelle', 'raifort', 'origan', 'câpre', 'piment', 'verveine'] },
+            { id: 'sucre', icon: '🍯', name: 'Épicerie Sucrée', keywords: ['farine', 'sucre', 'chocolat', 'miel', 'biscuit', 'confiture', 'compote', 'cacao', 'vanille', 'levure', 'amande', 'noisette', 'noix', 'gâteau', 'sucre vanillé', 'sirop', 'pectine', 'petit-beurre'] },
+            { id: 'surgelé', icon: '❄️', name: 'Surgelés', keywords: ['surgelé', 'petit pois', 'glace', 'épinard haché', 'frites', 'sorbet'] },
+            { id: 'boulangerie', icon: '🥖', name: 'Boulangerie', keywords: ['pain', 'baguette', 'mie', 'brioche', 'biscotte', 'croissant', 'croûton'] }
+        ];
+
+        const ROOTS = [
+            'pomme de terre', 'patate douce', 'tomate cerise', 'tomate pelée', 'tomate confite', 'tomate', 
+            'pomme granny smith', 'pomme fuji', 'pomme', 'courgette', 'oignon rouge', 'oignon blanc', 'oignon', 
+            'poivron rouge', 'poivron jaune', 'poivron', 'champignon de paris', 'champignon', 'piment oiseau', 'piment rouge', 'piment', 
+            'chou kale', 'chou-fleur', 'chou', 'poireau', 'haricot vert', 'haricot rouge', 'haricot', 'kiwi gold', 'kiwi vert', 'kiwi', 
+            'échalote', 'carotte', 'navet', 'aubergine', 'avocat', 'mangue', 'pêche', 'poire', 'fraise', 'framboise', 
+            'banane', 'citron vert', 'citron combava', 'citron', 'orange', 'abricot', 'melon', 'pastèque', 'asperge', 'oeuf', 'œuf', 'sardine', 'endive'
+        ].sort((a, b) => b.length - a.length);
+
+        const SEASONS_DATA = {
+            printemps: { id: 'printemps', icon: '🌸', name: 'Printemps' },
+            ete: { id: 'ete', icon: '☀️', name: 'Été' },
+            automne: { id: 'automne', icon: '🍂', name: 'Automne' },
+            hiver: { id: 'hiver', icon: '❄️', name: 'Hiver' }
+        };
+
+        const SEASONAL_INGREDIENTS = {
+          printemps: ['asperge', 'carotte', 'champignon', 'chou', 'courgette', 'épinard', 'navet', 'oignon', 'radis', 'tomate', 'abricot', 'cerise', 'citron', 'fraise', 'framboise', 'passion', 'pêche', 'rhubarbe'],
+          ete: ['artichaut', 'aubergine', 'blette', 'brocoli', 'carotte', 'céleri', 'champignon', 'chou', 'concombre', 'courgette', 'épinard', 'fenouil', 'haricot', 'oignon', 'pois', 'poivron', 'tomate', 'abricot', 'cassis', 'cerise', 'citron', 'figue', 'fraise', 'framboise', 'passion', 'groseille', 'melon', 'mirabelle', 'mûre', 'myrtille', 'nectarine', 'pastèque', 'pêche', 'prune', 'quetsche'],
+          automne: ['avocat', 'carotte', 'céleri', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'épinard', 'fenouil', 'maïs', 'navet', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'topinambour', 'amande', 'châtaigne', 'citron', 'clémentine', 'coing', 'datte', 'figue', 'passion', 'kaki', 'mandarine', 'marron', 'mirabelle', 'mûre', 'myrtille', 'noisette', 'noix', 'papaye', 'pêche', 'poire', 'pomme', 'raisin'],
+          hiver: ['avocat', 'betterave', 'carotte', 'champignon', 'chou', 'citrouille', 'courge', 'endive', 'oignon', 'panais', 'poireau', 'potimarron', 'potiron', 'salsifis', 'topinambour', 'ananas', 'banane', 'citron', 'clémentine', 'passion', 'grenade', 'kaki', 'litchi', 'mandarine', 'mangue', 'noisette', 'noix', 'orange', 'pamplemousse', 'poire', 'pomme', 'raisin']
+        };
+
+        const TYPICAL_DAYS = [
+            { maxAge: 5, title: "Avant 6 mois", subtitle: "Lait exclusif", meals: [{ name: "Matin", icon: "🍼", text: "Lait maternel ou infantile exclusif." }, { name: "Midi", icon: "🍼", text: "Lait exclusif. Diversification possible vers 4-5 mois sur avis médical." }, { name: "Goûter", icon: "🍼", text: "Lait exclusif." }, { name: "Soir", icon: "🌙", text: "Lait exclusif." }] },
+            { maxAge: 7, title: "De 6 à 7 mois", subtitle: "Diversification", meals: [{ name: "Petit-déjeuner", icon: "🍼", text: "210-240ml lait.\nFruits." }, { name: "Déjeuner", icon: "🥣", text: "200g purée légumes.\n10g protéines.\n5g MG.\n1/2 laitage." }, { name: "Goûter", icon: "🍎", text: "210ml lait.\n80g fruits." }, { name: "Dîner", icon: "🌙", text: "Lait." }] },
+            { maxAge: 9, title: "De 8 à 9 mois", subtitle: "Textures", meals: [{ name: "Petit-déjeuner", icon: "🍼", text: "240ml lait.\nFruit." }, { name: "Déjeuner", icon: "🥣", text: "140g légumes + 50g féculents.\n15g protéines.\n5g MG.\nLaitage + fruits." }, { name: "Goûter", icon: "🍎", text: "210ml lait.\nFruits." }, { name: "Dîner", icon: "🌙", text: "Légumes + féculents.\n5g MG." }] },
+            { maxAge: 12, title: "De 10 à 12 mois", subtitle: "Morceaux", meals: [{ name: "Petit-déjeuner", icon: "🥖", text: "Lait + Fruit.\nTartine beurrée." }, { name: "Déjeuner", icon: "🥣", text: "Légumes + féculents.\n20g protéines.\nMG.\nLaitage + fruit." }, { name: "Goûter", icon: "🍎", text: "Lait + Fruit." }, { name: "Dîner", icon: "🌙", text: "Légumes + féculents.\nLaitage + fruit." }] },
+            { maxAge: 24, title: "De 1 à 2 ans", subtitle: "Comme les grands", meals: [{ name: "Petit-déjeuner", icon: "🥖", text: "Lait croissance.\nFruit.\nTartine." }, { name: "Déjeuner", icon: "🥗", text: "Crudités.\nLégumes + féculents.\n25g protéines.\nDessert." }, { name: "Goûter", icon: "🍪", text: "Lait.\nFruit.\nBiscuit." }, { name: "Dîner", icon: "🌙", text: "Légumes + féculents.\nLaitage + fruit." }] }
+        ];
+
+        const GENERAL_TIPS = [
+            { icon: '📝', title: "Planning", text: "Anticipez vos menus pour gagner du temps et économiser." },
+            { icon: '❄️', title: "Congélation", text: "Doublez les doses pour les soirs pressés." },
+            { icon: '🧹', title: "Nettoyage", text: "Un plan de travail propre aide à cuisiner sereinement." }
+        ];
+
+        // --- FONCTIONS UTILITAIRES ---
+        function calculateAgeInMonths(birthdate) {
+            if (!birthdate) return null;
+            try {
+                const diffTime = Math.abs(new Date() - new Date(birthdate));
+                return Math.floor(Math.ceil(diffTime / (1000 * 60 * 60 * 24)) / 30.44); 
+            } catch(e) { return null; }
+        }
+
+        function getCurrentActiveSeasons() {
+            const month = new Date().getMonth();
+            const activeIds = [];
+            if ([10, 11, 0, 1, 2].includes(month)) activeIds.push('hiver');
+            if ([1, 2, 3, 4, 5].includes(month)) activeIds.push('printemps');
+            if ([4, 5, 6, 7, 8].includes(month)) activeIds.push('ete');
+            if ([7, 8, 9, 10, 11].includes(month)) activeIds.push('automne');
+            return activeIds.map(id => SEASONS_DATA[id]);
+        }
+
+        function getRecipeDominantSeasons(ingredientsArray) {
+          if (!ingredientsArray || ingredientsArray.length === 0) return [];
+          const text = ingredientsArray.join(' ').toLowerCase();
+          const scores = { printemps: 0, ete: 0, automne: 0, hiver: 0 };
+          Object.keys(SEASONAL_INGREDIENTS).forEach(season => {
+              SEASONAL_INGREDIENTS[season].forEach(ing => {
+                  if (text.includes(ing)) scores[season]++;
+              });
+          });
+          let maxScore = 0;
+          Object.values(scores).forEach(score => { if (score > maxScore) maxScore = score; });
+          return maxScore === 0 ? [] : Object.keys(scores).filter(season => scores[season] === maxScore);
+        }
+
+        function getMatchingActiveSeasons(ingredientsArray, activeSeasons) {
+          const dominantSeasonsIds = getRecipeDominantSeasons(ingredientsArray);
+          return activeSeasons.filter(activeSeason => dominantSeasonsIds.includes(activeSeason.id));
+        }
+
+        function categorizeIngredient(displayStr) {
+            if (!displayStr) return 'autres';
+            const lower = displayStr.toLowerCase();
+            const ingredientPart = lower.split(' : ')[0] || lower;
+            for (const cat of SHOPPING_CATEGORIES) {
+                if (cat.keywords.some(kw => ingredientPart.includes(kw))) return cat.id;
+            }
+            return 'autres';
+        }
+
+        function parseIngredient(rawStr) {
+            const match = rawStr.toLowerCase().trim().match(/^([\d.,/]+)?\s*(?:(g|kg|ml|cl|l|c\.à\.s|c\.à\.c|cuillères?|pincées?|gousses?|tranches?|feuilles?|filets?|poignées?|bocaux|bocal|bottes?|bouquets?)(?=\s|$|d'|d’|de\b))?\s*(?:de\s+|d'|d’)?(.*)$/);
+            if (!match) return { qty: 0, unit: '', name: rawStr.toLowerCase().trim(), root: rawStr.toLowerCase().trim(), variety: '', raw: rawStr };
+            
+            let qty = 0;
+            const qtyStr = match[1] || '0';
+            if (qtyStr.includes('/')) {
+                const parts = qtyStr.split('/');
+                if (parts.length === 2 && parseFloat(parts[1]) !== 0) qty = parseFloat(parts[0]) / parseFloat(parts[1]);
+            } else {
+                qty = parseFloat(qtyStr.replace(',', '.'));
+            }
+            
+            let unit = (match[2] || '').trim();
+            if (unit.startsWith('cuillère')) unit = 'cuillère';
+            if (unit.startsWith('pincée')) unit = 'pincée';
+            if (unit.startsWith('gousse')) unit = 'gousse';
+            if (unit.startsWith('tranche')) unit = 'tranche';
+            if (unit.startsWith('feuille')) unit = 'feuille';
+            if (unit.startsWith('filet')) unit = 'filet';
+            if (unit.startsWith('poignée')) unit = 'poignée';
+            if (unit.startsWith('botte')) unit = 'botte';
+            if (unit.startsWith('bouquet')) unit = 'bouquet';
+            if (unit === 'bocaux') unit = 'bocal';
+
+            let name = (match[3] || rawStr).trim().replace(/^(les|des|du|de la|un|une)\s+/, '');
+            
+            let normalizedName = name;
+            if (normalizedName.endsWith('s') && !['pois', 'radis', 'frais', 'épices'].includes(normalizedName)) {
+                normalizedName = normalizedName.replace(/s$/, '');
+            }
+
+            let root = normalizedName;
+            let variety = 'classique';
+            for (const r of ROOTS) {
+                if (normalizedName.startsWith(r)) {
+                    root = r;
+                    const vRaw = normalizedName.substring(r.length).trim().replace(/^(de |d'|des |aux |en )/, '').trim();
+                    if (vRaw && vRaw !== 's' && vRaw !== 'x') {
+                        variety = vRaw;
+                    }
+                    break;
+                }
+            }
+            return { qty, unit, name: normalizedName, root, variety, raw: rawStr };
+        }
+
+        function aggregateShoppingList(rawList) {
+            const aggregated = {};
+            rawList.forEach(rawStr => {
+                const parsed = parseIngredient(rawStr);
+                let baseUnit = parsed.unit;
+                let baseQty = parsed.qty;
+                if (baseUnit === 'kg') { baseUnit = 'g'; baseQty *= 1000; }
+                else if (baseUnit === 'l' || baseUnit === 'L') { baseUnit = 'ml'; baseQty *= 1000; }
+                else if (baseUnit === 'cl') { baseUnit = 'ml'; baseQty *= 10; }
+                
+                const root = parsed.root;
+                if (!aggregated[root]) aggregated[root] = {};
+                if (!aggregated[root][baseUnit]) {
+                    aggregated[root][baseUnit] = { varieties: {}, rawItems: [] };
+                }
+                const varKey = parsed.variety;
+                aggregated[root][baseUnit].varieties[varKey] = (aggregated[root][baseUnit].varieties[varKey] || 0) + baseQty;
+                aggregated[root][baseUnit].rawItems.push(rawStr);
+            });
+            
+            const result = [];
+            Object.keys(aggregated).forEach(root => {
+                Object.keys(aggregated[root]).forEach(unit => {
+                    const data = aggregated[root][unit];
+                    const varKeys = Object.keys(data.varieties);
+                    const totalQty = varKeys.reduce((sum, k) => sum + data.varieties[k], 0);
+                    
+                    let displayQty = totalQty;
+                    let displayUnit = unit;
+                    if (unit === 'g' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'kg'; }
+                    if (unit === 'ml' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'L'; }
+                    
+                    let pluralRoot = root;
+                    if (displayQty > 1 && !displayUnit) {
+                        if (!pluralRoot.endsWith('s') && !pluralRoot.endsWith('x') && !pluralRoot.endsWith('z') && root !== 'chou') pluralRoot += 's';
+                        else if (root === 'chou') pluralRoot = 'choux';
+                    }
+                    
+                    let displayName = pluralRoot;
+                    let varietyDetails = "";
+                    if (varKeys.length === 1 && varKeys[0] !== 'classique') {
+                        displayName = `${pluralRoot} ${varKeys[0]}`;
+                    } else if (varKeys.length > 1) {
+                        const details = varKeys.map(vk => {
+                            let vQty = data.varieties[vk];
+                            if (unit === 'g' && vQty >= 1000) vQty /= 1000;
+                            if (unit === 'ml' && vQty >= 1000) vQty /= 1000;
+                            const qStr = Number.isInteger(vQty) ? vQty : vQty.toFixed(1);
+                            return vk === 'classique' ? `${qStr} classiques` : `${qStr} ${vk}`;
+                        }).join(', ');
+                        varietyDetails = ` (${details})`;
+                    }
+                    
+                    let qtyStr = "";
+                    if (displayQty > 0) {
+                        let finalQty = Number.isInteger(displayQty) ? displayQty : displayQty.toFixed(1);
+                        let finalUnit = displayUnit;
+                        if (['cuillère', 'pincée', 'gousse', 'tranche', 'feuille', 'filet', 'poignée', 'bocal', 'botte', 'bouquet'].includes(finalUnit)) {
+                            finalUnit = displayQty > 1 ? (finalUnit === 'bocal' ? 'bocaux' : finalUnit + 's') : finalUnit;
+                        }
+                        qtyStr = finalQty + (finalUnit ? " " + finalUnit : "");
+                    }
+                    
+                    let finalLabel = displayName.charAt(0).toUpperCase() + displayName.slice(1) + varietyDetails;
+                    if (qtyStr) finalLabel += " : " + qtyStr;
+                    result.push({ displayStr: finalLabel, rawItems: data.rawItems });
+                });
+            });
+            return result;
+        }
+
+        function getTypicalDayForAge(ageInMonths) {
+            if (ageInMonths === null) return null;
+            return TYPICAL_DAYS.find(td => ageInMonths <= td.maxAge) || TYPICAL_DAYS[TYPICAL_DAYS.length - 1];
+        }
+
+        function getCoachAdvice(ageInMonths) {
+            if (ageInMonths === null) return null;
+            
+            if (ageInMonths < 4) return { 
+                texture: "Liquide", prot: "0g", fat: "Non", 
+                text: "Le nourrisson ne doit recevoir qu'un seul type d'aliment : un lait répondant à ses besoins[cite: 20]. Le lait de vache est totalement inadapté à cet âge[cite: 31].",
+                textureReason: "Le système digestif de votre enfant n'est prêt que pour déglutir du lait."
+            };
+            
+            if (ageInMonths < 6) return { 
+                texture: "Lisse", prot: "5g", fat: "1 c.à.c", 
+                text: "L'introduction des aliments autres que le lait ne doit jamais se faire avant 4 mois révolus[cite: 42]. Introduisez toutes les familles d'aliments, y compris ceux qui peuvent provoquer une allergie (œufs, arachides...) et le gluten[cite: 286]. Ajoutez de la matière grasse[cite: 349].",
+                textureReason: "Proposez tous les aliments en purée ou en compote lisses pour que le bébé les avale sans risque[cite: 340]."
+            };
+            
+            if (ageInMonths < 8) return { 
+                texture: "Écrasé", prot: "10g", fat: "1 c.à.c", 
+                text: "Tous les aliments hachés ou écrasés grossièrement à la fourchette[cite: 379].",
+                textureReason: "À partir de 6/8 mois, c'est important de proposer progressivement de nouvelles textures à votre enfant[cite: 362]. Il va ainsi pouvoir développer ses capacités à bien mâcher[cite: 363]."
+            };
+            
+            if (ageInMonths <= 12) return { 
+                texture: "Morceaux", prot: "20g", fat: "1 c.à.c", 
+                text: "Les aliments protéiques (viandes, poissons, oeufs) ne devraient être proposés qu'une fois par jour et en quantité adaptée (exemple, 5 g à 6 mois, 20 g à 12 mois)[cite: 53].",
+                textureReason: "Aliments en morceaux très mous qui s'écrasent entre la langue et le palais [cite: 381] puis à croquer dès 10 mois[cite: 383]. Proposer un quignon de pain de temps en temps au repas permet de stimuler la mastication et de fortifier la mâchoire[cite: 385]."
+            };
+            
+            return { 
+                texture: "Familiale", prot: "20-30g", fat: "1-2 c.à.c", 
+                text: "L'enfant passe progressivement d'une alimentation infantile spécifique, adaptée à son âge, à l'alimentation familiale[cite: 68]. 3 repas par jour + 1 goûter (et 1 seul)[cite: 417].",
+                textureReason: "Votre enfant mange presque comme les grands, en quantités adaptées à son âge."
+            };
+        }
+
+        function getGoldenRules(ageInMonths) {
+            if (ageInMonths === null) return [];
+            const rules = [];
+            
+            rules.push({ icon: '🚫', text: "La règle à tout âge est de proposer sans jamais forcer en respectant son appétit[cite: 147]." });
+            rules.push({ icon: '📺', text: "Il est préférable d'éteindre la télé et de laisser son téléphone à distance[cite: 166]." });
+            
+            if (ageInMonths < 36) {
+                rules.push({ icon: '🧂', text: "Jusqu'à 3 ans, ne salez pas le fait maison ou les petits pots[cite: 208]." });
+                rules.push({ icon: '🍯', text: "Proposez des fruits tendres crus ou cuits écrasés à la fourchette, toujours sans sucre[cite: 358]." });
+            }
+            return rules;
+        }
+
+        function getRecipeTip() {
+            return GENERAL_TIPS[Math.floor(Math.random() * GENERAL_TIPS.length)];
+        }
+
+        // --- COMPOSANT PRINCIPAL ---
+        function App() {
+          const [currentTab, setCurrentTab] = useState('home');
+          const [selectedRecipe, setSelectedRecipe] = useState(null);
+          const [selectedDayForAgenda, setSelectedDayForAgenda] = useState(DAYS_OF_WEEK[0]);
+          const todayStrGlobal = new Date().toLocaleDateString('fr-FR', { weekday: 'long' }).replace(/^\w/, c => c.toUpperCase());
+          const [selectedHomeDay, setSelectedHomeDay] = useState(todayStrGlobal);
+          const [children, setChildren] = useState([]); 
+          const [agenda, setAgenda] = useState({}); 
+          const [shoppingList, setShoppingList] = useState([]); 
+          const [pantry, setPantry] = useState([]); 
+          const [testedIngredients, setTestedIngredients] = useState({});
+          const [user, setUser] = useState(null);
+          const [appError, setAppError] = useState(null);
+          const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
+          const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
+          const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
+          const [activeModalChildId, setActiveModalChildId] = useState(null); 
+          const [showTipsModal, setShowTipsModal] = useState(false);
+          const [showGeneratorModal, setShowGeneratorModal] = useState(false);
+          const [genConfig, setGenConfig] = useState({ weekdayMeals: 1, weekendMeals: 2, structure: 'Plat + Dessert' });
+          const [collapsedCategories, setCollapsedCategories] = useState({});
+          const [showOnboardingModal, setShowOnboardingModal] = useState(() => localStorage.getItem('cookidoudou_onboarded') !== 'true');
+          const [showMedicalConsentModal, setShowMedicalConsentModal] = useState(false);
+          const [isCoachEnabled, setIsCoachEnabled] = useState(() => JSON.parse(localStorage.getItem('cookidoudou_coach_enabled')) || false);
+          const currentActiveSeasons = useMemo(() => getCurrentActiveSeasons(), []);
+          const [isSeasonalModeActive, setIsSeasonalModeActive] = useState(() => JSON.parse(localStorage.getItem('cookidoudou_season_mode')) !== false);
+
+          const names = useMemo(() => children.length ? children.map(c => c.name || "Bébé").join(' et ') : "!", [children]);
+
+          useEffect(() => { localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive)); }, [isSeasonalModeActive]);
+
+          // --- FIREBASE ET SYNC ---
+          useEffect(() => {
+            const start = async () => {
+              if (!window.FirebaseHelper) return;
+              try {
+                const app = window.FirebaseHelper.initializeApp(firebaseConfig);
+                const auth = window.FirebaseHelper.getAuth(app);
+                window._db = window.FirebaseHelper.getFirestore(app);
+                const cred = await window.FirebaseHelper.signInAnonymously(auth);
+                setUser(cred.user);
+              } catch (e) { setAppError("Erreur de connexion."); }
+            };
+            start();
+          }, []);
+
+          useEffect(() => {
+            if (!user || !window._db || !familyCode) return;
+            const fid = familyCode.trim().toLowerCase();
+            const pRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
+            return window.FirebaseHelper.onSnapshot(pRef, (s) => {
+              if (s.exists()) {
+                const d = s.data();
+                if (d.children) setChildren(d.children);
+                if (d.testedIngredients) setTestedIngredients(d.testedIngredients);
+                if (d.agenda) {
+                    const mig = {};
+                    Object.keys(d.agenda).forEach(day => { mig[day] = Array.isArray(d.agenda[day]) ? d.agenda[day] : [d.agenda[day]].filter(Boolean); });
+                    setAgenda(mig);
+                }
+                if (d.shoppingList) setShoppingList(d.shoppingList);
+                if (d.pantry) setPantry(d.pantry);
+              }
+            });
+          }, [user, familyCode]);
+
+          const saveToCloud = useCallback(async (data) => {
+            if (!user || !window._db || !familyCode) return;
+            const fid = familyCode.trim().toLowerCase();
+            const docRef = window.FirebaseHelper.doc(window._db, 'artifacts', appId, 'public', 'data', 'profiles', fid);
+            await window.FirebaseHelper.setDoc(docRef, data, { merge: true });
+          }, [user, familyCode]);
+
+          // --- ACTIONS ---
+          const toggleTestedIngredient = (childId, ingredient) => {
+            const currentList = testedIngredients[childId] || [];
+            let newList;
+            if (currentList.includes(ingredient)) {
+                newList = currentList.filter(i => i !== ingredient);
+            } else {
+                newList = [...currentList, ingredient];
+            }
+            const newTested = { ...testedIngredients, [childId]: newList };
+            setTestedIngredients(newTested);
+            saveToCloud({ testedIngredients: newTested });
+          };
+
+          const getRebuiltShoppingList = (agendaObj, pantryArr) => {
+            let newList = [];
+            Object.values(agendaObj).flat().forEach(rid => {
+                const r = RECIPES.find(rec => rec.id === rid);
+                if (r && r.ingredients) {
+                    r.ingredients.forEach(i => { if (!pantryArr.includes(i) && !newList.includes(i)) newList.push(i); });
+                }
+            });
+            return newList;
+          };
+
+          const addToAgenda = (day, rid) => {
+            const current = agenda[day] || [];
+            if (current.length >= 6) return alert("Plein !");
+            if (current.includes(rid)) return alert("Déjà là !");
+            const newA = { ...agenda, [day]: [...current, rid] };
+            const newS = getRebuiltShoppingList(newA, pantry);
+            setAgenda(newA); setShoppingList(newS);
+            saveToCloud({ agenda: newA, shoppingList: newS });
+          };
+
+          const removeFromAgenda = (day, rid) => {
+            const newA = { ...agenda, [day]: (agenda[day] || []).filter(id => id !== rid) };
+            const isAllEmpty = Object.values(newA).flat().length === 0;
+            const newPantry = isAllEmpty ? [] : pantry;
+            const newS = getRebuiltShoppingList(newA, newPantry);
+            setAgenda(newA); setShoppingList(newS); setPantry(newPantry);
+            saveToCloud({ agenda: newA, shoppingList: newS, pantry: newPantry });
+          };
+
+          const generateWeeklyMenu = () => {
+            let pool = isSeasonalModeActive ? RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0) : RECIPES;
+            if (pool.length < 5) pool = RECIPES;
+            const entrees = pool.filter(r => r.category?.includes("Entrée"));
+            const plats = pool.filter(r => r.category?.includes("Plat"));
+            const desserts = pool.filter(r => r.category?.includes("Dessert"));
+            const newA = {};
+            let used = [];
+            const pick = (arr) => {
+                let avail = arr.filter(r => !used.includes(r.id));
+                if (avail.length === 0) avail = arr;
+                const r = avail[Math.floor(Math.random() * avail.length)];
+                if (r) used.push(r.id);
+                return r;
+            };
+            DAYS_OF_WEEK.forEach(day => {
+                const count = (day === 'Samedi' || day === 'Dimanche') ? genConfig.weekendMeals : genConfig.weekdayMeals;
+                let dayRecs = [];
+                for(let i=0; i<count; i++) {
+                    if (genConfig.structure.includes('Entrée')) { const r = pick(entrees); if(r) dayRecs.push(r.id); }
+                    if (genConfig.structure.includes('Plat')) { const r = pick(plats); if(r) dayRecs.push(r.id); }
+                    if (genConfig.structure.includes('Dessert')) { const r = pick(desserts); if(r) dayRecs.push(r.id); }
+                }
+                newA[day] = Array.from(new Set(dayRecs)).slice(0, 6);
+            });
+            const newP = [];
+            const newS = getRebuiltShoppingList(newA, newP);
+            setAgenda(newA); setShoppingList(newS); setPantry(newP);
+            saveToCloud({ agenda: newA, shoppingList: newS, pantry: newP });
+            setShowGeneratorModal(false); setCurrentTab('home');
+          };
+
+          const handleCloseOnboarding = () => { setShowOnboardingModal(false); localStorage.setItem('cookidoudou_onboarded', 'true'); };
+          const handleAcceptMedicalConsent = () => { setIsCoachEnabled(true); localStorage.setItem('cookidoudou_coach_enabled', 'true'); setShowMedicalConsentModal(false); setCurrentTab('coach'); };
+          const handleCoachToggle = () => isCoachEnabled ? (setIsCoachEnabled(false), localStorage.setItem('cookidoudou_coach_enabled', 'false')) : setShowMedicalConsentModal(true);
+
+          const updateChild_func = (id, up) => { const n = children.map(c => c.id === id ? {...c, ...up} : c); setChildren(n); saveToCloud({children: n}); };
+          const removeChild = (id) => { const n = children.filter(c => c.id !== id); setChildren(n); saveToCloud({children: n}); };
+          const handlePhoto_func = (e, id) => {
+            const f = e.target.files[0]; if(!f) return;
+            const rd = new FileReader(); rd.onload=(ev)=>{
+                const i = new Image(); i.onload=()=>{
+                    const c = document.createElement('canvas'); c.width=300; c.height=300; const ctx=c.getContext('2d');
+                    const s = Math.min(i.width, i.height);
+                    ctx.drawImage(i, (i.width-s)/2, (i.height-s)/2, s, s, 0, 0, 300, 300);
+                    updateChild_func(id, {photo: c.toDataURL('image/jpeg', 0.8)});
+                }; i.src=ev.target.result;
+            }; rd.readAsDataURL(f);
+          };
+
+          // --- RENDUS ---
+          const renderHome = () => {
+            const displayRecs = (agenda[selectedHomeDay] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
+            return (
+              <div className="space-y-6 animate-fadeIn pb-24">
+                <div className="text-center"><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'long'})}</p><h1 className="text-3xl font-black text-gray-800 tracking-tighter">Coucou {names}</h1></div>
+                <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-3 text-[10px] uppercase tracking-widest px-2"><i className="fa-solid fa-calendar-week text-blue-500"></i> La Semaine</h3>
+                    <div className="flex gap-3 overflow-x-auto hide-scrollbar pt-2 pb-2 px-2">
+                       {DAYS_OF_WEEK.map(day => {
+                           const dayRecs = (agenda[day] || []).map(id => RECIPES.find(r => r.id === id)).filter(Boolean);
+                           const isToday = day === todayStrGlobal;
+                           const isSel = day === selectedHomeDay;
+                           return (
+                               <div key={day} onClick={() => setSelectedHomeDay(day)} className={`flex flex-col items-center p-3 rounded-2xl min-w-[4rem] border transition-all cursor-pointer ${isSel ? 'ring-2 ring-orange-400 bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-100'}`}>
+                                   <span className={`text-[10px] font-black uppercase mb-2 ${isSel ? 'text-orange-600' : isToday ? 'text-orange-400' : 'text-gray-400'}`}>{day.substring(0,3)}</span>
+                                   <div className="flex flex-col gap-1 items-center">
+                                       {dayRecs.length ? dayRecs.slice(0,3).map((r,i) => <img key={i} src={r.image} className="recipe-mini-avatar" style={{marginTop: i>0?'-10px':'0'}} />) : <div className="w-8 h-8 rounded-full border-dashed border border-gray-300 flex items-center justify-center"><i className="fa-solid fa-plus text-gray-200 text-xs"></i></div>}
+                                   </div>
+                               </div>
+                           )
+                       })}
+                    </div>
+                </div>
+                <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-4 text-xs uppercase tracking-widest"><i className="fa-solid fa-utensils text-orange-500"></i> {selectedHomeDay === todayStrGlobal ? "Menu d'aujourd'hui" : `Menu du ${selectedHomeDay}`}</h3>
+                    {displayRecs.length ? <div className="space-y-3">
+                        {displayRecs.map((r, idx) => (
+                            <div key={idx} className="flex gap-4 bg-orange-50 p-3 rounded-3xl items-center group">
+                                <div onClick={() => { setSelectedRecipe(r); setCurrentTab('recipe_detail'); }} className="flex-1 flex items-center gap-4 cursor-pointer">
+                                    <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm flex-shrink-0"><img src={r.image} className="w-full h-full object-cover" /></div>
+                                    <div className="flex-1"><h4 className="font-black text-gray-800 text-sm line-clamp-1">{r.title}</h4><p className="text-[10px] text-orange-600 font-bold">⏱ {r.time}</p></div>
+                                </div>
+                                <button onClick={() => removeFromAgenda(selectedHomeDay, r.id)} className="w-8 h-8 bg-white text-gray-400 rounded-full flex items-center justify-center shadow-sm hover:text-red-500 transition-colors"><i className="fa-solid fa-trash-can text-xs"></i></button>
+                            </div>
+                        ))}
+                    </div> : <div className="text-center py-6 opacity-40 italic text-sm">Rien de prévu.</div>}
+                </div>
+                <div onClick={() => children.length ? (setActiveModalChildId(children[0].id), setShowTypicalDayModal(true)) : setCurrentTab('profile')} className="bg-blue-500 rounded-[2.5rem] p-6 shadow-md text-white relative overflow-hidden cursor-pointer active:scale-95 transition">
+                    <i className="fa-solid fa-clipboard-list absolute -right-6 -bottom-6 text-8xl opacity-10 transform -rotate-12"></i>
+                    <h3 className="font-black mb-2 text-xs uppercase tracking-widest"><i className="fa-solid fa-lightbulb text-yellow-300"></i> Journée Type</h3>
+                    <p className="text-sm font-medium mb-3">Portions et menus adaptés.</p>
+                </div>
+              </div>
+            );
+          };
+
+          const renderShopping = () => {
+            const agg = aggregateShoppingList(shoppingList);
+            const grouped = agg.reduce((acc, obj) => {
+                const cid = categorizeIngredient(obj.displayStr);
+                if(!acc[cid]) acc[cid] = []; acc[cid].push(obj); return acc;
+            }, {});
+            const cats = [...SHOPPING_CATEGORIES, {id:'autres', icon:'🛒', name:'Autres'}];
+            return (
+              <div className="animate-fadeIn space-y-6 pb-24">
+                <h1 className="text-2xl font-black text-gray-800">Ma Liste <span className="text-sm text-gray-400 font-bold ml-2">({agg.length})</span></h1>
+                {!agg.length ? <div className="text-center py-24 opacity-20"><i className="fa-solid fa-basket-shopping text-7xl mb-4"></i><p className="font-black uppercase tracking-widest text-xs">Panier vide</p></div> : 
+                  <div className="space-y-4">
+                    {cats.map(c => {
+                        if(!grouped[c.id]) return null;
+                        const isCol = collapsedCategories[c.id] !== false;
+                        return (
+                            <div key={c.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm transition-all">
+                                <div onClick={() => setCollapsedCategories({...collapsedCategories, [c.id]: !isCol})} className="bg-gray-50 px-5 py-4 flex items-center gap-3 cursor-pointer group select-none">
+                                    <span className="text-xl">{c.icon}</span>
+                                    <h3 className="font-black text-gray-800 text-[10px] uppercase tracking-widest">{c.name}</h3>
+                                    <div className="ml-auto flex items-center gap-3">
+                                        <span className="bg-white px-2 py-1 rounded-full text-[9px] font-bold text-gray-400 border">{grouped[c.id].length}</span>
+                                        <i className={`fa-solid fa-chevron-down text-[10px] transition-transform duration-300 ${!isCol?'rotate-180 text-orange-500':''}`}></i>
+                                    </div>
+                                </div>
+                                {!isCol && <div className="animate-fadeIn">
+                                    {grouped[c.id].map((it, i) => (
+                                        <div key={i} className="flex items-center gap-4 p-4 sm:px-5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
+                                            <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 accent-orange-500 cursor-pointer" onChange={() => { const nP = [...new Set([...pantry, ...it.rawItems])]; setPantry(nP); setShoppingList(getRebuiltShoppingList(agenda, nP)); saveToCloud({shoppingList: getRebuiltShoppingList(agenda, nP), pantry: nP}); }} />
+                                            <span className="text-sm font-bold text-gray-700 flex-1">{it.displayStr}</span>
+                                        </div>
+                                    ))}
+                                </div>}
+                            </div>
+                        )
+                    })}
+                  </div>
+                }
+              </div>
+            );
+          };
+
+          const renderDetail = () => {
+            if(!selectedRecipe) return null; const r=selectedRecipe;
+            return (
+              <div className="animate-fadeIn space-y-6 pb-32">
+                <button onClick={() => {setSelectedRecipe(null); setCurrentTab('carnet');}} className="text-gray-500 font-bold bg-white px-4 py-2 rounded-full border border-gray-100 shadow-sm flex items-center gap-2"><i className="fa-solid fa-arrow-left"></i> Retour</button>
+                <div className="relative"><img src={r.image} className="w-full h-72 object-cover rounded-[3rem] shadow-xl"/><div className="absolute bottom-4 right-4 bg-white/90 p-3 rounded-2xl font-black text-xs shadow-lg">⏱ {r.time}</div></div>
+                <h1 className="text-3xl font-black text-gray-800 leading-tight px-2">{r.title}</h1>
+                <div className="pt-2 flex gap-3 px-2">
+                    <select value={selectedDayForAgenda} onChange={e=>setSelectedDayForAgenda(e.target.value)} className="flex-1 p-4 rounded-2xl bg-white border border-gray-200 font-black text-sm outline-none shadow-sm appearance-none">
+                      {DAYS_OF_WEEK.map(d=><option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <button onClick={()=>addToAgenda(selectedDayForAgenda, r.id)} className="bg-gray-900 text-white px-8 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition hover:bg-black">Planifier</button>
+                </div>
+                {children.length > 0 && <div className="space-y-3 mt-4">
+                    {children.map((c, idx) => {
+                        const age = calculateAgeInMonths(c.birthdate);
+                        const steps = r.babyAdaptations || [];
+                        let txt = age !== null ? (steps.find(a => age <= a.maxAge)?.text || steps[steps.length-1]?.text) : "Âge inconnu.";
+                        return (
+                            <div key={c.id} className={`${["bg-orange-500", "bg-amber-500", "bg-rose-500"][idx%3]} p-6 rounded-[2.5rem] text-white shadow-md relative overflow-hidden`}>
+                                <div className="flex items-center gap-3 mb-3 relative z-10 border-b border-white/20 pb-3">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white flex items-center justify-center shadow-sm">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-xs"></i>}</div>
+                                    <h4 className="font-black text-xs uppercase tracking-widest">Part de {c.name || "Bébé"} {age!==null?`(${age} m)` : ''}</h4>
+                                </div>
+                                <p className="text-sm leading-relaxed font-medium">{txt}</p>
+                            </div>
+                        );
+                    })}
+                </div>}
+                <div className="space-y-8 pt-6 px-2">
+                  <section>
+                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 border-b pb-2 tracking-widest">Ingrédients</h3>
+                    <div className="grid gap-2">
+                      {r.ingredients?.map((ing, i) => <div key={i} className="flex items-center gap-4 text-sm bg-white p-4 rounded-2xl shadow-sm border border-gray-50 font-medium text-gray-700"><span className="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></span><span>{ing}</span></div>)}
+                    </div>
+                  </section>
+                  <section>
+                    <h3 className="font-black text-[10px] uppercase text-gray-400 mb-4 border-b pb-2 tracking-widest">Préparation</h3>
+                    <div className="space-y-6">
+                      {r.adultSteps?.map((s, i) => <div key={i} className="flex gap-5 bg-white p-5 rounded-3xl border border-gray-50 shadow-sm"><span className="text-3xl text-orange-100 font-black italic">{i+1}</span><p className="text-sm leading-relaxed text-gray-600 font-medium">{s}</p></div>)}
+                    </div>
+                  </section>
+                </div>
+              </div>
+            );
+          };
+
+          const renderCoach = () => (
+            <div className="animate-fadeIn space-y-6 pb-24">
+                <h1 className="text-2xl font-black text-gray-800">Coach Bébé</h1>
+                {!children.length ? <div className="text-center py-12 opacity-40 bg-white rounded-[2rem] p-6 border border-gray-100 font-bold"><p>Ajoutez un enfant.</p></div> : 
+                    children.map(c => {
+                        const age = calculateAgeInMonths(c.birthdate); if(age === null) return null;
+                        const adv = getCoachAdvice(age);
+                        return (
+                            <div key={c.id} className="bg-white rounded-[3rem] p-6 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+                                <div className="flex items-center gap-4 mb-6 border-b border-gray-50 pb-5">
+                                    <div className="w-14 h-14 rounded-full overflow-hidden bg-indigo-50 border-2 border-white shadow-md flex items-center justify-center">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-2xl text-indigo-200"></i>}</div>
+                                    <div><h2 className="text-xl font-black text-gray-800">{c.name || "Bébé"}</h2><p className="text-xs text-indigo-500 font-bold uppercase tracking-widest">{age} mois</p></div>
+                                </div>
+                                <div className="bg-indigo-50/50 rounded-3xl p-5 mb-5 border border-indigo-100">
+                                    <h3 className="font-black text-indigo-800 mb-3 text-[10px] uppercase tracking-widest"><i className="fa-solid fa-bullseye text-indigo-400"></i> Étape & Nutrition</h3>
+                                    <p className="text-sm text-indigo-900 mb-4 font-medium leading-relaxed">{adv.text}</p>
+                                    
+                                    <div className="bg-white/60 p-4 rounded-2xl mb-4 border border-indigo-100/50">
+                                        <h4 className="font-black text-indigo-700 text-[10px] uppercase mb-2"><i className="fa-solid fa-tooth"></i> Pourquoi cette texture ?</h4>
+                                        <p className="text-xs text-indigo-800 font-medium">{adv.textureReason}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-2 mb-4">
+                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥣</span><span className="text-[10px] font-black text-indigo-700">{adv.texture}</span></div>
+                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🥩</span><span className="text-[10px] font-black text-indigo-700">{adv.prot}</span></div>
+                                        <div className="bg-white p-3 rounded-2xl text-center shadow-sm"><span className="block text-xl mb-1">🧈</span><span className="text-[10px] font-black text-indigo-700">{adv.fat}</span></div>
+                                    </div>
+
+                                    {age >= 4 && (
+                                        <div className="bg-white rounded-2xl p-4 shadow-sm mt-4">
+                                            <h4 className="font-black text-indigo-800 text-[10px] uppercase mb-3 tracking-widest"><i className="fa-solid fa-clipboard-check text-green-500"></i> Carnet de découverte</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['Gluten', 'Œuf', 'Arachide', 'Fruits à coque', 'Laitage', 'Poisson'].map(ing => {
+                                                    const isTested = (testedIngredients[c.id] || []).includes(ing);
+                                                    return (
+                                                        <button 
+                                                            key={ing} 
+                                                            onClick={() => toggleTestedIngredient(c.id, ing)}
+                                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${isTested ? 'bg-green-100 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
+                                                        >
+                                                            {isTested && <i className="fa-solid fa-check mr-1"></i>} {ing}
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="bg-red-50 rounded-3xl p-5 border border-red-100 shadow-inner">
+                                    <h4 className="font-black text-red-800 text-[10px] uppercase mb-4 tracking-widest">Précautions importantes</h4>
+                                    <div className="space-y-3">
+                                        {getGoldenRules(age).map((r, i) => <div key={i} className="flex gap-3 items-start bg-white/40 p-3 rounded-2xl"><span className="text-lg leading-none">{r.icon}</span><p className="text-xs font-bold text-red-900 leading-relaxed">{r.text}</p></div>)}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })
+                }
+            </div>
+          );
+
+          const renderCarnet = () => {
+            const list = isSeasonalModeActive ? RECIPES.filter(r => getMatchingActiveSeasons(r.ingredients, currentActiveSeasons).length > 0) : RECIPES;
+            const grouped = list.reduce((acc, r) => {
+              const c = r.category?.includes("Entrée") ? "Entrées" : (r.category?.includes("Dessert") ? "Desserts" : "Plats");
+              if (!acc[c]) acc[c] = []; acc[c].push(r); return acc;
+            }, {});
+            return (
+              <div className="animate-fadeIn space-y-8 pb-24">
+                <h1 className="text-2xl font-black text-gray-800">Recettes</h1>
+                <div onClick={() => setShowGeneratorModal(true)} className="bg-gradient-to-r from-orange-400 to-rose-400 rounded-[2rem] p-6 text-white cursor-pointer active:scale-95 transition shadow-lg flex items-center justify-between overflow-hidden relative">
+                    <i className="fa-solid fa-wand-magic-sparkles absolute -right-4 -bottom-4 text-8xl opacity-10 transform -rotate-12"></i>
+                    <div className="relative z-10"><h3 className="font-black text-lg">Inspiration ?</h3><p className="text-sm opacity-90 font-medium">Générer un menu de semaine.</p></div>
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center relative z-10"><i className="fa-solid fa-arrow-right"></i></div>
+                </div>
+                {isSeasonalModeActive && <div className="bg-green-500 text-white px-4 py-2 rounded-2xl font-black text-[10px] uppercase shadow-md flex items-center gap-2 w-fit"><i className="fa-solid fa-leaf"></i> Saison Active</div>}
+                {["Entrées", "Plats", "Desserts"].map(c => grouped[c] && (
+                    <div key={c} className="mb-8">
+                      <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b pb-2 flex justify-between px-2"><span>{c}</span><span>{grouped[c].length}</span></h2>
+                      <div className="grid gap-3">
+                        {grouped[c].map(r => (
+                          <div key={r.id} onClick={()=>{setSelectedRecipe(r); setCurrentTab('recipe_detail');}} className="bg-white p-4 rounded-3xl flex gap-4 items-center border border-gray-100 shadow-sm cursor-pointer hover:bg-orange-50/50 transition">
+                            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-inner flex-shrink-0"><img src={r.image} className="w-full h-full object-cover" /></div>
+                            <div className="flex-1"><h4 className="font-bold text-gray-800 text-sm line-clamp-1">{r.title}</h4><p className="text-[10px] text-gray-400 font-bold">⏱ {r.time}</p></div>
+                            <i className="fa-solid fa-chevron-right text-gray-200 text-xs"></i>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                ))}
+              </div>
+            );
+          };
+
+          const renderProfile = () => (
+            <div className="animate-fadeIn space-y-6 pb-24">
+              <h1 className="text-2xl font-black text-gray-800">La Famille</h1>
+              <div className="space-y-6">
+                  {children.map((c, i) => (
+                      <div key={c.id} className="bg-white rounded-[3rem] p-8 border border-gray-100 flex flex-col items-center shadow-sm relative group">
+                          <button onClick={() => removeChild(c.id)} className="absolute top-6 right-6 text-red-300 hover:text-red-500 transition-colors"><i className="fa-solid fa-trash-can"></i></button>
+                          <div className="relative w-28 h-28 mb-6 cursor-pointer transform hover:scale-105 transition" onClick={() => document.getElementById(`f-${c.id}`).click()}>
+                              <div className="w-full h-full rounded-full bg-orange-50 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">{c.photo ? <img src={c.photo} className="w-full h-full object-cover"/> : <i className="fa-solid fa-baby text-5xl text-orange-200"></i>}</div>
+                              <div className="absolute bottom-0 right-0 bg-white p-2.5 rounded-full shadow-lg text-orange-500 border border-gray-100 flex items-center justify-center"><i className="fa-solid fa-camera text-sm"></i></div>
+                              <input type="file" id={`f-${c.id}`} className="hidden" onChange={e => handlePhoto_func(e, c.id)} />
+                          </div>
+                          <div className="w-full space-y-4 text-center">
+                              <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Prénom</label><input type="text" value={c.name} onChange={e=>updateChild_func(c.id, {name:e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-black outline-none border border-transparent focus:border-orange-200" placeholder={`Enfant ${i+1}`} /></div>
+                              <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Naissance</label><input type="date" value={c.birthdate} onChange={e=>updateChild_func(c.id, {birthdate:e.target.value})} className="w-full bg-gray-50 p-4 rounded-2xl text-center font-bold outline-none border border-transparent focus:border-orange-200" /></div>
+                          </div>
+                      </div>
+                  ))}
+                  {children.length < 3 && <button onClick={() => { const n = [...children, {id:Date.now(), name:'', birthdate:'', photo:null}]; setChildren(n); saveToCloud({children:n}); }} className="w-full bg-orange-50 text-orange-600 border-2 border-dashed border-orange-200 py-6 rounded-[2.5rem] font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-orange-100 transition"><i className="fa-solid fa-plus"></i> Ajouter un enfant</button>}
+              </div>
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 flex justify-between items-center shadow-sm">
+                <div className="flex-1 pr-4"><h3 className="font-black text-xs uppercase tracking-widest text-gray-800">Coach Diversification</h3><p className="text-[10px] text-gray-500">Conseils adaptés.</p></div>
+                <button onClick={handleCoachToggle} className={`w-12 h-6 rounded-full p-1 transition shadow-inner ${isCoachEnabled?'bg-indigo-500 justify-end':'bg-gray-300 justify-start'}`}><div className="w-4 h-4 rounded-full bg-white shadow-sm"></div></button>
+              </div>
+              <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden">
+                <h3 className="font-black text-xs uppercase mb-2 tracking-widest text-gray-800">Partage Familial</h3>
+                <div className="flex gap-2 relative z-10">
+                    <input type="text" value={tempFamilyCode} onChange={e=>setTempFamilyCode(e.target.value.toUpperCase())} className="flex-1 bg-gray-50 p-4 rounded-2xl text-xs font-black outline-none border border-transparent focus:border-blue-200" placeholder="CODE SECRET" />
+                    <button onClick={()=>{ if(tempFamilyCode) { setFamilyCode(tempFamilyCode); localStorage.setItem('cookidoudou_family_code', tempFamilyCode); alert("Synchronisé !"); } }} className="bg-blue-600 text-white px-6 rounded-2xl font-black text-[10px] uppercase shadow-md active:scale-95 transition">Valider</button>
+                </div>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="min-h-screen bg-gray-50 flex flex-col relative overflow-x-hidden">
+              <main className="flex-1 max-w-2xl mx-auto w-full p-6 pt-10 overflow-y-auto">
+                {currentTab === 'home' && renderHome()}
+                {currentTab === 'carnet' && renderCarnet()}
+                {currentTab === 'coach' && isCoachEnabled && renderCoach()}
+                {currentTab === 'shopping' && renderShopping()}
+                {currentTab === 'profile' && renderProfile()}
+                {currentTab === 'recipe_detail' && renderDetail()}
+              </main>
+
+              {showGeneratorModal && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="bg-gradient-to-r from-orange-400 to-rose-400 p-6 text-white flex justify-between items-center">
+                            <h2 className="text-2xl font-black">Inspiration</h2>
+                            <button onClick={() => setShowGeneratorModal(false)}><i className="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div className="p-6 overflow-y-auto space-y-6 bg-gray-50 flex-1 hide-scrollbar">
+                            <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-2 tracking-widest">Semaine</label><div className="flex gap-2">{[1,2].map(n=><button key={n} onClick={()=>setGenConfig({...genConfig, weekdayMeals:n})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekdayMeals===n?'bg-orange-500 text-white':'bg-white text-gray-400'}`}>{n} repas</button>)}</div></div>
+                            <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-2 tracking-widest">Week-end</label><div className="flex gap-2">{[1,2,3].map(n=><button key={n} onClick={()=>setGenConfig({...genConfig, weekendMeals:n})} className={`flex-1 py-3 rounded-2xl font-black text-sm transition ${genConfig.weekendMeals===n?'bg-orange-500 text-white':'bg-white text-gray-400'}`}>{n} repas</button>)}</div></div>
+                            <div><label className="text-[10px] font-black uppercase text-gray-400 block mb-2 tracking-widest">Structure</label><div className="flex flex-col gap-2">{['Plat', 'Entrée + Plat', 'Plat + Dessert', 'Entrée + Plat + Dessert'].map(s=><button key={s} onClick={()=>setGenConfig({...genConfig, structure:s})} className={`w-full py-3 rounded-2xl font-black text-sm transition ${genConfig.structure===s?'bg-rose-400 text-white':'bg-white text-gray-400'}`}>{s}</button>)}</div></div>
+                        </div>
+                        <div className="p-6 bg-white border-t border-gray-100"><button onClick={generateWeeklyMenu} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-xs active:scale-95 transition">Générer mon menu</button></div>
+                    </div>
+                </div>
+              )}
+
+              {showTypicalDayModal && activeModalChildId && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="bg-blue-500 pt-6 px-6 pb-4 text-white">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+                                    {children.map(c => <button key={c.id} onClick={()=>setActiveModalChildId(c.id)} className={`px-4 py-2 rounded-2xl text-[10px] font-black transition whitespace-nowrap ${activeModalChildId===c.id?'bg-white text-blue-500':'bg-blue-600 text-blue-100'}`}>{c.name||"Bébé"}</button>)}
+                                </div>
+                                <button onClick={()=>setShowTypicalDayModal(false)}><i className="fa-solid fa-xmark"></i></button>
+                            </div>
+                            {(() => { const activeChild = children.find(c => c.id === activeModalChildId); const age = calculateAgeInMonths(activeChild?.birthdate); const td = getTypicalDayForAge(age); return <><h2 className="text-2xl font-black">{td?.title||"Âge inconnu"}</h2><p className="text-blue-100 text-sm font-medium">{td?.subtitle}</p></>; })()}
+                        </div>
+                        <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
+                            {(() => { const activeChild = children.find(c => c.id === activeModalChildId); const age = calculateAgeInMonths(activeChild?.birthdate); const td = getTypicalDayForAge(age); return td?.meals.map((m, i) => (
+                                <div key={i} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                                    <h4 className="font-black text-gray-800 flex items-center gap-2 mb-2"><span className="text-xl">{m.icon}</span> {m.name}</h4>
+                                    <p className="text-sm text-gray-600 pl-8 border-l-2 border-blue-100 whitespace-pre-line font-medium">{m.text}</p>
+                                </div>
+                            )); })()}
+                        </div>
+                        <div className="p-6 bg-white border-t border-gray-100"><button onClick={()=>setShowTypicalDayModal(false)} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black uppercase text-xs active:scale-95 transition">Fermer</button></div>
+                    </div>
+                </div>
+              )}
+
+              {showOnboardingModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 p-4 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] p-8 text-center shadow-2xl overflow-hidden relative">
+                        <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6 text-orange-400 text-4xl shadow-inner"><i className="fa-solid fa-spoon"></i></div>
+                        <h2 className="text-2xl font-black mb-2 text-gray-800 tracking-tight">Bienvenue !</h2>
+                        <p className="text-sm text-gray-600 mb-8 font-medium leading-relaxed">Nourrir toute la famille simplement et de saison.</p>
+                        <button onClick={handleCloseOnboarding} className="w-full bg-orange-500 text-white py-4 rounded-2xl font-black uppercase text-xs active:scale-95 transition">Commencer</button>
+                    </div>
+                </div>
+              )}
+
+              {showMedicalConsentModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-md animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden">
+                        <div className="bg-red-50 p-8 text-center border-b border-red-100"><i className="fa-solid fa-stethoscope text-4xl text-red-400 mb-4"></i><h2 className="text-xl font-black text-red-900 tracking-tight">Avertissement</h2></div>
+                        <div className="p-8 text-sm text-gray-600 space-y-4 text-center"><p>Les conseils du Coach sont donnés à titre indicatif.</p><button onClick={handleAcceptMedicalConsent} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-xs shadow-md active:scale-95 transition">J'ai compris</button></div>
+                    </div>
+                </div>
+              )}
+
+              {showTipsModal && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 p-4 animate-fadeIn">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                        <div className="bg-yellow-400 p-6 text-yellow-900 flex justify-between items-center relative"><h2 className="text-2xl font-black">Astuces</h2><button onClick={()=>setShowTipsModal(false)}><i className="fa-solid fa-xmark"></i></button></div>
+                        <div className="p-6 overflow-y-auto space-y-4 flex-1 hide-scrollbar bg-gray-50">
+                            {GENERAL_TIPS.map((t, i) => <div key={i} className="flex gap-4 items-start bg-white p-5 rounded-3xl shadow-sm border border-gray-100 font-medium text-gray-600"><span className="text-3xl">{t.icon}</span><div><h4 className="font-black text-gray-800 text-sm mb-1">{t.title}</h4><p className="text-xs">{t.text}</p></div></div>)}
+                        </div>
+                    </div>
+                </div>
+              )}
+
+              <nav className="fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around py-4 px-2 z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                {[
+                  { id: 'home', icon: 'fa-house', label: 'Accueil' },
+                  { id: 'carnet', icon: 'fa-book-open', label: 'Recettes' },
+                  ...(isCoachEnabled ? [{ id: 'coach', icon: 'fa-graduation-cap', label: 'Coach' }] : []),
+                  { id: 'shopping', icon: 'fa-cart-shopping', label: 'Courses' },
+                  { id: 'profile', icon: 'fa-user', label: 'Profil' }
+                ].map(t => {
+                  const isActive = currentTab === t.id || (t.id === 'carnet' && currentTab === 'recipe_detail');
+                  return (
+                    <button key={t.id} onClick={() => { setCurrentTab(t.id); setSelectedRecipe(null); }} className={`flex flex-col items-center gap-1.5 w-16 transition-all duration-300 ${isActive ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'}`}>
+                      <div className={`transition-transform duration-300 ${isActive ? '-translate-y-1 scale-110' : ''}`}><i className={`fa-solid ${t.icon} text-xl`}></i></div>
+                      <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`}>{t.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
