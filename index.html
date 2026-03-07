@@ -36,11 +36,11 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // ============================================================================
+        // 1. CONSTANTES GLOBALES ET DICTIONNAIRES (HOISTING SAFE)
+        // ============================================================================
         const { useState, useEffect, useCallback, useMemo } = React;
 
-        const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=600&q=80";
-
-        // --- DONNÉES ET CONSTANTES ---
         const firebaseConfig = {
             apiKey: "AIzaSyCOY2zjdwiQ9fIHfKdTt3B5c5eH5NocWUk",
             authDomain: "cookidoudou-4ac92.firebaseapp.com",
@@ -74,13 +74,14 @@
             'banane', 'citron vert', 'citron combava', 'citron', 'orange', 'abricot', 'melon', 'pastèque', 'asperge', 'oeuf', 'œuf', 'sardine', 'endive'
         ].sort((a, b) => b.length - a.length);
 
-        // Super-dictionnaire pour l'autocomplétion
-        const ALL_INGREDIENTS_DICT = Array.from(new Set([
-            ...ROOTS,
-            ...SHOPPING_CATEGORIES.flatMap(c => c.keywords)
-        ])).map(i => i.charAt(0).toUpperCase() + i.slice(1)).sort();
+        // Pré-calcul des expressions régulières pour capter la racine ET ses éventuels pluriels (ex: "pommes de terres")
+        const ROOT_REGEXES = ROOTS.map(r => {
+            const pattern = r.split(' ').map(word => word + '(?:s|x|z)?').join('\\s+');
+            return { root: r, regex: new RegExp('^' + pattern + '\\b', 'i') };
+        });
 
-        // Cartographie des allergènes (renommée pour l'UI)
+        const ALL_INGREDIENTS_DICT = Array.from(new Set([...ROOTS, ...SHOPPING_CATEGORIES.flatMap(c => c.keywords)])).map(i => i.charAt(0).toUpperCase() + i.slice(1)).sort();
+
         const ALLERGEN_MAP = {
             'Gluten': ['blé', 'pâte', 'pain', 'farine', 'semoule', 'biscotte', 'macaroni', 'spaghetti', 'boulgour', 'croissant', 'brioche'],
             'Laitage': ['lait', 'beurre', 'crème', 'yaourt', 'fromage', 'gruyère', 'emmental', 'parmesan', 'mozzarella', 'mascarpone', 'feta', 'chèvre', 'ricotta', 'laitage', 'comté', 'roquefort', 'fourme'],
@@ -90,13 +91,7 @@
             'Poisson & Fruits de mer': ['poisson', 'saumon', 'cabillaud', 'crevette', 'merlu', 'thon', 'colin', 'truite', 'daurade', 'bar', 'maquereau', 'sardine', 'anchois', 'saint-jacques', 'pétoncle', 'crabe']
         };
 
-        const SEASONS_DATA = {
-            printemps: { id: 'printemps', icon: '🌸', name: 'Printemps' },
-            ete: { id: 'ete', icon: '☀️', name: 'Été' },
-            automne: { id: 'automne', icon: '🍂', name: 'Automne' },
-            hiver: { id: 'hiver', icon: '❄️', name: 'Hiver' }
-        };
-
+        const SEASONS_DATA = { printemps: { id: 'printemps', icon: '🌸', name: 'Printemps' }, ete: { id: 'ete', icon: '☀️', name: 'Été' }, automne: { id: 'automne', icon: '🍂', name: 'Automne' }, hiver: { id: 'hiver', icon: '❄️', name: 'Hiver' } };
         const SEASONAL_INGREDIENTS = {
           printemps: ['asperge', 'carotte', 'champignon', 'chou', 'courgette', 'épinard', 'navet', 'oignon', 'radis', 'tomate', 'abricot', 'cerise', 'citron', 'fraise', 'framboise', 'passion', 'pêche', 'rhubarbe'],
           ete: ['artichaut', 'aubergine', 'blette', 'brocoli', 'carotte', 'céleri', 'champignon', 'chou', 'concombre', 'courgette', 'épinard', 'fenouil', 'haricot', 'oignon', 'pois', 'poivron', 'tomate', 'abricot', 'cassis', 'cerise', 'citron', 'figue', 'fraise', 'framboise', 'passion', 'groseille', 'melon', 'mirabelle', 'mûre', 'myrtille', 'nectarine', 'pastèque', 'pêche', 'prune', 'quetsche'],
@@ -118,13 +113,19 @@
             { icon: '🧹', title: "Nettoyage", text: "Un plan de travail propre aide à cuisiner sereinement." }
         ];
 
-        // --- FONCTIONS UTILITAIRES ---
+        const PLURALS_DICT = {
+            'chou': 'choux', 'chou-fleur': 'choux-fleurs', 'pomme de terre': 'pommes de terre', 'patate douce': 'patates douces',
+            'tomate cerise': 'tomates cerises', 'poireau': 'poireaux', 'oignon rouge': 'oignons rouges', 'oignon blanc': 'oignons blancs',
+            'poivron rouge': 'poivrons rouges', 'poivron jaune': 'poivrons jaunes', 'haricot vert': 'haricots verts', 'haricot rouge': 'haricots rouges',
+            'kiwi gold': 'kiwis gold', 'kiwi vert': 'kiwis verts', 'citron vert': 'citrons verts'
+        };
+
+        // ============================================================================
+        // 2. FONCTIONS DE LOGIQUE MÉTIER & PARSING (HOISTING SAFE)
+        // ============================================================================
         function calculateAgeInMonths(birthdate) {
             if (!birthdate) return null;
-            try {
-                const diffTime = Math.abs(new Date() - new Date(birthdate));
-                return Math.floor(Math.ceil(diffTime / (1000 * 60 * 60 * 24)) / 30.44); 
-            } catch(e) { return null; }
+            try { const diff = Math.abs(new Date() - new Date(birthdate)); return Math.floor(Math.ceil(diff / (1000 * 60 * 60 * 24)) / 30.44); } catch(e) { return null; }
         }
 
         function getCurrentActiveSeasons() {
@@ -141,11 +142,7 @@
           if (!ingredientsArray || ingredientsArray.length === 0) return [];
           const text = ingredientsArray.join(' ').toLowerCase();
           const scores = { printemps: 0, ete: 0, automne: 0, hiver: 0 };
-          Object.keys(SEASONAL_INGREDIENTS).forEach(season => {
-              SEASONAL_INGREDIENTS[season].forEach(ing => {
-                  if (text.includes(ing)) scores[season]++;
-              });
-          });
+          Object.keys(SEASONAL_INGREDIENTS).forEach(season => { SEASONAL_INGREDIENTS[season].forEach(ing => { if (text.includes(ing)) scores[season]++; }); });
           let maxScore = 0;
           Object.values(scores).forEach(score => { if (score > maxScore) maxScore = score; });
           return maxScore === 0 ? [] : Object.keys(scores).filter(season => scores[season] === maxScore);
@@ -160,27 +157,29 @@
             if (!displayStr) return 'autres';
             const lower = displayStr.toLowerCase();
             const ingredientPart = lower.split(' : ')[0] || lower;
-            for (const cat of SHOPPING_CATEGORIES) {
-                if (cat.keywords.some(kw => ingredientPart.includes(kw))) return cat.id;
-            }
+            for (const cat of SHOPPING_CATEGORIES) { if (cat.keywords.some(kw => ingredientPart.includes(kw))) return cat.id; }
             return 'autres';
         }
 
-        // Fonction pour catégoriser dans le carnet du Coach
         function getCategoryForTested(ing) {
             const lower = ing.toLowerCase();
-            for (const [allergen, words] of Object.entries(ALLERGEN_MAP)) {
-                if (words.some(w => lower.includes(w))) return 'Aliments prioritaires *';
-            }
+            for (const [allergen, words] of Object.entries(ALLERGEN_MAP)) { if (words.some(w => lower.includes(w))) return 'Aliments prioritaires *'; }
             const cat = categorizeIngredient(ing);
             if (cat === 'fruits' || cat === 'legumes') return 'Fruits & Légumes';
             if (cat === 'viande') return 'Viandes & Protéines';
             return 'Autres';
         }
 
-        function parseIngredient(rawStr) {
+        function getGrammaticallyCorrectPlural(root) {
+            if (PLURALS_DICT[root]) return PLURALS_DICT[root];
+            if (root.endsWith('s') || root.endsWith('x') || root.endsWith('z')) return root;
+            return root + 's';
+        }
+
+        // LE CŒUR DE LA V3 : Parseur robuste avec Regex dynamiques
+        function parseIngredientV3(rawStr) {
             const match = rawStr.toLowerCase().trim().match(/^([\d.,/]+)?\s*(?:(g|kg|ml|cl|l|c\.à\.s|c\.à\.c|cuillères?|pincées?|gousses?|tranches?|feuilles?|filets?|poignées?|bocaux|bocal|bottes?|bouquets?)(?=\s|$|d'|d’|de\b))?\s*(?:de\s+|d'|d’)?(.*)$/);
-            if (!match) return { qty: 0, unit: '', name: rawStr.toLowerCase().trim(), root: rawStr.toLowerCase().trim(), variety: '', raw: rawStr };
+            if (!match) return { qty: 0, unit: '', name: rawStr.toLowerCase().trim(), root: rawStr.toLowerCase().trim(), variety: 'classique', raw: rawStr };
             
             let qty = 0;
             const qtyStr = match[1] || '0';
@@ -205,41 +204,52 @@
 
             let name = (match[3] || rawStr).trim().replace(/^(les|des|du|de la|un|une)\s+/, '');
             
-            let normalizedName = name;
-            if (normalizedName.endsWith('s') && !['pois', 'radis', 'frais', 'épices'].includes(normalizedName)) {
-                normalizedName = normalizedName.replace(/s$/, '');
-            }
-
-            let root = normalizedName;
+            let root = name;
             let variety = 'classique';
-            for (const r of ROOTS) {
-                if (normalizedName.startsWith(r)) {
-                    root = r;
-                    const vRaw = normalizedName.substring(r.length).trim().replace(/^(de |d'|des |aux |en )/, '').trim();
-                    if (vRaw && vRaw !== 's' && vRaw !== 'x') {
-                        variety = vRaw;
-                    }
+
+            // Cherche la plus longue racine correspondante en ignorant les pluriels
+            for (const rr of ROOT_REGEXES) {
+                const regexMatch = name.match(rr.regex);
+                if (regexMatch) {
+                    root = rr.root;
+                    // On coupe la partie racine trouvée, le reste est la variété
+                    let vRaw = name.substring(regexMatch[0].length).trim();
+                    // On nettoie la variété (ex: "de fuji")
+                    vRaw = vRaw.replace(/^(de |d'|des |aux |en )/, '').trim();
+                    // Sécurité anti fantôme (si la regex a laissé un 's' accroché à un espace par erreur)
+                    if (vRaw === 's' || vRaw === 'x') vRaw = '';
+                    if (vRaw) variety = vRaw;
                     break;
                 }
             }
-            return { qty, unit, name: normalizedName, root, variety, raw: rawStr };
+
+            // Si aucune racine n'a matché, on nettoie un peu le pluriel à la mano (fallback)
+            if (root === name && root.endsWith('s') && !['pois', 'radis', 'frais', 'épices'].includes(root)) {
+                root = root.slice(0, -1);
+            }
+
+            return { qty, unit, name, root, variety, raw: rawStr };
         }
 
-        function aggregateShoppingList(rawList) {
+        function aggregateShoppingListV3(rawList) {
             const aggregated = {};
+            
             rawList.forEach(rawStr => {
-                const parsed = parseIngredient(rawStr);
+                const parsed = parseIngredientV3(rawStr);
                 let baseUnit = parsed.unit;
                 let baseQty = parsed.qty;
+                // Standardisation
                 if (baseUnit === 'kg') { baseUnit = 'g'; baseQty *= 1000; }
                 else if (baseUnit === 'l' || baseUnit === 'L') { baseUnit = 'ml'; baseQty *= 1000; }
                 else if (baseUnit === 'cl') { baseUnit = 'ml'; baseQty *= 10; }
                 
+                // On fusionne tout par racine et par unité
                 const root = parsed.root;
                 if (!aggregated[root]) aggregated[root] = {};
                 if (!aggregated[root][baseUnit]) {
                     aggregated[root][baseUnit] = { varieties: {}, rawItems: [] };
                 }
+                
                 const varKey = parsed.variety;
                 aggregated[root][baseUnit].varieties[varKey] = (aggregated[root][baseUnit].varieties[varKey] || 0) + baseQty;
                 aggregated[root][baseUnit].rawItems.push(rawStr);
@@ -257,17 +267,16 @@
                     if (unit === 'g' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'kg'; }
                     if (unit === 'ml' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'L'; }
                     
-                    let pluralRoot = root;
-                    if (displayQty > 1 && !displayUnit) {
-                        if (!pluralRoot.endsWith('s') && !pluralRoot.endsWith('x') && !pluralRoot.endsWith('z') && root !== 'chou') pluralRoot += 's';
-                        else if (root === 'chou') pluralRoot = 'choux';
-                    }
+                    // Pluralisation intelligente du label global
+                    let displayName = (displayQty > 1 && !displayUnit) ? getGrammaticallyCorrectPlural(root) : root;
                     
-                    let displayName = pluralRoot;
+                    // Gestion des variétés entre parenthèses
                     let varietyDetails = "";
                     if (varKeys.length === 1 && varKeys[0] !== 'classique') {
-                        displayName = `${pluralRoot} ${varKeys[0]}`;
+                        // S'il n'y a qu'une variété, on l'attache au nom (ex: Pommes fuji)
+                        displayName = `${displayName} ${varKeys[0]}`;
                     } else if (varKeys.length > 1) {
+                        // Si plusieurs variétés, on les liste avec leurs quantités
                         const details = varKeys.map(vk => {
                             let vQty = data.varieties[vk];
                             if (unit === 'g' && vQty >= 1000) vQty /= 1000;
@@ -278,6 +287,7 @@
                         varietyDetails = ` (${details})`;
                     }
                     
+                    // Gestion de l'affichage de la quantité finale
                     let qtyStr = "";
                     if (displayQty > 0) {
                         let finalQty = Number.isInteger(displayQty) ? displayQty : displayQty.toFixed(1);
@@ -296,53 +306,21 @@
             return result;
         }
 
-        function getTypicalDayForAge(ageInMonths) {
-            if (ageInMonths === null) return null;
-            return TYPICAL_DAYS.find(td => ageInMonths <= td.maxAge) || TYPICAL_DAYS[TYPICAL_DAYS.length - 1];
-        }
-
         // --- CONSEILS COACH (JSX) ---
         function getCoachAdvice(ageInMonths) {
             if (ageInMonths === null) return null;
-            
-            if (ageInMonths < 4) return { 
-                texture: "Liquide", prot: "0g", fat: "Non", 
-                text: <>Le nourrisson ne doit recevoir qu'un seul type d'aliment : un lait répondant à ses besoins. Le lait de vache est totalement inadapté à cet âge.<sup>1</sup></>,
-                textureReason: <>Le système digestif de votre enfant n'est prêt que pour déglutir du lait.<sup>1</sup></>
-            };
-            
-            if (ageInMonths < 6) return { 
-                texture: "Lisse", prot: "5g", fat: "1 c.à.c", 
-                text: <>L'introduction des aliments autres que le lait ne doit jamais se faire avant 4 mois révolus.<sup>3</sup> Introduisez toutes les familles d'aliments, y compris ceux qui peuvent provoquer une allergie (œufs, arachides...) et le gluten.<sup>3</sup> Ajoutez de la matière grasse.<sup>2</sup></>,
-                textureReason: <>Proposez tous les aliments en purée ou en compote lisses pour que le bébé les avale sans risque.<sup>2</sup></>
-            };
-            
-            if (ageInMonths < 8) return { 
-                texture: "Écrasé", prot: "10g", fat: "1 c.à.c", 
-                text: <>Tous les aliments hachés ou écrasés grossièrement à la fourchette.<sup>2</sup></>,
-                textureReason: <>À partir de 6/8 mois, c'est important de proposer progressivement de nouvelles textures à votre enfant. Il va ainsi pouvoir développer ses capacités à bien mâcher.<sup>2,3</sup></>
-            };
-            
-            if (ageInMonths <= 12) return { 
-                texture: "Morceaux", prot: "20g", fat: "1 c.à.c", 
-                text: <>Les aliments protéiques (viandes, poissons, oeufs) ne devraient être proposés qu'une fois par jour et en quantité adaptée (exemple, 5 g à 6 mois, 20 g à 12 mois).<sup>3</sup></>,
-                textureReason: <>Aliments en morceaux très mous qui s'écrasent entre la langue et le palais puis à croquer dès 10 mois.<sup>2</sup> Proposer un quignon de pain de temps en temps au repas permet de stimuler la mastication et de fortifier la mâchoire.<sup>3</sup></>
-            };
-            
-            return { 
-                texture: "Familiale", prot: "20-30g", fat: "1-2 c.à.c", 
-                text: <>L'enfant passe progressivement d'une alimentation infantile spécifique, adaptée à son âge, à l'alimentation familiale. 3 repas par jour + 1 goûter (et 1 seul).<sup>1,3</sup></>,
-                textureReason: <>Votre enfant mange presque comme les grands, en quantités adaptées à son âge.<sup>2</sup></>
-            };
+            if (ageInMonths < 4) return { texture: "Liquide", prot: "0g", fat: "Non", text: <>Le nourrisson ne doit recevoir qu'un seul type d'aliment : un lait répondant à ses besoins. Le lait de vache est totalement inadapté à cet âge.<sup>1</sup></>, textureReason: <>Le système digestif de votre enfant n'est prêt que pour déglutir du lait.<sup>1</sup></> };
+            if (ageInMonths < 6) return { texture: "Lisse", prot: "5g", fat: "1 c.à.c", text: <>L'introduction des aliments autres que le lait ne doit jamais se faire avant 4 mois révolus.<sup>3</sup> Introduisez toutes les familles d'aliments, y compris ceux qui peuvent provoquer une allergie (œufs, arachides...) et le gluten.<sup>3</sup> Ajoutez de la matière grasse.<sup>2</sup></>, textureReason: <>Proposez tous les aliments en purée ou en compote lisses pour que le bébé les avale sans risque.<sup>2</sup></> };
+            if (ageInMonths < 8) return { texture: "Écrasé", prot: "10g", fat: "1 c.à.c", text: <>Tous les aliments hachés ou écrasés grossièrement à la fourchette.<sup>2</sup></>, textureReason: <>À partir de 6/8 mois, c'est important de proposer progressivement de nouvelles textures à votre enfant. Il va ainsi pouvoir développer ses capacités à bien mâcher.<sup>2,3</sup></> };
+            if (ageInMonths <= 12) return { texture: "Morceaux", prot: "20g", fat: "1 c.à.c", text: <>Les aliments protéiques (viandes, poissons, oeufs) ne devraient être proposés qu'une fois par jour et en quantité adaptée (exemple, 5 g à 6 mois, 20 g à 12 mois).<sup>3</sup></>, textureReason: <>Aliments en morceaux très mous qui s'écrasent entre la langue et le palais puis à croquer dès 10 mois.<sup>2</sup> Proposer un quignon de pain de temps en temps au repas permet de stimuler la mastication et de fortifier la mâchoire.<sup>3</sup></> };
+            return { texture: "Familiale", prot: "20-30g", fat: "1-2 c.à.c", text: <>L'enfant passe progressivement d'une alimentation infantile spécifique, adaptée à son âge, à l'alimentation familiale. 3 repas par jour + 1 goûter (et 1 seul).<sup>1,3</sup></>, textureReason: <>Votre enfant mange presque comme les grands, en quantités adaptées à son âge.<sup>2</sup></> };
         }
 
         function getGoldenRules(ageInMonths) {
             if (ageInMonths === null) return [];
             const rules = [];
-            
             rules.push({ icon: '🚫', text: <>La règle à tout âge est de proposer sans jamais forcer en respectant son appétit.<sup>2,3</sup></> });
             rules.push({ icon: '📺', text: <>Il est préférable d'éteindre la télé et de laisser son téléphone à distance.<sup>2</sup></> });
-            
             if (ageInMonths < 36) {
                 rules.push({ icon: '🧂', text: <>Jusqu'à 3 ans, ne salez pas le fait maison ou les petits pots.<sup>1,2</sup></> });
                 rules.push({ icon: '🍯', text: <>Proposez des fruits tendres crus ou cuits écrasés à la fourchette, toujours sans sucre.<sup>1,2</sup></> });
@@ -350,11 +328,9 @@
             return rules;
         }
 
-        function getRecipeTip() {
-            return GENERAL_TIPS[Math.floor(Math.random() * GENERAL_TIPS.length)];
-        }
-
-        // --- COMPOSANT PRINCIPAL ---
+        // ============================================================================
+        // 3. COMPOSANT PRINCIPAL (APP)
+        // ============================================================================
         function App() {
           const [currentTab, setCurrentTab] = useState('home');
           const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -370,16 +346,18 @@
           const [appError, setAppError] = useState(null);
           const [familyCode, setFamilyCode] = useState(() => localStorage.getItem('cookidoudou_family_code') || '');
           const [tempFamilyCode, setTempFamilyCode] = useState(familyCode);
+          
+          // Modales
           const [showTypicalDayModal, setShowTypicalDayModal] = useState(false);
           const [activeModalChildId, setActiveModalChildId] = useState(null); 
           const [showTipsModal, setShowTipsModal] = useState(false);
           const [showGeneratorModal, setShowGeneratorModal] = useState(false);
           
-          // État pour la recherche dans le carnet par enfant
+          // UI Courses (Rayons)
+          const [activeAisle, setActiveAisle] = useState(null);
+          
           const [coachSearchTerms, setCoachSearchTerms] = useState({});
-
           const [genConfig, setGenConfig] = useState({ weekdayMeals: 1, weekendMeals: 2, structure: 'Plat + Dessert' });
-          const [collapsedCategories, setCollapsedCategories] = useState({});
           const [showOnboardingModal, setShowOnboardingModal] = useState(() => localStorage.getItem('cookidoudou_onboarded') !== 'true');
           const [showMedicalConsentModal, setShowMedicalConsentModal] = useState(false);
           const [isCoachEnabled, setIsCoachEnabled] = useState(() => JSON.parse(localStorage.getItem('cookidoudou_coach_enabled')) || false);
@@ -389,6 +367,9 @@
           const names = useMemo(() => children.length ? children.map(c => c.name || "Bébé").join(' et ') : "!", [children]);
 
           useEffect(() => { localStorage.setItem('cookidoudou_season_mode', JSON.stringify(isSeasonalModeActive)); }, [isSeasonalModeActive]);
+          
+          // Reset du rayon actif si on quitte la page de courses
+          useEffect(() => { if (currentTab !== 'shopping') setActiveAisle(null); }, [currentTab]);
 
           // --- FIREBASE ET SYNC ---
           useEffect(() => {
@@ -436,11 +417,8 @@
           const toggleTestedIngredient = (childId, ingredient) => {
             const currentList = testedIngredients[childId] || [];
             let newList;
-            if (currentList.includes(ingredient)) {
-                newList = currentList.filter(i => i !== ingredient);
-            } else {
-                newList = [...currentList, ingredient];
-            }
+            if (currentList.includes(ingredient)) { newList = currentList.filter(i => i !== ingredient); } 
+            else { newList = [...currentList, ingredient]; }
             const newTested = { ...testedIngredients, [childId]: newList };
             setTestedIngredients(newTested);
             saveToCloud({ testedIngredients: newTested });
@@ -449,24 +427,17 @@
           const suggestRecipeForNewIngredient = (childId) => {
               const tested = testedIngredients[childId] || [];
               let recipesWithNew = [];
-
               RECIPES.forEach(r => {
                   let hasNew = false;
                   if (r.ingredients) {
                       r.ingredients.forEach(rawIng => {
-                          const parsed = parseIngredient(rawIng);
-                          const dictMatch = ALL_INGREDIENTS_DICT.find(d => 
-                              d.toLowerCase() === parsed.root.toLowerCase() || 
-                              d.toLowerCase() === parsed.name.toLowerCase()
-                          );
-                          if (dictMatch && !tested.includes(dictMatch)) {
-                              hasNew = true;
-                          }
+                          const parsed = parseIngredientV3(rawIng);
+                          const dictMatch = ALL_INGREDIENTS_DICT.find(d => d.toLowerCase() === parsed.root.toLowerCase() || d.toLowerCase() === parsed.name.toLowerCase());
+                          if (dictMatch && !tested.includes(dictMatch)) hasNew = true;
                       });
                   }
                   if (hasNew) recipesWithNew.push(r);
               });
-
               if (recipesWithNew.length > 0) {
                   const randomRecipe = recipesWithNew[Math.floor(Math.random() * recipesWithNew.length)];
                   setSelectedRecipe(randomRecipe);
@@ -476,12 +447,17 @@
               }
           };
 
+          // Récupère les ingrédients brut de l'agenda SANS deduplication (pour que l'addition V3 marche)
+          // ET filtre ceux qui sont déjà intégralement validés dans le pantry.
           const getRebuiltShoppingList = (agendaObj, pantryArr) => {
             let newList = [];
             Object.values(agendaObj).flat().forEach(rid => {
                 const r = RECIPES.find(rec => rec.id === rid);
                 if (r && r.ingredients) {
-                    r.ingredients.forEach(i => { if (!pantryArr.includes(i) && !newList.includes(i)) newList.push(i); });
+                    r.ingredients.forEach(i => {
+                        // On garde l'élément s'il n'est pas dans le placard
+                        if (!pantryArr.includes(i)) newList.push(i);
+                    });
                 }
             });
             return newList;
@@ -500,6 +476,7 @@
           const removeFromAgenda = (day, rid) => {
             const newA = { ...agenda, [day]: (agenda[day] || []).filter(id => id !== rid) };
             const isAllEmpty = Object.values(newA).flat().length === 0;
+            // Vider le placard automatiquement si l'agenda est vide
             const newPantry = isAllEmpty ? [] : pantry;
             const newS = getRebuiltShoppingList(newA, newPantry);
             setAgenda(newA); setShoppingList(newS); setPantry(newPantry);
@@ -531,7 +508,7 @@
                 }
                 newA[day] = Array.from(new Set(dayRecs)).slice(0, 6);
             });
-            const newP = [];
+            const newP = []; // Vider le placard sur nouvelle semaine
             const newS = getRebuiltShoppingList(newA, newP);
             setAgenda(newA); setShoppingList(newS); setPantry(newP);
             saveToCloud({ agenda: newA, shoppingList: newS, pantry: newP });
@@ -604,43 +581,107 @@
           };
 
           const renderShopping = () => {
-            const agg = aggregateShoppingList(shoppingList);
+            const agg = aggregateShoppingListV3(shoppingList);
+            const totalItems = agg.length;
+
+            if (totalItems === 0) {
+                return (
+                    <div className="animate-fadeIn space-y-6 pb-24">
+                        <h1 className="text-2xl font-black text-gray-800">Mes Courses</h1>
+                        <div className="text-center py-24 opacity-20">
+                            <i className="fa-solid fa-basket-shopping text-7xl mb-4"></i>
+                            <p className="font-black uppercase tracking-widest text-xs">Panier vide</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Gestion de l'ajout au placard
+            const handleCheckItem = (rawItemsArr) => {
+                const nP = [...new Set([...pantry, ...rawItemsArr])];
+                setPantry(nP);
+                const newS = getRebuiltShoppingList(agenda, nP);
+                setShoppingList(newS);
+                saveToCloud({ shoppingList: newS, pantry: nP });
+            };
+
+            // Mode "Sprint final" (Derniers achats) activé s'il reste 8 articles ou moins
+            if (totalItems <= 8) {
+                return (
+                    <div className="animate-fadeIn space-y-6 pb-24">
+                        <div className="flex justify-between items-end mb-6">
+                            <h1 className="text-2xl font-black text-gray-800">Derniers achats <i className="fa-solid fa-stopwatch text-orange-400 ml-2"></i></h1>
+                            <span className="text-xs font-black text-white bg-orange-500 px-3 py-1.5 rounded-full shadow-sm">{totalItems} restants</span>
+                        </div>
+                        <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
+                            {agg.map((it, i) => (
+                                <div key={i} className="flex items-center gap-4 p-5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
+                                    <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 accent-orange-500 cursor-pointer" onChange={() => handleCheckItem(it.rawItems)} />
+                                    <span className="text-sm font-bold text-gray-700 flex-1">{it.displayStr}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // Groupement par catégories/rayons
             const grouped = agg.reduce((acc, obj) => {
                 const cid = categorizeIngredient(obj.displayStr);
-                if(!acc[cid]) acc[cid] = []; acc[cid].push(obj); return acc;
+                if(!acc[cid]) acc[cid] = []; 
+                acc[cid].push(obj); 
+                return acc;
             }, {});
-            const cats = [...SHOPPING_CATEGORIES, {id:'autres', icon:'🛒', name:'Autres'}];
+
+            const activeCats = [...SHOPPING_CATEGORIES, {id:'autres', icon:'🛒', name:'Autres'}].filter(c => grouped[c.id]);
+
+            // Mode Navigation à l'intérieur d'un rayon
+            if (activeAisle) {
+                const cat = activeCats.find(c => c.id === activeAisle);
+                // Si le rayon est vidé entre temps, on revient automatiquement à la grille
+                if (!cat || !grouped[activeAisle] || grouped[activeAisle].length === 0) {
+                    setActiveAisle(null);
+                    return null;
+                }
+                
+                return (
+                    <div className="animate-fadeIn space-y-6 pb-24">
+                        <button onClick={() => setActiveAisle(null)} className="text-gray-500 text-xs uppercase tracking-widest font-black bg-white px-5 py-3 rounded-full border border-gray-100 shadow-sm flex items-center gap-2 mb-2 hover:bg-gray-50 active:scale-95 transition">
+                            <i className="fa-solid fa-arrow-left"></i> Retour aux rayons
+                        </button>
+                        <div className="flex items-center gap-3 mb-4 px-2">
+                            <span className="text-3xl">{cat.icon}</span>
+                            <h1 className="text-2xl font-black text-gray-800">{cat.name}</h1>
+                            <span className="ml-auto bg-gray-100 text-gray-500 font-bold px-3 py-1 rounded-full text-xs">{grouped[activeAisle].length}</span>
+                        </div>
+                        <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm">
+                            {grouped[activeAisle].map((it, i) => (
+                                <div key={i} className="flex items-center gap-4 p-5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
+                                    <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 accent-orange-500 cursor-pointer" onChange={() => handleCheckItem(it.rawItems)} />
+                                    <span className="text-sm font-bold text-gray-700 flex-1">{it.displayStr}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // Mode Grille des rayons (par défaut)
             return (
               <div className="animate-fadeIn space-y-6 pb-24">
-                <h1 className="text-2xl font-black text-gray-800">Ma Liste <span className="text-sm text-gray-400 font-bold ml-2">({agg.length})</span></h1>
-                {!agg.length ? <div className="text-center py-24 opacity-20"><i className="fa-solid fa-basket-shopping text-7xl mb-4"></i><p className="font-black uppercase tracking-widest text-xs">Panier vide</p></div> : 
-                  <div className="space-y-4">
-                    {cats.map(c => {
-                        if(!grouped[c.id]) return null;
-                        const isCol = collapsedCategories[c.id] !== false;
-                        return (
-                            <div key={c.id} className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm transition-all">
-                                <div onClick={() => setCollapsedCategories({...collapsedCategories, [c.id]: !isCol})} className="bg-gray-50 px-5 py-4 flex items-center gap-3 cursor-pointer group select-none">
-                                    <span className="text-xl">{c.icon}</span>
-                                    <h3 className="font-black text-gray-800 text-[10px] uppercase tracking-widest">{c.name}</h3>
-                                    <div className="ml-auto flex items-center gap-3">
-                                        <span className="bg-white px-2 py-1 rounded-full text-[9px] font-bold text-gray-400 border">{grouped[c.id].length}</span>
-                                        <i className={`fa-solid fa-chevron-down text-[10px] transition-transform duration-300 ${!isCol?'rotate-180 text-orange-500':''}`}></i>
-                                    </div>
-                                </div>
-                                {!isCol && <div className="animate-fadeIn">
-                                    {grouped[c.id].map((it, i) => (
-                                        <div key={i} className="flex items-center gap-4 p-4 sm:px-5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
-                                            <input type="checkbox" className="w-6 h-6 rounded-full border-2 border-gray-300 accent-orange-500 cursor-pointer" onChange={() => { const nP = [...new Set([...pantry, ...it.rawItems])]; setPantry(nP); setShoppingList(getRebuiltShoppingList(agenda, nP)); saveToCloud({shoppingList: getRebuiltShoppingList(agenda, nP), pantry: nP}); }} />
-                                            <span className="text-sm font-bold text-gray-700 flex-1">{it.displayStr}</span>
-                                        </div>
-                                    ))}
-                                </div>}
-                            </div>
-                        )
-                    })}
-                  </div>
-                }
+                <div className="flex justify-between items-end mb-4">
+                    <h1 className="text-2xl font-black text-gray-800">Mes Rayons</h1>
+                    <span className="text-xs font-black text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">{totalItems} articles restants</span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    {activeCats.map(c => (
+                        <button key={c.id} onClick={() => setActiveAisle(c.id)} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-3 hover:bg-orange-50 hover:border-orange-200 transition group active:scale-95">
+                            <span className="text-4xl group-hover:scale-110 transition-transform">{c.icon}</span>
+                            <h3 className="font-black text-gray-800 text-[10px] uppercase tracking-widest text-center">{c.name}</h3>
+                            <span className="bg-gray-50 text-gray-400 text-[10px] font-bold px-3 py-1 rounded-full group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">{grouped[c.id].length} articles</span>
+                        </button>
+                    ))}
+                </div>
               </div>
             );
           };
@@ -703,7 +744,6 @@
                             const age = calculateAgeInMonths(c.birthdate); if(age === null) return null;
                             const adv = getCoachAdvice(age);
                             
-                            // Groupement dynamique des aliments testés
                             const tested = testedIngredients[c.id] || [];
                             const groupedTested = tested.reduce((acc, ing) => {
                                 const cat = getCategoryForTested(ing);
@@ -712,7 +752,6 @@
                                 return acc;
                             }, {});
                             
-                            // Ordre d'affichage des catégories du carnet (Modifié selon nos échanges)
                             const catOrder = ['Aliments prioritaires *', 'Fruits & Légumes', 'Viandes & Protéines', 'Autres'];
 
                             return (
@@ -738,12 +777,10 @@
                                         </div>
                                     </div>
 
-                                    {/* CARNET DE DÉCOUVERTE INTÉGRÉ & DYNAMIQUE */}
                                     {age >= 4 && (
                                         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 mb-5 relative">
                                             <h4 className="font-black text-gray-800 text-[10px] uppercase tracking-widest mb-4"><i className="fa-solid fa-clipboard-check text-green-500 mr-1"></i> Carnet de découverte</h4>
                                             
-                                            {/* Recherche intelligente intégrée */}
                                             <div className="relative mb-3">
                                                 <input
                                                     type="text"
@@ -754,7 +791,6 @@
                                                 />
                                             </div>
                                             
-                                            {/* Suggestions au fil de la frappe */}
                                             {(coachSearchTerms[c.id] || '').length > 0 && (
                                                 <div className="max-h-40 overflow-y-auto mb-4 bg-gray-50 rounded-xl border border-gray-100 p-2 space-y-1 shadow-inner animate-fadeIn">
                                                     {ALL_INGREDIENTS_DICT
@@ -777,12 +813,10 @@
                                                 </div>
                                             )}
 
-                                            {/* Bouton Magique pour Suggérer une Recette */}
                                             <button onClick={() => suggestRecipeForNewIngredient(c.id)} className="w-full bg-gradient-to-r from-orange-400 to-rose-400 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-md flex items-center justify-center gap-2 active:scale-95 transition mb-5">
                                                 <i className="fa-solid fa-wand-magic-sparkles"></i> Suggérer une recette inédite
                                             </button>
 
-                                            {/* Affichage de l'inventaire existant avec la nouvelle couleur bleue pour les prioritaires */}
                                             {tested.length === 0 ? (
                                                 <p className="text-xs text-gray-400 italic text-center py-4 border-t border-gray-50 pt-4">Bébé n'a encore rien goûté. Cherchez un aliment ci-dessus pour l'ajouter !</p>
                                             ) : (
@@ -812,7 +846,6 @@
                             )
                         })}
 
-                        {/* Explication et Bibliographie */}
                         <div className="mt-8">
                             <p className="text-[10px] text-gray-500 italic px-4 mb-4 leading-relaxed">
                                 * Selon les recommandations récentes (Santé publique France et Société Française de Pédiatrie), l'introduction précoce et régulière (dès 4-6 mois) des aliments à potentiel allergène (œuf, arachide, blé, etc.) aide le système immunitaire de l'enfant à développer une tolérance, ce qui réduit le risque d'allergie future.
