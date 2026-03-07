@@ -98,8 +98,8 @@
             'blanc de poulet': 150, 'filet de poulet': 150, 'filet de dinde': 150, 'escalope': 150, 'pavé de saumon': 150, 'filet de daurade': 150,
             'boudin': 120, 'boudin noir': 120, 'saucisse': 100, 'râble de lapin': 250, 'râble': 250, 'noix de saint-jacques': 20, 
             'pétoncle': 10, 'aile de raie': 200, 'filet de bar': 150, 'maquereau': 150, 'oeuf': 50, 'œuf': 50,
-            // Unités textuelles (sert pour les conversions "1 gousse" -> 5g)
-            'gousse': 5, 'bouquet': 30, 'botte': 200, 'poignée': 20, 'filet': 10
+            // Unités textuelles
+            'ail': 5, 'gousse': 5, 'bouquet': 30, 'botte': 200, 'poignée': 20, 'filet': 10
         };
 
         const ALL_INGREDIENTS_DICT = Array.from(new Set([...ROOTS, ...SHOPPING_CATEGORIES.flatMap(c => c.keywords)])).map(i => i.charAt(0).toUpperCase() + i.slice(1)).sort();
@@ -140,7 +140,8 @@
             'chou': 'choux', 'chou-fleur': 'choux-fleurs', 'pomme de terre': 'pommes de terre', 'patate douce': 'patates douces',
             'tomate cerise': 'tomates cerises', 'poireau': 'poireaux', 'oignon rouge': 'oignons rouges', 'oignon blanc': 'oignons blancs',
             'poivron rouge': 'poivrons rouges', 'poivron jaune': 'poivrons jaunes', 'haricot vert': 'haricots verts', 'haricot rouge': 'haricots rouges',
-            'kiwi gold': 'kiwis gold', 'kiwi vert': 'kiwis verts', 'citron vert': 'citrons verts', 'ail': 'ail', 'persil': 'persil', 'coriandre': 'coriandre', 'thym': 'thym', 'romarin': 'romarin', 'menthe': 'menthe', 'ciboulette': 'ciboulette'
+            'kiwi gold': 'kiwis gold', 'kiwi vert': 'kiwis verts', 'citron vert': 'citrons verts', 'ail': 'ail', 'persil': 'persil', 'coriandre': 'coriandre', 'thym': 'thym', 'romarin': 'romarin', 'menthe': 'menthe', 'ciboulette': 'ciboulette',
+            'champignon de paris': 'champignons de Paris', 'tomate confite': 'tomates confites', 'tomate pelée': 'tomates pelées'
         };
 
         // ============================================================================
@@ -256,7 +257,6 @@
                 let baseUnit = parsed.unit;
                 let baseQty = parsed.qty;
                 
-                // Moteur de conversion des Unités vers Grammes via AVERAGE_WEIGHTS
                 let avgWeight = AVERAGE_WEIGHTS[parsed.root] || AVERAGE_WEIGHTS[baseUnit];
                 
                 if (['kg', 'l', 'L', 'cl', 'ml', 'c.à.s', 'c.à.c', 'cuillère', 'pincée'].includes(baseUnit)) {
@@ -264,7 +264,6 @@
                     else if (baseUnit === 'l' || baseUnit === 'L') { baseUnit = 'ml'; baseQty *= 1000; }
                     else if (baseUnit === 'cl') { baseUnit = 'ml'; baseQty *= 10; }
                 } else {
-                    // C'est un compte (ex: "4 carottes", "1 bouquet") -> Conversion en Grammes
                     if (avgWeight && baseQty > 0) {
                         baseQty = baseQty * avgWeight;
                         baseUnit = 'g';
@@ -287,40 +286,55 @@
                 Object.keys(aggregated[root]).forEach(unit => {
                     const data = aggregated[root][unit];
                     const varKeys = Object.keys(data.varieties);
-                    const totalQty = varKeys.reduce((sum, k) => sum + data.varieties[k], 0);
+                    const totalQty = varKeys.reduce((sum, k) => sum + data.varieties[k], 0); // Toujours en g ou ml
                     
                     let displayQty = totalQty;
                     let displayUnit = unit;
                     
-                    // Conversion d'affichage >= 1kg ou 1L
                     if (unit === 'g' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'kg'; }
                     if (unit === 'ml' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'L'; }
                     
-                    // Logique de pluriel dynamique basée sur le poids
+                    // Calcul du pluriel sur la quantité absolue (totalQty) et non sur l'affichage (displayQty)
                     let isPlural = false;
                     let avg = AVERAGE_WEIGHTS[root] || 50; 
-                    if (unit === 'g' || unit === 'kg') {
-                        let totalGrams = unit === 'kg' ? displayQty * 1000 : displayQty;
-                        if (totalGrams > avg) isPlural = true;
-                    } else if (unit === 'ml' || unit === 'L') {
-                        isPlural = false; // Liquides massifs
+                    if (unit === 'g') {
+                        if (totalQty > avg) isPlural = true;
+                    } else if (unit === 'ml') {
+                        isPlural = false;
                     } else {
-                        if (displayQty > 1) isPlural = true; // Pièces standard (ex: oeufs)
+                        if (totalQty > 1) isPlural = true;
                     }
                     
                     let displayName = isPlural ? getGrammaticallyCorrectPlural(root) : root;
                     
                     let varietyDetails = "";
                     if (varKeys.length === 1 && varKeys[0] !== 'classique') {
-                        displayName = `${displayName} ${varKeys[0]}`;
+                        let vName = varKeys[0];
+                        // Pluralisation de l'adjectif si applicable
+                        if (isPlural && !vName.endsWith('s') && !vName.endsWith('x')) vName += 's';
+                        displayName = `${displayName} ${vName}`;
                     } else if (varKeys.length > 1) {
                         const details = varKeys.map(vk => {
-                            let vQty = data.varieties[vk];
-                            if (unit === 'g' && vQty >= 1000) vQty /= 1000;
-                            if (unit === 'ml' && vQty >= 1000) vQty /= 1000;
+                            let vQty = data.varieties[vk]; // Quantité de base en g ou ml
+                            
+                            // Alignement d'échelle : si on affiche en kg, les sous-variétés s'affichent aussi en kg
+                            if (displayUnit === 'kg') vQty /= 1000;
+                            if (displayUnit === 'L') vQty /= 1000;
+                            
                             const qStr = Number.isInteger(vQty) ? vQty : parseFloat(vQty.toFixed(2));
                             const qStrFr = qStr.toString().replace('.', ',');
-                            return vk === 'classique' ? `${qStrFr} classiques` : `${qStrFr} ${vk}`;
+                            
+                            let vkName = vk;
+                            let baseVQty = data.varieties[vk]; 
+                            let isVarPlural = (unit === 'g' && baseVQty > avg) || (unit !== 'g' && baseVQty > 1);
+                            
+                            if (vk === 'classique') {
+                                vkName = isVarPlural ? 'classiques' : 'classique';
+                            } else {
+                                if (isVarPlural && !vk.endsWith('s') && !vk.endsWith('x')) vkName += 's';
+                            }
+                            
+                            return `${qStrFr} ${vkName}`;
                         }).join(', ');
                         varietyDetails = ` (${details})`;
                     }
@@ -335,12 +349,11 @@
                             finalUnit = displayQty > 1 ? (finalUnit === 'bocal' ? 'bocaux' : finalUnit + 's') : finalUnit;
                         }
                         
-                        // Calcul des pièces équivalentes pour l'affichage (uniquement pour les aliments >= 20g)
+                        // Condition d'affichage des pièces : aliments >= 15g ou l'ail
                         let equivalentStr = "";
-                        if (AVERAGE_WEIGHTS[root] && (unit === 'g' || unit === 'kg')) {
-                            let totalGrams = unit === 'kg' ? displayQty * 1000 : displayQty;
-                            let pieces = Math.round(totalGrams / AVERAGE_WEIGHTS[root]);
-                            if (pieces > 0 && AVERAGE_WEIGHTS[root] >= 20) {
+                        if (AVERAGE_WEIGHTS[root] && unit === 'g') {
+                            let pieces = Math.round(totalQty / AVERAGE_WEIGHTS[root]);
+                            if (pieces > 0 && (AVERAGE_WEIGHTS[root] >= 15 || root === 'ail')) {
                                 equivalentStr = ` (~ ${pieces} pièce${pieces > 1 ? 's' : ''})`;
                             }
                         }
@@ -1009,7 +1022,7 @@
                 </div>
               )}
 
-              {showTypicalDayModal && activeDayChild && (
+              {showTypicalDayModal && activeModalChildId && (
                 <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fadeIn">
                     <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="bg-blue-500 pt-6 px-6 pb-4 text-white">
@@ -1019,10 +1032,10 @@
                                 </div>
                                 <button onClick={()=>setShowTypicalDayModal(false)}><i className="fa-solid fa-xmark"></i></button>
                             </div>
-                            {(() => { const age = calculateAgeInMonths(activeDayChild.birthdate); const td = getTypicalDayForAge(age); return <><h2 className="text-2xl font-black">{td?.title||"Âge inconnu"}</h2><p className="text-blue-100 text-sm font-medium">{td?.subtitle}</p></>; })()}
+                            {(() => { const activeChild = children.find(c => c.id === activeModalChildId); const age = calculateAgeInMonths(activeChild?.birthdate); const td = getTypicalDayForAge(age); return <><h2 className="text-2xl font-black">{td?.title||"Âge inconnu"}</h2><p className="text-blue-100 text-sm font-medium">{td?.subtitle}</p></>; })()}
                         </div>
                         <div className="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1 hide-scrollbar">
-                            {(() => { const age = calculateAgeInMonths(activeDayChild.birthdate); const td = getTypicalDayForAge(age); return td?.meals.map((m, i) => (
+                            {(() => { const activeChild = children.find(c => c.id === activeModalChildId); const age = calculateAgeInMonths(activeChild?.birthdate); const td = getTypicalDayForAge(age); return td?.meals.map((m, i) => (
                                 <div key={i} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
                                     <h4 className="font-black text-gray-800 flex items-center gap-2 mb-2"><span className="text-xl">{m.icon}</span> {m.name}</h4>
                                     <p className="text-sm text-gray-600 pl-8 border-l-2 border-blue-100 whitespace-pre-line font-medium">{m.text}</p>
