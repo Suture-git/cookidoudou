@@ -69,13 +69,15 @@
             { id: 'boulangerie', icon: '🥖', name: 'Boulangerie', keywords: ['pain', 'baguette', 'mie', 'brioche', 'biscotte', 'croissant', 'croûton'] }
         ];
 
+        // Dictionnaire allégé pour regrouper les variétés automatiquement
         const ROOTS = [
             'pomme de terre', 'patate douce', 'tomate cerise', 'tomate pelée', 'tomate confite', 'tomate', 
-            'pomme granny smith', 'pomme fuji', 'pomme', 'courgette', 'oignon rouge', 'oignon blanc', 'oignon', 
-            'poivron rouge', 'poivron jaune', 'poivron', 'champignon de paris', 'champignon', 'piment oiseau', 'piment rouge', 'piment', 
-            'chou kale', 'chou-fleur', 'chou', 'poireau', 'haricot vert', 'haricot rouge', 'haricot', 'kiwi gold', 'kiwi vert', 'kiwi', 
+            'pomme granny smith', 'pomme fuji', 'pomme', 'courgette', 'oignon', 
+            'poivron', 'champignon de paris', 'champignon', 'piment oiseau', 'piment rouge', 'piment', 
+            'chou kale', 'chou-fleur', 'chou', 'poireau', 'haricot vert', 'haricot rouge', 'haricot', 'kiwi', 
             'échalote', 'carotte', 'navet', 'aubergine', 'avocat', 'mangue', 'pêche', 'poire', 'fraise', 'framboise', 
-            'banane', 'citron vert', 'citron combava', 'citron', 'orange', 'abricot', 'melon', 'pastèque', 'asperge', 'oeuf', 'œuf', 'sardine', 'endive'
+            'banane', 'citron vert', 'citron combava', 'citron', 'orange', 'abricot', 'melon', 'pastèque', 'asperge', 
+            'céleri branche', 'oeuf', 'œuf', 'sardine', 'endive'
         ].sort((a, b) => b.length - a.length);
 
         const ROOT_REGEXES = ROOTS.map(r => {
@@ -86,19 +88,19 @@
         // Dictionnaire des Poids Moyens pour la conversion automatique (Unité -> Grammes)
         const AVERAGE_WEIGHTS = {
             'pomme de terre': 150, 'patate douce': 300, 'tomate cerise': 15, 'tomate': 120, 'tomate confite': 10, 'tomate pelée': 100,
-            'pomme granny smith': 150, 'pomme fuji': 150, 'pomme': 150, 'courgette': 250, 'oignon rouge': 100, 'oignon blanc': 100, 'oignon': 100,
-            'poivron rouge': 160, 'poivron jaune': 160, 'poivron': 160, 'champignon de paris': 20, 'champignon': 20, 
+            'pomme granny smith': 150, 'pomme fuji': 150, 'pomme': 150, 'courgette': 250, 'oignon': 100,
+            'poivron': 160, 'champignon de paris': 20, 'champignon': 20, 
             'piment oiseau': 5, 'piment rouge': 10, 'piment': 10,
-            'chou kale': 200, 'chou-fleur': 800, 'chou': 800, 'poireau': 150, 'kiwi gold': 100, 'kiwi vert': 100, 'kiwi': 100,
+            'chou kale': 200, 'chou-fleur': 800, 'chou': 800, 'poireau': 150, 'kiwi': 100,
             'échalote': 25, 'carotte': 100, 'navet': 100, 'aubergine': 300, 'avocat': 200, 'mangue': 300, 'pêche': 150, 'poire': 150, 
             'fraise': 15, 'framboise': 5, 'banane': 150, 'citron vert': 100, 'citron combava': 80, 'citron': 100, 'orange': 150, 
             'abricot': 45, 'melon': 1000, 'pastèque': 3000, 'asperge': 30, 'endive': 150, 'fenouil': 250, 'laitue': 300, 'sucrine': 100, 
-            'ananas victoria': 800, 'ananas': 1000, 'fruit du dragon': 300, 'papaye': 400,
+            'ananas victoria': 800, 'ananas': 1000, 'fruit du dragon': 300, 'papaye': 400, 'céleri branche': 400,
             // Viandes / Poissons / Oeufs
             'blanc de poulet': 150, 'filet de poulet': 150, 'filet de dinde': 150, 'escalope': 150, 'pavé de saumon': 150, 'filet de daurade': 150,
             'boudin': 120, 'boudin noir': 120, 'saucisse': 100, 'râble de lapin': 250, 'râble': 250, 'noix de saint-jacques': 20, 
             'pétoncle': 10, 'aile de raie': 200, 'filet de bar': 150, 'maquereau': 150, 'oeuf': 50, 'œuf': 50,
-            // Unités textuelles
+            // Unités textuelles (sert pour les conversions "1 gousse" -> 5g)
             'ail': 5, 'gousse': 5, 'bouquet': 30, 'botte': 200, 'poignée': 20, 'filet': 10
         };
 
@@ -138,10 +140,10 @@
         // Protection des singuliers qui ne doivent jamais prendre de "s" final
         const PLURALS_DICT = {
             'chou': 'choux', 'chou-fleur': 'choux-fleurs', 'pomme de terre': 'pommes de terre', 'patate douce': 'patates douces',
-            'tomate cerise': 'tomates cerises', 'poireau': 'poireaux', 'oignon rouge': 'oignons rouges', 'oignon blanc': 'oignons blancs',
-            'poivron rouge': 'poivrons rouges', 'poivron jaune': 'poivrons jaunes', 'haricot vert': 'haricots verts', 'haricot rouge': 'haricots rouges',
-            'kiwi gold': 'kiwis gold', 'kiwi vert': 'kiwis verts', 'citron vert': 'citrons verts', 'ail': 'ail', 'persil': 'persil', 'coriandre': 'coriandre', 'thym': 'thym', 'romarin': 'romarin', 'menthe': 'menthe', 'ciboulette': 'ciboulette',
-            'champignon de paris': 'champignons de Paris', 'tomate confite': 'tomates confites', 'tomate pelée': 'tomates pelées'
+            'tomate cerise': 'tomates cerises', 'poireau': 'poireaux', 'haricot vert': 'haricots verts', 'haricot rouge': 'haricots rouges',
+            'citron vert': 'citrons verts', 'ail': 'ail', 'persil': 'persil', 'coriandre': 'coriandre', 'thym': 'thym', 'romarin': 'romarin', 'menthe': 'menthe', 'ciboulette': 'ciboulette',
+            'champignon de paris': 'champignons de Paris', 'tomate confite': 'tomates confites', 'tomate pelée': 'tomates pelées',
+            'céleri branche': 'céleris branches'
         };
 
         // ============================================================================
@@ -286,7 +288,7 @@
                 Object.keys(aggregated[root]).forEach(unit => {
                     const data = aggregated[root][unit];
                     const varKeys = Object.keys(data.varieties);
-                    const totalQty = varKeys.reduce((sum, k) => sum + data.varieties[k], 0); // Toujours en g ou ml
+                    const totalQty = varKeys.reduce((sum, k) => sum + data.varieties[k], 0); 
                     
                     let displayQty = totalQty;
                     let displayUnit = unit;
@@ -331,7 +333,6 @@
                                 if (isVarPlural && !vk.endsWith('s') && !vk.endsWith('x')) vkName += 's';
                             }
                             
-                            // AJOUT DE L'UNITÉ DANS LES VARIÉTÉS ICI
                             let vUnitStr = displayUnit ? displayUnit + " " : "";
                             
                             return `${qStrFr} ${vUnitStr}${vkName}`.trim();
