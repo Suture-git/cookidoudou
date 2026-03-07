@@ -294,7 +294,6 @@
                     if (unit === 'g' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'kg'; }
                     if (unit === 'ml' && totalQty >= 1000) { displayQty = totalQty / 1000; displayUnit = 'L'; }
                     
-                    // Calcul du pluriel sur la quantité absolue (totalQty) et non sur l'affichage (displayQty)
                     let isPlural = false;
                     let avg = AVERAGE_WEIGHTS[root] || 50; 
                     if (unit === 'g') {
@@ -310,14 +309,12 @@
                     let varietyDetails = "";
                     if (varKeys.length === 1 && varKeys[0] !== 'classique') {
                         let vName = varKeys[0];
-                        // Pluralisation de l'adjectif si applicable
                         if (isPlural && !vName.endsWith('s') && !vName.endsWith('x')) vName += 's';
                         displayName = `${displayName} ${vName}`;
                     } else if (varKeys.length > 1) {
                         const details = varKeys.map(vk => {
-                            let vQty = data.varieties[vk]; // Quantité de base en g ou ml
+                            let vQty = data.varieties[vk]; 
                             
-                            // Alignement d'échelle : si on affiche en kg, les sous-variétés s'affichent aussi en kg
                             if (displayUnit === 'kg') vQty /= 1000;
                             if (displayUnit === 'L') vQty /= 1000;
                             
@@ -334,7 +331,10 @@
                                 if (isVarPlural && !vk.endsWith('s') && !vk.endsWith('x')) vkName += 's';
                             }
                             
-                            return `${qStrFr} ${vkName}`;
+                            // AJOUT DE L'UNITÉ DANS LES VARIÉTÉS ICI
+                            let vUnitStr = displayUnit ? displayUnit + " " : "";
+                            
+                            return `${qStrFr} ${vUnitStr}${vkName}`.trim();
                         }).join(', ');
                         varietyDetails = ` (${details})`;
                     }
@@ -349,7 +349,6 @@
                             finalUnit = displayQty > 1 ? (finalUnit === 'bocal' ? 'bocaux' : finalUnit + 's') : finalUnit;
                         }
                         
-                        // Condition d'affichage des pièces : aliments >= 15g ou l'ail
                         let equivalentStr = "";
                         if (AVERAGE_WEIGHTS[root] && unit === 'g') {
                             let pieces = Math.round(totalQty / AVERAGE_WEIGHTS[root]);
